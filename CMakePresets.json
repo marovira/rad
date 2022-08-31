@@ -1,0 +1,26 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired":{
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "hidden": true,
+            "displayName": "Default configuration",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build"
+        },
+        {
+            "name": "AI",
+            "inherits": "default",
+            "displayName": "AI",
+            "description": "Build using ONNX for AI projects",
+            "cacheVariables": {
+                "ONNXRUNTIME_ROOT": "C:/onnxruntime"
+            }
+        }
+    ]
+}
