@@ -26,13 +26,21 @@ namespace rad::onnx
                 const char* message)
     {
         std::string level = log_level_from_enum(severity);
-        fmt::print("{}: {}: ({}) at {}: {}\n", level, category, log_id, code_location, message);
+        fmt::print("{}: {}: ({}) at {}: {}\n",
+                   level,
+                   category,
+                   log_id,
+                   code_location,
+                   message);
     }
 
     Ort::Env create_environment(std::string const& name)
     {
 
-        return {OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING, name.c_str(), logger, nullptr};
+        return {OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
+                name.c_str(),
+                logger,
+                nullptr};
     }
 } // namespace rad::onnx
 #endif

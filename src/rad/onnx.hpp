@@ -49,13 +49,17 @@ namespace rad::onnx
     Ort::Env create_environment(std::string const& name);
 
     template<typename ModelSelectorFun>
-    Ort::Session make_session_from_file(std::string const& model_root, Ort::Env& env, ModelSelectorFun&& selector)
+    Ort::Session make_session_from_file(std::string const& model_root,
+                                        Ort::Env& env,
+                                        ModelSelectorFun&& selector)
     {
         std::wstring model_to_load = selector(model_root);
         if (model_to_load.empty())
         {
             ASSERT(0);
-            throw std::runtime_error{fmt::format("error: unable to find a model load in {}", model_root).c_str()};
+            throw std::runtime_error{
+                fmt::format("error: unable to find a model load in {}", model_root)
+                    .c_str()};
         }
 
         Ort::SessionOptions opt;
@@ -94,7 +98,8 @@ namespace rad::onnx
 
         Ort::Value tensor{nullptr};
         perform_safe_op([&tensor, &tensor_data, tensor_dims]() {
-            Ort::MemoryInfo mem_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+            Ort::MemoryInfo mem_info =
+                Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
             tensor = Ort::Value::CreateTensor<T>(mem_info,
                                                  tensor_data.data(),
@@ -219,7 +224,8 @@ namespace rad::onnx
     }
 
     template<typename T, typename Fun>
-    cv::Mat image_from_tensor(Ort::Value& tensor, cv::Size sz, int type, Fun&& post_process)
+    cv::Mat
+    image_from_tensor(Ort::Value& tensor, cv::Size sz, int type, Fun&& post_process)
     {
         cv::Mat from_tensor{sz, type, tensor.GetTensorMutableData<T>()};
         cv::Mat image = from_tensor.clone();

@@ -3,7 +3,7 @@ Standard: c++20
 
 # Global settings
 AccessModifierOffset: -4
-ColumnLimit: 120
+ColumnLimit: 90
 Cpp11BracedListStyle: true
 DeriveLineEnding: true
 DerivePointerAlignment: true

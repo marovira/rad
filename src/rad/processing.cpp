@@ -3,7 +3,8 @@
 namespace rad
 {
 #if defined(RAD_ONNX_ENABLED)
-    void prepare_training_directories(std::string const& root, std::string const& app_name)
+    void prepare_training_directories(std::string const& root,
+                                      std::string const& app_name)
     {
         // Create the top-level models directory first.
         std::string models_root{root};
@@ -27,7 +28,8 @@ namespace rad
         std::string image_name;
         fs::path entry{path};
         cv::Mat img;
-        if (entry.extension() == ".jpg" || entry.extension() == ".JPG" || entry.extension() == ".png")
+        if (entry.extension() == ".jpg" || entry.extension() == ".JPG"
+            || entry.extension() == ".png")
         {
             image_name = entry.stem().string();
             img        = cv::imread(entry.string());
@@ -44,8 +46,10 @@ namespace rad
         fs::create_directories(res_root);
     }
 
-    void
-    save_result(cv::Mat const& img, std::string const& root, std::string const& app_name, std::string const& img_name)
+    void save_result(cv::Mat const& img,
+                     std::string const& root,
+                     std::string const& app_name,
+                     std::string const& img_name)
     {
         if (img.empty())
         {
