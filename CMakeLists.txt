@@ -1,14 +1,10 @@
 #================================
 # Project setup.
 #================================
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
 project(rad LANGUAGES CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-if (POLICY CMP0072)
-    cmake_policy(SET CMP0072 NEW)
-endif()
 
 #================================
 # Option variables.
