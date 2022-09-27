@@ -4,11 +4,18 @@ namespace rad
 {
     cv::Mat to_normalised_float(cv::Mat const& img)
     {
+        return to_normalised_float(img,
+                                   cv::Scalar{0.406f, 0.456f, 0.485f},
+                                   cv::Scalar{0.225f, 0.224f, 0.229f});
+    }
+
+    cv::Mat to_normalised_float(cv::Mat const& img, cv::Scalar mean, cv::Scalar std)
+    {
         cv::Mat as_float;
         img.convertTo(as_float, CV_32FC3, 1.0 / 255.0);
 
-        as_float -= cv::Scalar{0.406f, 0.456f, 0.485f};
-        as_float /= cv::Scalar{0.225f, 0.224f, 0.229f};
+        as_float -= mean;
+        as_float /= std;
 
         return as_float;
     }
