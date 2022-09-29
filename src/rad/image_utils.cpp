@@ -20,6 +20,13 @@ namespace rad
         return as_float;
     }
 
+    cv::Mat downscale_to(cv::Mat const& img, cv::Size size)
+    {
+        cv::Mat resized;
+        cv::resize(img, resized, size, 0, 0, cv::INTER_CUBIC);
+        return resized;
+    }
+
     cv::Mat downscale_by_long_edge(cv::Mat const& img, int max_size)
     {
         cv::Size size = img.size();

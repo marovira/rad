@@ -5,6 +5,8 @@ namespace rad
 {
     cv::Mat to_normalised_float(cv::Mat const& img);
     cv::Mat to_normalised_float(cv::Mat const& img, cv::Scalar mean, cv::Scalar std);
+
+    cv::Mat downscale_to(cv::Mat const& img, cv::Size size);
     cv::Mat downscale_by_long_edge(cv::Mat const& img, int max_size);
 
     template<typename T>
