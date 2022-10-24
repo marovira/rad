@@ -3,6 +3,8 @@
 
 namespace rad
 {
+    cv::Mat change_colour_space(cv::Mat const& img, cv::ColorConversionCodes code);
+
     cv::Mat to_normalised_float(cv::Mat const& img);
     cv::Mat to_normalised_float(cv::Mat const& img, cv::Scalar mean, cv::Scalar std);
 

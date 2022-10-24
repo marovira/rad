@@ -2,11 +2,11 @@
 
 namespace rad
 {
-    cv::Mat to_normalised_float(cv::Mat const& img)
+    cv::Mat change_colour_space(cv::Mat const& img, cv::ColorConversionCodes code)
     {
-        return to_normalised_float(img,
-                                   cv::Scalar{0.406f, 0.456f, 0.485f},
-                                   cv::Scalar{0.225f, 0.224f, 0.229f});
+        cv::Mat as_code;
+        cvtColor(img, as_code, code);
+        return as_code;
     }
 
     cv::Mat to_normalised_float(cv::Mat const& img, cv::Scalar mean, cv::Scalar std)
