@@ -227,10 +227,65 @@ namespace rad::onnx
     cv::Mat
     image_from_tensor(Ort::Value& tensor, cv::Size sz, int type, Fun&& post_process)
     {
-        cv::Mat from_tensor{sz, type, tensor.GetTensorMutableData<T>()};
-        cv::Mat image = from_tensor.clone();
-        image         = post_process(image);
+        int num_channels = 1 + (type >> CV_CN_SHIFT);
+        int depth        = type & CV_MAT_DEPTH_MASK;
 
+        cv::Mat image;
+        if (num_channels == 1)
+        {
+            // For grayscale images, just copy the data directly from the tensor into the
+            // final image.
+            cv::Mat from_tensor{sz, type, tensor.GetTensorMutableData<T>()};
+            image = from_tensor.clone();
+        }
+        else if (num_channels == 3)
+        {
+            // 3-channeled images are a bit tricky. OpenCV expects the dimensions to be
+            // HxWxC, but tensors come in CxHxW. To get around this problem, we're going
+            // to "slice" up the tensor into its 3 channels and then merge them to the
+            // final image.
+            auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+            if (dims.size() != 4)
+            {
+                auto msg = fmt::format(
+                    "error: expected a 4-dimensional tensor but received {} dimensions",
+                    dims.size());
+                throw std::runtime_error{msg.c_str()};
+            }
+
+            if (dims[1] != 3)
+            {
+                auto msg = fmt::format(
+                    "error: expected a 3-channel tensor but received {} channels",
+                    dims[1]);
+                throw std::runtime_error{msg.c_str()};
+            }
+
+            if (dims[2] != sz.width || dims[3] != sz.height)
+            {
+                auto msg = fmt::format("error: expected a tensor with dimensions {} x {} "
+                                       "but received dimensions {} x {}",
+                                       sz.width,
+                                       sz.height,
+                                       dims[3],
+                                       dims[2]);
+                throw std::runtime_error{msg.c_str()};
+            }
+
+            auto data = tensor.GetTensorMutableData<T>();
+            std::vector<T> slice(dims[2] * dims[3]);
+            std::vector<cv::Mat> channels(dims[1]);
+            for (auto& channel : channels)
+            {
+                std::memcpy(slice.data(), data, sizeof(T) * slice.size());
+                channel = cv::Mat{sz, CV_MAKE_TYPE(depth, 1), slice.data()}.clone();
+                data += slice.size();
+            }
+
+            cv::merge(channels, image);
+        }
+
+        image = post_process(image);
         return image;
     }
 
