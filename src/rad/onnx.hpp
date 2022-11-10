@@ -261,7 +261,7 @@ namespace rad::onnx
                 throw std::runtime_error{msg.c_str()};
             }
 
-            if (dims[2] != sz.width || dims[3] != sz.height)
+            if (dims[2] != sz.height || dims[3] != sz.width)
             {
                 auto msg = fmt::format("error: expected a tensor with dimensions {} x {} "
                                        "but received dimensions {} x {}",
