@@ -123,12 +123,12 @@ namespace rad::onnx
         Ort::AllocatorWithDefaultOptions alloc;
 
         // Query the number of inputs and the name of said inputs.
-        std::vector<const char*> input_names;
+        std::vector<std::string> input_names;
         {
             std::size_t num_inputs = session.GetInputCount();
             for (std::size_t i{0}; i < num_inputs; ++i)
             {
-                input_names.push_back(session.GetInputName(i, alloc));
+                input_names.push_back(session.GetInputNameAllocated(i, alloc).get());
             }
         }
 
@@ -188,12 +188,12 @@ namespace rad::onnx
         // Input tensors are correct, so now we need to query the names of the
         // output tensors. Note that we don't actually have to do any
         // allocations here, ORT will do it for us.
-        std::vector<const char*> output_names;
+        std::vector<std::string> output_names;
         {
             std::size_t num_outputs = session.GetOutputCount();
             for (std::size_t i{0}; i < num_outputs; ++i)
             {
-                output_names.push_back(session.GetOutputName(i, alloc));
+                output_names.push_back(session.GetOutputNameAllocated(i, alloc).get());
             }
         }
 
