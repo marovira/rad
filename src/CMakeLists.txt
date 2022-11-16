@@ -4,7 +4,7 @@ set(SOURCE_LIST
     ${RAD_DIR}/assert.cpp
     ${RAD_DIR}/image_utils.cpp
     ${RAD_DIR}/onnx.cpp
-    ${RAD_DIR}/processing.cpp
+    ${RAD_DIR}/processing_util.cpp
     )
 
 set(INCLUDE_LIST
@@ -14,6 +14,7 @@ set(INCLUDE_LIST
     ${RAD_DIR}/opencv.hpp
     ${RAD_DIR}/parallel_for.hpp
     ${RAD_DIR}/processing.hpp
+    ${RAD_DIR}/processing_util.hpp
     ${RAD_DIR}/split_string.hpp
     )
 

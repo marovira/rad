@@ -1,4 +1,4 @@
-#include "processing.hpp"
+#include "processing_util.hpp"
 
 namespace rad
 {
@@ -22,6 +22,17 @@ namespace rad
         fs::create_directories(models_root + "trained/");
     }
 #endif
+
+    std::vector<fs::path> get_file_paths_from_root(std::string const& root)
+    {
+        std::vector<fs::path> files;
+        for (auto const& entry : fs::directory_iterator{root})
+        {
+            files.push_back(entry.path());
+        }
+
+        return files;
+    }
 
     std::pair<std::string, cv::Mat> load_image(std::string const& path)
     {
