@@ -3,7 +3,6 @@
 #include "opencv.hpp"
 #include "processing_util.hpp"
 
-#include <filesystem>
 #include <functional>
 #include <string>
 #include <tbb/parallel_for_each.h>

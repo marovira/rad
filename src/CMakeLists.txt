@@ -16,6 +16,7 @@ set(INCLUDE_LIST
     ${RAD_DIR}/processing.hpp
     ${RAD_DIR}/processing_util.hpp
     ${RAD_DIR}/split_string.hpp
+    ${RAD_DIR}/batch_processing.hpp
     )
 
 source_group("source" FILES ${SOURCE_LIST})
