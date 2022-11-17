@@ -11,8 +11,21 @@
 
 namespace rad
 {
-    using ImageBatch = std::vector<std::pair<std::string, cv::Mat>>;
-    using FileBatch  = std::vector<std::string>;
+    struct Batch
+    {
+        std::size_t id{0};
+        std::size_t count{0};
+    };
+
+    struct ImageBatch : public Batch
+    {
+        std::vector<std::pair<std::string, cv::Mat>> imgs;
+    };
+
+    struct FileBatch : public Batch
+    {
+        std::vector<std::string> paths;
+    };
 
     template<typename T, typename TransformFun>
     decltype(auto) split_into_batches(std::vector<T> const& list,
@@ -24,10 +37,10 @@ namespace rad
             throw std::runtime_error{"error: list to be split into batches is empty"};
         }
 
-        using U = decltype(fun(list.begin()));
+        using U = decltype(fun(list.front()));
 
         std::vector<std::vector<U>> batches;
-        for (std::size_t i{0}; i < list.size(); i += batch_size)
+        for (std::size_t i{0}, b{0}; i < list.size(); i += batch_size, ++b)
         {
             auto last = std::min(list.size(), i + batch_size);
             std::vector<T> tmp(list.begin() + i, list.begin() + last);
@@ -46,12 +59,19 @@ namespace rad
                              ImageBatchProcessingFun&& fun)
     {
         auto file_list = get_file_paths_from_root(root);
-        for (auto const& batch :
-             split_into_batches(file_list, batch_size, [](fs::path const& path) {
-                 return load_image(path.string());
-             }))
+        auto batches =
+            split_into_batches(file_list, batch_size, [](fs::path const& path) {
+                return load_image(path.string());
+            });
+
+        for (std::size_t i{0}; auto const& batch : batches)
         {
-            fun(batch);
+            ImageBatch b{.imgs = batch};
+            b.id    = i;
+            b.count = batches.size();
+
+            fun(b);
+            ++i;
         }
     }
 
@@ -61,13 +81,20 @@ namespace rad
                              std::size_t batch_size,
                              ImageBatchProcessingFun&& fun)
     {
-        for (auto const& batch :
-             split_into_batches(samples, batch_size, [root](std::string const& sample) {
-                 std::string path = root + sample;
-                 return load_image(path);
-             }))
+        auto batches =
+            split_into_batches(samples, batch_size, [root](std::string const& sample) {
+                std::string path = root + sample;
+                return load_image(path);
+            });
+
+        for (std::size_t i{0}; auto const& batch : batches)
         {
-            fun(batch);
+            ImageBatch b{.imgs = batch};
+            b.id    = i;
+            b.count = batches.size();
+
+            fun(b);
+            ++i;
         }
     }
 
@@ -77,12 +104,19 @@ namespace rad
                             FileBatchProcessingFun&& fun)
     {
         auto file_list = get_file_paths_from_root(root);
-        for (auto const& batch :
-             split_into_batches(file_list, batch_size, [](fs::path const& path) {
-                 return path.string();
-             }))
+        auto batches =
+            split_into_batches(file_list, batch_size, [](fs::path const& path) {
+                return path.string();
+            });
+
+        for (std::size_t i{0}; auto const& batch : batches)
         {
-            fun(batch);
+            FileBatch b{.paths = batch};
+            b.id    = i;
+            b.count = batches.size();
+
+            fun(b);
+            ++i;
         }
     }
 
@@ -92,13 +126,19 @@ namespace rad
                             std::size_t batch_size,
                             FileBatchProcessingFun&& fun)
     {
-        for (auto const& batch :
-             split_into_batches(samples, batch_size, [root](std::string const& sample) {
-                 std::string path = root + sample;
-                 return path;
-             }))
+        auto batches =
+            split_into_batches(samples, batch_size, [root](std::string const& sample) {
+                return root + sample;
+            });
+
+        for (std::size_t i{0}; auto const& batch : batches)
         {
-            fun(batch);
+            FileBatch b{.paths = batch};
+            b.id    = i;
+            b.count = batches.size();
+
+            fun(b);
+            ++i;
         }
     }
 
