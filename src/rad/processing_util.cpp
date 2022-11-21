@@ -28,7 +28,10 @@ namespace rad
         std::vector<fs::path> files;
         for (auto const& entry : fs::directory_iterator{root})
         {
-            files.push_back(entry.path());
+            if (!entry.is_directory())
+            {
+                files.push_back(entry.path());
+            }
         }
 
         return files;
