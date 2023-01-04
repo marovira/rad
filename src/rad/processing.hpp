@@ -15,7 +15,7 @@ namespace rad
     {
         for (auto const& entry : get_file_paths_from_root(root))
         {
-            auto [filename, img] = load_image(entry.path().string());
+            auto [filename, img] = load_image(entry.string());
             fun(filename, img);
         }
     }
