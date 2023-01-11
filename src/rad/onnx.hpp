@@ -123,12 +123,12 @@ namespace rad::onnx
         Ort::AllocatorWithDefaultOptions alloc;
 
         // Query the number of inputs and the name of said inputs.
-        std::vector<const char*> input_names;
+        std::vector<std::string> input_names;
         {
             std::size_t num_inputs = session.GetInputCount();
             for (std::size_t i{0}; i < num_inputs; ++i)
             {
-                input_names.push_back(session.GetInputNameAllocated(i, alloc).get());
+                input_names.emplace_back(session.GetInputNameAllocated(i, alloc).get());
             }
         }
 
@@ -188,22 +188,37 @@ namespace rad::onnx
         // Input tensors are correct, so now we need to query the names of the
         // output tensors. Note that we don't actually have to do any
         // allocations here, ORT will do it for us.
-        std::vector<const char*> output_names;
+        std::vector<std::string> output_names;
         {
             std::size_t num_outputs = session.GetOutputCount();
             for (std::size_t i{0}; i < num_outputs; ++i)
             {
-                output_names.push_back(session.GetOutputNameAllocated(i, alloc).get());
+                output_names.emplace_back(session.GetOutputNameAllocated(i, alloc).get());
             }
         }
 
-        // Everything is ready, so let's perform the inference.
+        // Everything is ready, so let's perform the inference. Make sure we convert the
+        // name vectors into C-strings beforehand.
+        std::vector<const char*> input_strings, output_strings;
+        std::transform(input_names.begin(),
+                       input_names.end(),
+                       std::back_inserter(input_strings),
+                       [](std::string const& str) {
+                           return str.c_str();
+                       });
+        std::transform(output_names.begin(),
+                       output_names.end(),
+                       std::back_inserter(output_strings),
+                       [](std::string const& str) {
+                           return str.c_str();
+                       });
+
         auto output_tensors = session.Run(Ort::RunOptions{nullptr},
-                                          input_names.data(),
+                                          input_strings.data(),
                                           input_tensors.data(),
                                           input_tensors.size(),
-                                          output_names.data(),
-                                          output_names.size());
+                                          output_strings.data(),
+                                          output_strings.size());
 
         // Ensure that we got back the same number of tensors.
         if (output_names.size() != output_tensors.size())
