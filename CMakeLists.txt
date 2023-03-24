@@ -2,50 +2,78 @@
 # Project setup.
 #================================
 cmake_minimum_required(VERSION 3.24)
-project(rad LANGUAGES CXX)
+project(coeus VERSION 1.0.0 LANGUAGES CXX)
+
+if (APPLE)
+    message(ERROR "Coeus does not support Apple platforms.")
+endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Define version variables.
+set(COEUS_VERSION_MAJOR "1")
+set(COEUS_VERSION_MINOR "0")
+set(COEUS_VERSION_PATCH "0")
+set(COEUS_VERSION_EXTRA "")
+set(COEUS_VERSION "${COEUS_VERSION_MAJOR}.${COEUS_VERSION_MINOR}")
+set(COEUS_VERSION_FULL
+    "${COEUS_VERSION}.${COEUS_VERSION_PATCH}${COEUS_VERSION_EXTRA}")
 
 #================================
 # Option variables.
 #================================
 set(ZEUS_BUILD_TESTS OFF CACHE INTERNAL "")
+option(COEUS_USE_ONNX "Enable features that rely on ONNXRuntime" OFF)
+option(COEUS_BUILD_TESTS "Build Coeus unit tests" OFF)
+option(COEUS_INSTALL_TARGET "Create install target" OFF)
 
 #================================
 # Directory variables.
 #================================
-option(RAD_USE_ONNX "Use ONNX" OFF)
+set(COEUS_SOURCE_DIR ${PROJECT_SOURCE_DIR})
+set(COEUS_SOURCE_ROOT ${COEUS_SOURCE_DIR}/src)
+set(COEUS_CMAKE_ROOT ${COEUS_SOURCE_DIR}/cmake)
 
-set(RAD_SOURCE_DIR ${PROJECT_SOURCE_DIR})
-set(RAD_SOURCE_ROOT ${RAD_SOURCE_DIR}/src)
-
-# If you wish to use ONNX, it is your responsibility to fill out the
-# ONNXRUNTIME_ROOT variable with the location of ONNX.
-if (RAD_USE_ONNX)
-    if (NOT MSVC)
-        message(FATAL_ERROR "ONNX builds are not supported on Linux")
-    endif()
-    set(RAD_ONNXRUNTIME_INCLUDE "${ONNXRUNTIME_ROOT}/include")
-    set(RAD_ONNXRUNTIME_LIB "${ONNXRUNTIME_ROOT}/lib")
-endif()
-
-find_package(zeus REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(TBB REQUIRED)
 
 #================================
-# Compiler flags.
+# Find packages.
 #================================
-set(RAD_COMPILER_FLAGS /W4 /WX /MP)
-set(RAD_DEBUG_FLAGS "$<$<CONFIG:Debug>:/ZI>")
-set(RAD_COMPILE_DEFINITIONS -DNOMINMAX)
+find_package(zeus 1.0.1 REQUIRED)
+find_package(OpenCV 4.7.0 REQUIRED)
+find_package(TBB 2021.8.0 REQUIRED)
 
-if (RAD_USE_ONNX)
-    list(APPEND RAD_COMPILE_DEFINITIONS -DRAD_ONNX_ENABLED)
+if (COEUS_USE_ONNX)
+    list(APPEND CMAKE_MODULE_PATH ${COEUS_CMAKE_ROOT})
+    find_package(onnxruntime 1.14.1 REQUIRED)
 endif()
 
-##================================
-## Add subdirectories.
-##================================
-add_subdirectory(${RAD_SOURCE_ROOT})
+#================================
+# Add subdirectories.
+#================================
+add_subdirectory(${COEUS_SOURCE_ROOT}/coeus)
 
+# TODO: Add tests here.
+
+#================================
+# Source groups.
+#================================
+source_group("include" FILES)
+source_group("include\\coeus" FILES ${COEUS_INCLUDE_LIST})
+source_group("source" FILES)
+source_group("source\\coeus" FILES ${COEUS_SOURCE_LIST})
+
+#================================
+# Add library.
+#================================
+add_library(coeus ${COEUS_INCLUDE_LIST} ${COEUS_SOURCE_LIST})
+target_include_directories(coeus PUBLIC 
+    $<BUILD_INTERFACE:${COEUS_SOURCE_ROOT}>
+    $<INSTALL_INTERFACE:include>)
+target_link_libraries(coeus PUBLIC zeus::zeus TBB::tbb ${OpenCV_LIBS})
+
+if(COEUS_USE_ONNX)
+    target_link_libraries(coeus PUBLIC onnxruntime::onnxruntime)
+endif()
+
+target_compile_features(coeus PUBLIC cxx_std_20)
+add_library(coeus::coeus ALIAS coeus)

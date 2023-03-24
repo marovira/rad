@@ -2,24 +2,56 @@
     "version": 3,
     "cmakeMinimumRequired":{
         "major": 3,
-        "minor": 20,
+        "minor": 24,
         "patch": 0
     },
     "configurePresets": [
         {
-            "name": "default",
-            "hidden": true,
-            "displayName": "Default configuration",
+            "name": "msvc",
+            "displayName": "MSVC",
+            "description": "Default build for MSVC",
             "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build"
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "/W4 /WX /MP /EHsc -DNOMINMAX",
+                "CMAKE_CXX_FLAGS_DEBUG": "/ZI",
+                "CMAKE_CXX_STANDARD": "20",
+                "COEUS_BUILD_TESTS": "ON"
+            }
         },
         {
-            "name": "AI",
-            "inherits": "default",
-            "displayName": "AI",
-            "description": "Build using ONNX for AI projects",
+            "name": "msvc-onnx",
+            "displayName": "MSVC ONNX",
+            "description": "Default build for MSVC using ONNXRuntime",
+            "inherits": "msvc",
             "cacheVariables": {
-                "ONNXRUNTIME_ROOT": "C:/onnxruntime"
+                "COEUS_USE_ONNX": "ON"
+            }
+        },
+        {
+            "name": "gcc",
+            "displayName": "GCC",
+            "description": "Default build for GCC",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g",
+                "CMAKE_CXX_STANDARD": "20",
+                "COEUS_BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang",
+            "displayName": "Clang",
+            "description": "Default build for Clang",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g",
+                "CMAKE_CXX_STANDARD": "20",
+                "COEUS_BUILD_TESTS": "ON"
             }
         }
     ]

@@ -1,0 +1,14 @@
+#pragma once
+
+#include <string_view>
+
+namespace coeus
+{
+    // clang-format off
+    static constexpr auto coeus_version_major{@COEUS_VERSION_MAJOR@};
+    static constexpr auto coeus_version_minor{@COEUS_VERSION_MINOR@};
+    static constexpr auto coeus_version_patch{@COEUS_VERSION_PATCH@};
+
+    static constexpr std::string_view coeus_version_string{"@COEUS_VERSION_MAJOR@.@COEUS_VERSION_MINOR@.@COEUS_VERSION_PATCH@"};
+    // clang-format on
+} // namespace coeus
