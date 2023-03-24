@@ -9,7 +9,6 @@ set(INCLUDE_LIST
     ${COEUS_VERSION_HEADER}
     ${SRC_ROOT}/image_utils.hpp
     ${SRC_ROOT}/opencv.hpp
-    ${SRC_ROOT}/parallel_for.hpp
     ${SRC_ROOT}/processing.hpp
     ${SRC_ROOT}/processing_util.hpp
     )
