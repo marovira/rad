@@ -36,7 +36,6 @@ namespace coeus::onnx
 
     Ort::Env create_environment(std::string const& name)
     {
-
         return {OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
                 name.c_str(),
                 logger,

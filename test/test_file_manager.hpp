@@ -7,7 +7,6 @@
 
 class TestFileManager
 {
-
 public:
     struct Params
     {
