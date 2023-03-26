@@ -1,6 +1,13 @@
 #include <coeus/image_utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <zeus/float.hpp>
+
+template<typename T>
+inline constexpr T epsilon()
+{
+    return static_cast<T>(0.00001);
+}
 
 TEST_CASE("[image_utils] - change_colour_space", "[coeus]")
 {
@@ -12,22 +19,68 @@ TEST_CASE("[image_utils] - change_colour_space", "[coeus]")
     REQUIRE(as_rgb.at<cv::Vec3b>(0, 0) == cv::Vec3b{3, 2, 1});
 }
 
-TEST_CASE("[image_utils] - to_normalised_float", "[coeus")
+TEST_CASE("[image_utils] - to_normalised_float", "[coeus]")
 {
+    using zeus::are_equal;
+
     cv::Mat orig = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
-    orig         = cv::Scalar{127, 127, 127};
+    orig         = cv::Scalar{255, 255, 255};
+
+    auto compare_points = [](cv::Point3f const& lhs, cv::Point3f const& rhs) {
+        return are_equal<float, epsilon>(lhs.x, rhs.x)
+               && are_equal<float, epsilon>(lhs.y, rhs.y)
+               && are_equal<float, epsilon>(lhs.z, rhs.z);
+    };
 
     SECTION("Default conversion to float")
     {
-        const cv::Vec3f pix = cv::Vec3f::all(127 / 255.0f);
-        cv::Mat as_float    = coeus::to_normalised_float(orig);
+        const cv::Point3f pix = cv::Point3f{1.0f, 1.0f, 1.0f};
+        cv::Mat as_float      = coeus::to_normalised_float(orig);
         REQUIRE(as_float.type() == CV_32FC3);
+        REQUIRE(compare_points(as_float.at<cv::Point3f>(0, 0), pix));
     }
 
     SECTION("Convert to float with mean/std")
     {
-        const cv::Vec3f pix = cv::Vec3f::all(((127 / 255.0f) - 1) / 2.0f);
-        cv::Mat as_float    = coeus::to_normalised_float(orig, 1, 2);
+        const cv::Point3f pix = cv::Point3f{0.0f, 0.0f, 0.0f};
+        cv::Mat as_float      = coeus::to_normalised_float(orig, 1, 2);
         REQUIRE(as_float.type() == CV_32FC3);
+        REQUIRE(compare_points(as_float.at<cv::Point3f>(0, 0), pix));
+    }
+}
+
+TEST_CASE("[image_utils] - downscale_to", "[coeus]")
+{
+    const cv::Size target{64, 64};
+    const auto type = CV_8UC1;
+
+    cv::Mat orig = cv::Mat::zeros(cv::Size{128, 128}, type);
+    cv::Mat res  = coeus::downscale_to(orig, target);
+
+    REQUIRE(res.size() == target);
+    REQUIRE(res.type() == type);
+}
+
+TEST_CASE("[image_utils] - downscale_by_long_edge", "[coeus]")
+{
+    const int long_target{64};
+    const auto type = CV_8UC1;
+
+    SECTION("Width > Height")
+    {
+        cv::Mat orig = cv::Mat::zeros(cv::Size{512, 128}, type);
+        cv::Mat res  = coeus::downscale_by_long_edge(orig, long_target);
+
+        REQUIRE(res.size() == cv::Size{long_target, 16});
+        REQUIRE(res.type() == type);
+    }
+
+    SECTION("Height > Width")
+    {
+        cv::Mat orig = cv::Mat::zeros(cv::Size{128, 512}, type);
+        cv::Mat res  = coeus::downscale_by_long_edge(orig, long_target);
+
+        REQUIRE(res.size() == cv::Size{16, long_target});
+        REQUIRE(res.type() == type);
     }
 }
