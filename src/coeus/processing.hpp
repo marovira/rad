@@ -58,11 +58,14 @@ namespace coeus
     void process_images_parallel(std::string const& root, ImageProcessFun&& fun)
     {
         auto files = get_file_paths_from_root(root);
-        fs::directory_iterator ite{root};
-        tbb::parallel_for_each(files.begin(), files.end(), [fun](fs::path const& entry) {
-            auto [filename, img] = load_image(entry.string());
-            fun(filename, img);
-        });
+        std::filesystem::directory_iterator ite{root};
+
+        tbb::parallel_for_each(files.begin(),
+                               files.end(),
+                               [fun](std::filesystem::path const& entry) {
+                                   auto [filename, img] = load_image(entry.string());
+                                   fun(filename, img);
+                               });
     }
 
     template<typename ImageProcessFun>
@@ -83,10 +86,12 @@ namespace coeus
     void process_files_parallel(std::string const& root, FileProcessFun&& fun)
     {
         auto files = get_file_paths_from_root(root);
-        fs::directory_iterator ite{root};
-        tbb::parallel_for_each(files.begin(), files.end(), [fun](fs::path const& entry) {
-            fun(entry.string());
-        });
+        std::filesystem::directory_iterator ite{root};
+        tbb::parallel_for_each(files.begin(),
+                               files.end(),
+                               [fun](std::filesystem::path const& entry) {
+                                   fun(entry.string());
+                               });
     }
 
     template<typename FileProcessFun>

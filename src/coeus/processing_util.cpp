@@ -37,7 +37,7 @@ namespace coeus
     {
         fs::create_directories(root);
 
-        std::string res_root = root + app_name + "/";
+        std::string res_root = root + "/" + app_name + "/";
         fs::create_directories(res_root);
     }
 
@@ -68,7 +68,7 @@ namespace coeus
             img.convertTo(result, CV_8UC4, alpha);
         }
 
-        std::string res_root = root + app_name + "/";
+        std::string res_root = root + "/" + app_name + "/";
         std::string path     = res_root + img_name;
         cv::imwrite(path, result);
     }
