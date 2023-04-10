@@ -1,0 +1,16 @@
+#pragma once
+
+#include <string_view>
+
+#define RAD_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define RAD_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define RAD_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+namespace rad
+{
+    static constexpr auto rad_version_major{@PROJECT_VERSION_MAJOR@};
+    static constexpr auto rad_version_minor{@PROJECT_VERSION_MINOR@};
+    static constexpr auto rad_version_patch{@PROJECT_VERSION_PATCH@};
+
+    static constexpr std::string_view rad_version_string{"@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"};
+}
