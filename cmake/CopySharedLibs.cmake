@@ -21,7 +21,7 @@ function(copy_shared_libs)
         ${TBB_SHARED_LIB_RELEASE}
         )
 
-    if (COPY_ONNX)
+    if (${ARG_COPY_ONNX})
         find_package(onnxruntime ${ARG_ONNX_VERSION})
         list(APPEND DLL_LIST ${ONNXRUNTIME_SHARED_LIBS})
     endif()
