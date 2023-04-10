@@ -1,16 +1,14 @@
-# Coeus
-
-> A C++ research and development platform for computer vision.
+<a id="top"></a>
+![RAD logo](data/logo/logo-transparent.png)
 
 [![Generic badge](https://img.shields.io/badge/License-BSD3-blue)](LICENSE)
 [![Generic badge](https://img.shields.io/badge/Language-C++20-red.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
-[![CodeFactor](https://www.codefactor.io/repository/github/marovira/coeus/badge)](https://www.codefactor.io/repository/github/marovira/coeus)
+[![CodeFactor](https://www.codefactor.io/repository/github/marovira/rad/badge)](https://www.codefactor.io/repository/github/marovira/rad)
 
-## What is Coeus?
+## What is RAD?
 
-Named after one of the Titans born to Uranus and Gaia, Coeus is a C++ library that serves
-as a platform for rapid development of R&D applications in computer vision. It supports
-the following workflows:
+*RAD* (Research And Development) is a C++ library that serves as a platform for rapid
+development of R&D applications in computer vision. It supports the following workflows:
 
 * Image processing through OpenCV,
 * Parallel development through oneAPI's TBB,
@@ -18,35 +16,35 @@ the following workflows:
 
 ## Dependencies
 
-The following are **core** requirements of Coeus:
+The following are **core** requirements of RAD:
 
 * CMake 3.24+
 
-Coeus supports the following platforms and compilers:
+RAD supports the following platforms and compilers:
 
 | Platform (Compiler) | Version |
 |---------------------|---------|
 | Windows (MSVC) | 19.34 |
-
-> **Note:** Support for Linux is untested at this point, but will be added later on.
+| Linux (GCC) | 12 |
+| Linux (LLVM Clang) | 15.0 |
 
 Please note that macOS is **not** supported.
 
-In addition, Coeus depends on the following libraries:
+In addition, RAD depends on the following libraries:
 
 | Library | Version |
 |---------------------|---------|
-| [Zeus](https://github.com/marovira/zeus) | 1.0.1 |
+| [Zeus](https://github.com/marovira/zeus) | 1.1.0 |
 | [OpenCV](https://github.com/opencv/opencv) |4.7.0 |
 | [TBB](https://github.com/oneapi-src/oneTBB) |2021.8.0 |
 | [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.14.1 |
 
-Note that ONNXRuntime is an optional dependency that may be removed when the library is
-built.
+> **Note:** ONNXRuntime is an optional dependency that may be removed when the library is
+> built.
 
 ## Contributing
 
-There are three ways in which you can contribute to Coeus:
+There are three ways in which you can contribute to RAD:
 
 * If you find a bug, please open an issue. Similarly, if you have a question
   about how to use it, or if something is unclear, please post an issue so it
@@ -71,5 +69,5 @@ If you are submitting a pull request, the guidelines are the following:
 
 ## License
 
-Coeus is published under the BSD-3 license and can be viewed
-[here](https://github.com/marovira/coeus/blob/master/LICENSE).
+RAD is published under the BSD-3 license and can be viewed
+[here](https://github.com/marovira/rad/blob/master/LICENSE).
