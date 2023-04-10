@@ -55,11 +55,23 @@ find_path(ONNXRUNTIME_INCLUDE_DIR onnxruntime_c_api.h
     PATHS ${_POSSIBLE_PATHS}
     )
 
-find_file(ONNXRUNTIME_SHARED_LIBS 
-    NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
-    PATH_SUFFIXES lib lib64
-    PATHS ${_POSSIBLE_PATHS}
-    )
+# Windows 11 ships with a version of onnxruntime that is very old, and it will likely be
+# hit before the options that we give (especially if System is in the path somewhere). To
+# solve this, exclude the system path from the search for Windows.
+if (WIN32)
+    find_file(ONNXRUNTIME_SHARED_LIBS 
+        NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
+        PATH_SUFFIXES lib lib64
+        PATHS ${_POSSIBLE_PATHS}
+        NO_SYSTEM_ENVIRONMENT_PATH
+        )
+else()
+    find_file(ONNXRUNTIME_SHARED_LIBS 
+        NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
+        PATH_SUFFIXES lib lib64
+        PATHS ${_POSSIBLE_PATHS}
+        )
+endif()
 
 # Find the version file. For Windows, assume it is located at the installation root. For
 # Linux, assume it is located next to the header file.
