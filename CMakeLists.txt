@@ -26,6 +26,7 @@ set(RAD_SOURCE_ROOT ${RAD_SOURCE_DIR}/src)
 set(RAD_CMAKE_ROOT ${RAD_SOURCE_DIR}/cmake)
 set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 
+list(APPEND CMAKE_MODULE_PATH ${RAD_CMAKE_ROOT})
 
 #================================
 # Find packages.
@@ -41,23 +42,16 @@ if (NOT zeus_FOUND)
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
 endif()
-include(FetchLibrary)
 
-# Due to build complexities, OpenCV MUST be installed.
-find_package(OpenCV 4.7.0 REQUIRED)
-find_package(TBB 2021.8.0 QUIET)
+set(RAD_OPENCV_VERSION 4.7.0)
+set(RAD_TBB_VERSION 2021.8.0)
+set(RAD_ONNX_VERSION 1.14.1)
 
-if (NOT TBB_FOUND)
-    fetch_library(
-        NAME TBB
-        GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
-        GIT_TAG c9497714821c3d443ee44c732609eb6850195ffb
-        )
-endif()
+find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
+find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
 
 if (RAD_USE_ONNX)
-    list(APPEND CMAKE_MODULE_PATH ${RAD_CMAKE_ROOT})
-    find_package(onnxruntime 1.14.1 REQUIRED)
+    find_package(onnxruntime ${RAD_ONNX_VERSION} REQUIRED)
 endif()
 
 #================================
@@ -171,6 +165,9 @@ endif()
 # Build the tests.
 #================================
 if (RAD_BUILD_TESTS)
+    include(FetchLibrary)
+    include(CopySharedLibs)
+
     find_package(Catch2 3.3.2 QUIET)
 
     if (NOT Catch2_FOUND)
@@ -187,6 +184,16 @@ if (RAD_BUILD_TESTS)
     target_link_libraries(rad_test PRIVATE
         rad
         Catch2::Catch2WithMain)
+
+    if (WIN32)
+        copy_shared_libs(TARGET rad_test
+            TBB_VERSION ${RAD_TBB_VERSION}
+            OPENCV_VERSION ${RAD_OPENCV_VERSION}
+            ONNX_VERSION ${RAD_ONNX_VERSION}
+            COPY_ONNX ${RAD_USE_ONNX}
+            )
+    endif()
+
 
     include(CTest)
     include(Catch)
