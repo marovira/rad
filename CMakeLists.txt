@@ -186,12 +186,20 @@ if (RAD_BUILD_TESTS)
         Catch2::Catch2WithMain)
 
     if (WIN32)
-        copy_shared_libs(TARGET rad_test
-            TBB_VERSION ${RAD_TBB_VERSION}
-            OPENCV_VERSION ${RAD_OPENCV_VERSION}
-            ONNX_VERSION ${RAD_ONNX_VERSION}
-            COPY_ONNX ${RAD_USE_ONNX}
-            )
+        if (${RAD_USE_ONNX})
+            copy_shared_libs(TARGET rad_test
+                TBB_VERSION ${RAD_TBB_VERSION}
+                OPENCV_VERSION ${RAD_OPENCV_VERSION}
+                ONNX_VERSION ${RAD_ONNX_VERSION}
+                COPY_ONNX
+                )
+        else()
+            copy_shared_libs(TARGET rad_test
+                TBB_VERSION ${RAD_TBB_VERSION}
+                OPENCV_VERSION ${RAD_OPENCV_VERSION}
+                ONNX_VERSION ${RAD_ONNX_VERSION}
+                )
+        endif()
     endif()
 
 
