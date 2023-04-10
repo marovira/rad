@@ -14,7 +14,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "/W4 /WX /MP /EHsc -DNOMINMAX",
-                "CMAKE_CXX_FLAGS_DEBUG": "/ZI",
+                "CMAKE_CXX_FLAGS_DEBUG": "/ZI /Od",
                 "CMAKE_CXX_STANDARD": "20",
                 "RAD_BUILD_TESTS": "ON"
             }
