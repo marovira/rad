@@ -42,6 +42,15 @@
             }
         },
         {
+            "name": "gcc-onnx",
+            "displayName": "GCC ONNX",
+            "description": "Default build for GCC using ONNXRuntime",
+            "inherits": "gcc",
+            "cacheVariables": {
+                "RAD_USE_ONNX": "ON"
+            }
+        },
+        {
             "name": "clang",
             "displayName": "Clang",
             "description": "Default build for Clang",
@@ -52,6 +61,15 @@
                 "CMAKE_CXX_FLAGS_DEBUG": "-g",
                 "CMAKE_CXX_STANDARD": "20",
                 "RAD_BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "clang-onnx",
+            "displayName": "Clang ONNX",
+            "description": "Default build for Clang using ONNXRuntime",
+            "inherits": "clang",
+            "cacheVariables": {
+                "RAD_USE_ONNX": "ON"
             }
         }
     ]
