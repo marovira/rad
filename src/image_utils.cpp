@@ -1,6 +1,6 @@
-#include "image_utils.hpp"
+#include "rad/image_utils.hpp"
 
-namespace coeus
+namespace rad
 {
     cv::Mat change_colour_space(cv::Mat const& img, cv::ColorConversionCodes code)
     {
@@ -58,4 +58,4 @@ namespace coeus
 
         return resized;
     }
-} // namespace coeus
+} // namespace rad

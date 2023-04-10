@@ -1,4 +1,4 @@
-#include <coeus/processing_util.hpp>
+#include <rad/processing_util.hpp>
 
 #include "test_file_manager.hpp"
 
@@ -6,11 +6,11 @@
 
 namespace fs = std::filesystem;
 
-TEST_CASE("processing_util - get_file_paths_from_root", "[coeus]")
+TEST_CASE("processing_util - get_file_paths_from_root", "[rad]")
 {
     TestFileManager mgr{TestFileManager::Params{}};
 
-    auto files = coeus::get_file_paths_from_root(mgr.root().string());
+    auto files = rad::get_file_paths_from_root(mgr.root().string());
 
     REQUIRE(files.size() == 10);
     for (int i{0}; auto file : files)
@@ -21,7 +21,7 @@ TEST_CASE("processing_util - get_file_paths_from_root", "[coeus]")
     }
 }
 
-TEST_CASE("processing_util - load_image", "[coeus]")
+TEST_CASE("processing_util - load_image", "[rad]")
 {
     TestFileManager::Params params{.num_files = 1};
     const std::string exp_name = "test_img_0";
@@ -32,7 +32,7 @@ TEST_CASE("processing_util - load_image", "[coeus]")
         TestFileManager mgr{params};
 
         fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
-        auto [name, img] = coeus::load_image(p.string());
+        auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
         REQUIRE(img.size() == params.size);
@@ -45,7 +45,7 @@ TEST_CASE("processing_util - load_image", "[coeus]")
         TestFileManager mgr{params};
 
         fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
-        auto [name, img] = coeus::load_image(p.string());
+        auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
         REQUIRE(img.size() == params.size);
@@ -58,7 +58,7 @@ TEST_CASE("processing_util - load_image", "[coeus]")
         TestFileManager mgr{params};
 
         fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
-        auto [name, img] = coeus::load_image(p.string());
+        auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
         REQUIRE(img.size() == params.size);
@@ -66,16 +66,16 @@ TEST_CASE("processing_util - load_image", "[coeus]")
     }
 }
 
-TEST_CASE("processing_util - create_result_dir", "[coeus]")
+TEST_CASE("processing_util - create_result_dir", "[rad]")
 {
     fs::path root = fs::absolute("./test_root");
-    coeus::create_result_dir(root.string(), "app");
+    rad::create_result_dir(root.string(), "app");
 
     REQUIRE(fs::exists(root / "app"));
     fs::remove_all(root);
 }
 
-TEST_CASE("processing_util - save_result", "[coeus]")
+TEST_CASE("processing_util - save_result", "[rad]")
 {
     const fs::path root        = fs::absolute("./test_root");
     const std::string name     = "test_app";
@@ -87,7 +87,7 @@ TEST_CASE("processing_util - save_result", "[coeus]")
 
     SECTION("Empty image")
     {
-        coeus::save_result({}, root.string(), name, img_name);
+        rad::save_result({}, root.string(), name, img_name);
         REQUIRE_FALSE(fs::exists(img_path));
     }
 
@@ -96,14 +96,14 @@ TEST_CASE("processing_util - save_result", "[coeus]")
         SECTION("uint image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_8UC1);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_32F);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
     }
@@ -113,14 +113,14 @@ TEST_CASE("processing_util - save_result", "[coeus]")
         SECTION("uint image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_8UC3);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_32FC3);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
     }
@@ -130,14 +130,14 @@ TEST_CASE("processing_util - save_result", "[coeus]")
         SECTION("uint image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_8UC4);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
             cv::Mat img = cv::Mat::ones(size, CV_32FC4);
-            coeus::save_result(img, root.string(), name, img_name);
+            rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
     }

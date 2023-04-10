@@ -1,6 +1,6 @@
 #pragma once
 
-#include <coeus/opencv.hpp>
+#include <rad/opencv.hpp>
 
 #include <filesystem>
 #include <fmt/printf.h>

@@ -1,12 +1,10 @@
-#include "onnx.hpp"
-#include "split_string.hpp"
+#include "rad/onnx.hpp"
 
 #include <magic_enum.hpp>
 #include <zeus/string.hpp>
 
-namespace coeus::onnx
+namespace rad::onnx
 {
-
     std::string log_level_from_enum(OrtLoggingLevel level)
     {
         auto as_string = std::string{magic_enum::enum_name(level)};
@@ -41,4 +39,4 @@ namespace coeus::onnx
                 logger,
                 nullptr};
     }
-} // namespace coeus::onnx
+} // namespace rad::onnx

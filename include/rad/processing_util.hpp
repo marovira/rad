@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-namespace coeus
+namespace rad
 {
     std::vector<std::filesystem::path> get_file_paths_from_root(std::string const& root);
     std::pair<std::string, cv::Mat> load_image(std::string const& path);
@@ -13,4 +13,4 @@ namespace coeus
                      std::string const& root,
                      std::string const& app_name,
                      std::string const& img_name);
-} // namespace coeus
+} // namespace rad

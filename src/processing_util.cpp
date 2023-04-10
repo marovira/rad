@@ -1,6 +1,6 @@
-#include "processing_util.hpp"
+#include "rad/processing_util.hpp"
 
-namespace coeus
+namespace rad
 {
     namespace fs = std::filesystem;
 
@@ -73,4 +73,4 @@ namespace coeus
         cv::imwrite(path, result);
     }
 
-} // namespace coeus
+} // namespace rad

@@ -8,7 +8,7 @@
 #include <tbb/parallel_for_each.h>
 #include <vector>
 
-namespace coeus
+namespace rad
 {
     template<typename ImageProcessFun>
     void process_images(std::string const& root, ImageProcessFun&& fun)
@@ -108,4 +108,4 @@ namespace coeus
                                });
     }
 
-} // namespace coeus
+} // namespace rad

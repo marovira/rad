@@ -15,7 +15,7 @@
 #    pragma warning(pop)
 #endif
 
-namespace coeus::opencv
+namespace rad::opencv
 {
     template<typename T>
     bool perform_safe_op(T&& fun)
@@ -39,4 +39,4 @@ namespace coeus::opencv
 
         return true;
     }
-} // namespace coeus::opencv
+} // namespace rad::opencv

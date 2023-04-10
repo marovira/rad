@@ -1,4 +1,4 @@
-#include <coeus/processing.hpp>
+#include <rad/processing.hpp>
 
 #include "test_file_manager.hpp"
 
@@ -7,7 +7,7 @@
 
 namespace fs = std::filesystem;
 
-TEST_CASE("processing - process_images", "[coeus]")
+TEST_CASE("processing - process_images", "[rad]")
 {
     TestFileManager::Params params;
     TestFileManager mgr{params};
@@ -23,7 +23,7 @@ TEST_CASE("processing - process_images", "[coeus]")
 
     SECTION("Full list")
     {
-        coeus::process_images(mgr.root().string(), fun);
+        rad::process_images(mgr.root().string(), fun);
         for (auto seen : seen_files)
         {
             REQUIRE(seen);
@@ -32,7 +32,7 @@ TEST_CASE("processing - process_images", "[coeus]")
 
     SECTION("Full list - parallel")
     {
-        coeus::process_images_parallel(mgr.root().string(), fun);
+        rad::process_images_parallel(mgr.root().string(), fun);
         for (auto seen : seen_files)
         {
             REQUIRE(seen);
@@ -44,7 +44,7 @@ TEST_CASE("processing - process_images", "[coeus]")
         std::vector<std::string> samples{"test_img_0.jpg",
                                          "test_img_2.jpg",
                                          "test_img_4.jpg"};
-        coeus::process_images(mgr.root().string(), fun);
+        rad::process_images(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);
         REQUIRE(seen_files[4]);
@@ -55,14 +55,14 @@ TEST_CASE("processing - process_images", "[coeus]")
         std::vector<std::string> samples{"test_img_0.jpg",
                                          "test_img_2.jpg",
                                          "test_img_4.jpg"};
-        coeus::process_images_parallel(mgr.root().string(), fun);
+        rad::process_images_parallel(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);
         REQUIRE(seen_files[4]);
     }
 }
 
-TEST_CASE("processing - process_files", "[coeus]")
+TEST_CASE("processing - process_files", "[rad]")
 {
     TestFileManager::Params params;
     TestFileManager mgr{params};
@@ -80,7 +80,7 @@ TEST_CASE("processing - process_files", "[coeus]")
 
     SECTION("Full list")
     {
-        coeus::process_files(mgr.root().string(), fun);
+        rad::process_files(mgr.root().string(), fun);
         for (auto seen : seen_files)
         {
             REQUIRE(seen);
@@ -89,7 +89,7 @@ TEST_CASE("processing - process_files", "[coeus]")
 
     SECTION("Full list - parallel")
     {
-        coeus::process_files_parallel(mgr.root().string(), fun);
+        rad::process_files_parallel(mgr.root().string(), fun);
         for (auto seen : seen_files)
         {
             REQUIRE(seen);
@@ -101,7 +101,7 @@ TEST_CASE("processing - process_files", "[coeus]")
         std::vector<std::string> samples{"test_img_0.jpg",
                                          "test_img_2.jpg",
                                          "test_img_4.jpg"};
-        coeus::process_files(mgr.root().string(), fun);
+        rad::process_files(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);
         REQUIRE(seen_files[4]);
@@ -112,7 +112,7 @@ TEST_CASE("processing - process_files", "[coeus]")
         std::vector<std::string> samples{"test_img_0.jpg",
                                          "test_img_2.jpg",
                                          "test_img_4.jpg"};
-        coeus::process_files_parallel(mgr.root().string(), fun);
+        rad::process_files_parallel(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);
         REQUIRE(seen_files[4]);

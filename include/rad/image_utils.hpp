@@ -1,7 +1,7 @@
 #include "opencv.hpp"
 #include <type_traits>
 
-namespace coeus
+namespace rad
 {
     cv::Mat change_colour_space(cv::Mat const& img, cv::ColorConversionCodes code);
 
@@ -23,4 +23,4 @@ namespace coeus
         g      = (g < T{1e-4}) ? T{0} : g;
         return g;
     }
-} // namespace coeus
+} // namespace rad

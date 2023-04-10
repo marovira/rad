@@ -6,7 +6,7 @@
 #include <fmt/printf.h>
 #include <zeus/assert.hpp>
 
-namespace coeus::onnx
+namespace rad::onnx
 {
     template<typename T>
     bool perform_safe_op(T&& fun)
@@ -310,4 +310,4 @@ namespace coeus::onnx
             return img;
         });
     }
-} // namespace coeus::onnx
+} // namespace rad::onnx
