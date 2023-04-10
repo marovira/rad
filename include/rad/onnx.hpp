@@ -114,6 +114,36 @@ namespace rad::onnx
         set.tensors.emplace_back(std::move(tensor));
     }
 
+    template<typename Container, typename T>
+    void array_to_tensor(Container const& src_data, TensorSet<T>& set)
+    {
+        static_assert(std::is_same_v<typename Container::value_type, T>);
+
+        std::vector<std::int64_t> tensor_dims{1,
+                                              static_cast<std::int64_t>(src_data.size())};
+
+        std::vector<T> tensor_data(src_data.size());
+        tensor_data.assign(src_data.begin(), src_data.end());
+
+        Ort::Value tensor{nullptr};
+        perform_safe_op([&tensor, &tensor_data, tensor_dims]() {
+            Ort::MemoryInfo mem_info =
+                Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+            tensor = Ort::Value::CreateTensor<T>(mem_info,
+                                                 tensor_data.data(),
+                                                 tensor_data.size(),
+                                                 tensor_dims.data(),
+                                                 tensor_dims.size());
+            return true;
+        });
+
+        ASSERT(tensor.IsTensor());
+
+        set.tensor_data.emplace_back(std::move(tensor_data));
+        set.tensors.emplace_back(std::move(tensor));
+    }
+
     template<typename T>
     std::vector<Ort::Value> perform_inference(Ort::Session& session, TensorSet<T>& inputs)
     {
@@ -309,5 +339,21 @@ namespace rad::onnx
         return image_from_tensor<T>(tensor, sz, type, [](cv::Mat img) {
             return img;
         });
+    }
+
+    template<typename T>
+    std::vector<T> array_from_tensor(Ort::Value& tensor, std::size_t size)
+    {
+        std::vector<T> ret(size);
+        std::memcpy(ret.data(), tensor.GetTensorMutableData<T>(), size * sizeof(T));
+        return ret;
+    }
+
+    template<typename T, std::size_t N>
+    std::array<T, N> array_from_tensor(Ort::Value& tensor)
+    {
+        std::array<T, N> ret;
+        std::memcpy(ret.data(), tensor.GetTensorMutableData<T>(), N * sizeof(T));
+        return ret;
     }
 } // namespace rad::onnx
