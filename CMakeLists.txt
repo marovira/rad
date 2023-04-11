@@ -143,7 +143,7 @@ if (RAD_INSTALL_TARGET)
         )
 
     if (MSVC)
-        set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}")
+        set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}/rad")
     else()
         set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}/librad")
     endif()
