@@ -12,13 +12,10 @@ function(copy_shared_libs)
     find_package(TBB ${ARG_TBB_VERSION})
 
     file(GLOB OPENCV_DLLS "${_OpenCV_LIB_PATH}/*.dll")
-    get_target_property(TBB_SHARED_LIB_DEBUG TBB::tbb IMPORTED_LOCATION_DEBUG)
-    get_target_propertY(TBB_SHARED_LIB_RELEASE TBB::tbb IMPORTED_LOCATION_RELEASE)
 
     set(DLL_LIST
         ${OPENCV_DLLS}
-        ${TBB_SHARED_LIB_DEBUG}
-        ${TBB_SHARED_LIB_RELEASE}
+        "$<TARGET_PROPERTY:TBB::tbb,$<$<CONFIG:Debug>:IMPORTED_LOCATION_DEBUG>$<$<CONFIG:MinSizeRel>:IMPORTED_LOCATION_MINSIZEREL>$<$<CONFIG:Release>:IMPORTED_LOCATION_RELEASE>$<$<CONFIG:RelWithDebInfo>:IMPORTED_LOCATION_RELWITHDEBINFO>>"
         )
 
     if (${ARG_COPY_ONNX})
@@ -32,4 +29,5 @@ function(copy_shared_libs)
         ${DLL_LIST}
         $<TARGET_FILE_DIR:${ARG_TARGET}>
         )
+
 endfunction()
