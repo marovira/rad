@@ -112,7 +112,7 @@ if (RAD_INSTALL_TARGET)
     write_basic_package_version_file(
         "${PROJECT_BINARY_DIR}/radConfigVersion.cmake"
         VERSION ${PACKAGE_VERSION}
-        COMPATIBILITY AnyNewerVersion
+        COMPATIBILITY ExactVersion
         )
 
     install(EXPORT rad
@@ -127,6 +127,8 @@ if (RAD_INSTALL_TARGET)
         set(CONFIG_FILE "${RAD_CMAKE_ROOT}/radConfig.cmake")
     endif()
 
+    # Install the config file based on whether we're using ONNX. Either way, rename to
+    # radConfig.
     install(FILES
         ${CONFIG_FILE}
         DESTINATION lib/cmake/rad
@@ -134,6 +136,8 @@ if (RAD_INSTALL_TARGET)
         )
 
     install(FILES
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopySharedLibs.cmake"
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findonnxruntime.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/radConfigVersion.cmake"
         DESTINATION lib/cmake/rad
         )
@@ -143,8 +147,8 @@ if (RAD_INSTALL_TARGET)
     else()
         set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}/librad")
     endif()
-    install(DIRECTORY
-        ${RAD_INCLUDE_ROOT}/rad
+    install(FILES
+        ${RAD_INCLUDE_LIST}
         DESTINATION ${INCLUDE_INSTALL_DEST}
         )
 
