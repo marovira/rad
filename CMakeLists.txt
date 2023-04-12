@@ -64,6 +64,13 @@ if (RAD_BUILD_TESTS)
     add_subdirectory(${RAD_TEST_ROOT})
 endif()
 
+# Generate the CopySharedLibs script. Make sure we only replace @...@ so CMake variables
+# are left alone.
+configure_file(${RAD_CMAKE_ROOT}/CopySharedLibs.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/CopySharedLibs.cmake
+    @ONLY
+    )
+
 
 #================================
 # Source groups.
@@ -136,8 +143,8 @@ if (RAD_INSTALL_TARGET)
         )
 
     install(FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopySharedLibs.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findonnxruntime.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/CopySharedLibs.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/radConfigVersion.cmake"
         DESTINATION lib/cmake/rad
         )
@@ -169,6 +176,7 @@ endif()
 # Build the tests.
 #================================
 if (RAD_BUILD_TESTS)
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/cmake)
     include(FetchLibrary)
     include(CopySharedLibs)
 
@@ -191,18 +199,9 @@ if (RAD_BUILD_TESTS)
 
     if (WIN32)
         if (${RAD_USE_ONNX})
-            copy_shared_libs(TARGET rad_test
-                TBB_VERSION ${RAD_TBB_VERSION}
-                OPENCV_VERSION ${RAD_OPENCV_VERSION}
-                ONNX_VERSION ${RAD_ONNX_VERSION}
-                COPY_ONNX
-                )
+            copy_shared_libs(TARGET rad_test COPY_ONNX)
         else()
-            copy_shared_libs(TARGET rad_test
-                TBB_VERSION ${RAD_TBB_VERSION}
-                OPENCV_VERSION ${RAD_OPENCV_VERSION}
-                ONNX_VERSION ${RAD_ONNX_VERSION}
-                )
+            copy_shared_libs(TARGET rad_test)
         endif()
     endif()
 
