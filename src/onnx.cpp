@@ -39,4 +39,28 @@ namespace rad::onnx
                 logger,
                 nullptr};
     }
+
+    std::vector<std::vector<std::int64_t>> get_input_shapes(Ort::Session& session)
+    {
+        std::vector<std::vector<std::int64_t>> shapes;
+        for (std::size_t i{0}; i < session.GetInputCount(); ++i)
+        {
+            shapes.push_back(
+                session.GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+        }
+
+        return shapes;
+    }
+
+    std::vector<std::vector<std::int64_t>> get_output_shapes(Ort::Session& session)
+    {
+        std::vector<std::vector<std::int64_t>> shapes;
+        for (std::size_t i{0}; i < session.GetOutputCount(); ++i)
+        {
+            shapes.push_back(
+                session.GetOutputTypeInfo(i).GetTensorTypeAndShapeInfo().GetShape());
+        }
+
+        return shapes;
+    }
 } // namespace rad::onnx

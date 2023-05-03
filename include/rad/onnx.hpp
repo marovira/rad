@@ -144,6 +144,9 @@ namespace rad::onnx
         set.tensors.emplace_back(std::move(tensor));
     }
 
+    std::vector<std::vector<std::int64_t>> get_input_shapes(Ort::Session& session);
+    std::vector<std::vector<std::int64_t>> get_output_shapes(Ort::Session& session);
+
     template<typename T>
     std::vector<Ort::Value> perform_inference(Ort::Session& session, TensorSet<T>& inputs)
     {
