@@ -50,6 +50,7 @@ namespace rad::onnx
     template<typename ModelSelectorFun>
     Ort::Session make_session_from_file(std::string const& model_root,
                                         Ort::Env& env,
+                                        Ort::SessionOptions const& opt,
                                         ModelSelectorFun&& selector)
     {
         std::wstring model_to_load = selector(model_root);
@@ -61,10 +62,19 @@ namespace rad::onnx
                     .c_str()};
         }
 
-        Ort::SessionOptions opt;
-        opt.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
         Ort::Session session{env, model_to_load.c_str(), opt};
         return session;
+    }
+
+    template<typename ModelSelectorFun>
+    Ort::Session make_session_from_file(std::string const& model_root,
+                                        Ort::Env& env,
+                                        ModelSelectorFun&& selector)
+    {
+        Ort::SessionOptions opt;
+        opt.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
+
+        return make_session_from_file(model_root, env, opt, std::move(selector));
     }
 
     template<typename T>
