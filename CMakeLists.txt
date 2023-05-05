@@ -2,7 +2,7 @@
 # Project setup.
 #================================
 cmake_minimum_required(VERSION 3.24)
-project(rad VERSION 1.0.0 LANGUAGES CXX)
+project(rad VERSION 1.1.0 LANGUAGES CXX)
 
 if (APPLE)
     message(ERROR "RAD does not support Apple platforms.")
