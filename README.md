@@ -37,7 +37,7 @@ In addition, RAD depends on the following libraries:
 | [Zeus](https://github.com/marovira/zeus) | 1.1.0 |
 | [OpenCV](https://github.com/opencv/opencv) |4.7.0 |
 | [TBB](https://github.com/oneapi-src/oneTBB) |2021.8.0 |
-| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.14.1 |
+| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.15.0 |
 
 > **Note:** ONNXRuntime is an optional dependency that may be removed when the library is
 > built.
