@@ -14,8 +14,17 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Option variables.
 #================================
 option(RAD_USE_ONNX "Enable features that rely on ONNXRuntime" OFF)
+option(RAD_USE_ONNX_DML "Enable usage of ONNXRuntime with DML provider" OFF)
 option(RAD_BUILD_TESTS "Build RAD unit tests" OFF)
 option(RAD_INSTALL_TARGET "Create install target" OFF)
+
+if (NOT WIN32 AND RAD_USE_ONNX_DML)
+    message(FATAL_ERROR "DML provider for ONNXRuntime is only available in Windows")
+endif()
+
+if (NOT RAD_USE_ONNX AND RAD_USE_ONNX_DML)
+    message(FATAL_ERROR "ONNX usage is disabled but DML is requested")
+endif()
 
 #================================
 # Directory variables.
@@ -51,7 +60,10 @@ find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
 
 if (RAD_USE_ONNX)
-    find_package(onnxruntime ${RAD_ONNX_VERSION} REQUIRED)
+    if (RAD_USE_ONNX_DML)
+        set(RAD_ONNX_PROVIDERS DML)
+    endif()
+    find_package(onnxruntime ${RAD_ONNX_VERSION} REQUIRED ${RAD_ONNX_PROVIDERS})
 endif()
 
 #================================
@@ -83,13 +95,17 @@ source_group("source" FILES ${RAD_SOURCE_LIST})
 # Add library.
 #================================
 add_library(rad ${RAD_INCLUDE_LIST} ${RAD_SOURCE_LIST})
-target_include_directories(rad PUBLIC 
+target_include_directories(rad PUBLIC
     $<BUILD_INTERFACE:${RAD_INCLUDE_ROOT}>
     $<INSTALL_INTERFACE:include>)
 target_link_libraries(rad PUBLIC zeus::zeus TBB::tbb ${OpenCV_LIBS})
 
 if(RAD_USE_ONNX)
     target_link_libraries(rad PUBLIC onnxruntime::onnxruntime)
+endif()
+
+if (RAD_USE_ONNX_DML)
+    target_compile_definitions(rad PUBLIC RAD_ONNX_DML_ENABLED)
 endif()
 
 target_compile_features(rad PUBLIC cxx_std_20)
@@ -160,7 +176,7 @@ if (RAD_INSTALL_TARGET)
         )
 
     if (MSVC)
-        set(PDB_DIR_SUFFIX 
+        set(PDB_DIR_SUFFIX
             "$<$<CONFIG:Debug>:Debug>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>")
         set(LIB_SUFFIX "$<$<CONFIG:Debug>:d>")
 
@@ -198,7 +214,9 @@ if (RAD_BUILD_TESTS)
         Catch2::Catch2WithMain)
 
     if (WIN32)
-        if (${RAD_USE_ONNX})
+        if (${RAD_USE_ONNX} AND ${RAD_USE_ONNX_DML})
+            copy_shared_libs(TARGET rad_test COPY_ONNX COPY_DML)
+        elseif(${RAD_USE_ONNX})
             copy_shared_libs(TARGET rad_test COPY_ONNX)
         else()
             copy_shared_libs(TARGET rad_test)

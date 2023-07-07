@@ -1,5 +1,5 @@
 function(copy_shared_libs)
-    set(options COPY_ONNX)
+    set(options COPY_ONNX COPY_DML)
     set(oneValueArgs TARGET)
     set(multiValueArgs)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -25,6 +25,11 @@ function(copy_shared_libs)
     if (${ARG_COPY_ONNX})
         find_package(onnxruntime ${ONNX_VERSION})
         list(APPEND DLL_LIST ${ONNXRUNTIME_SHARED_LIBS})
+    endif()
+
+    if (${ARG_COPY_DML})
+        find_package(onnxruntime ${ONNX_VERSION})
+        list(APPEND DLL_LIST ${ONNXRUNTIME_DML_SHARED_LIB})
     endif()
 
     add_custom_command(TARGET ${ARG_TARGET}

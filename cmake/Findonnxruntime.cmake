@@ -1,21 +1,36 @@
 # Locate ONNXRUNTIME library
 # This module defines
-#  ONNXRUNTIME_INCLUDE_DIR, where to find nvtt.h
+#  ONNXRUNTIME_INCLUDE_DIR, where to find onnxruntime_c_api.h
 #  ONNXRUNTIME_SHARED_LIBS
 #  ONNXRUNTIME_LIBRARIES, defined only in Windows builds
 #=============================================================================
-# The required version of ONNXruntime can be specified using the 
-# standard syntax, e.g. FIND_PACKAGE(onnxruntime 14). Note that due to the
-# way ONNXRuntime is versioned, this module only supports a major version which will be
-# matched to the API version in the header. Otherwise the module will search for
+# The required version of ONNXRuntime can be specified using the standard syntax, e.g.
+# FIND_PACKAGE(onnxruntime 15.0.0). If no version is provided, the module will search for
 # any available implementation.
-# the module will search for any available implementation.
-# Note: it is your responsibility to ensure that the shared library
-# defined in ONNXRUNTIME_SHARED_LIBS is copied to the final executable.
+#
+# Note (1): if you're using versions, then it is recommended that you use the build script
+# bundled with RAD, since the required file isn't guaranteed to be there. Please see the
+# README for details.
+#
+# Note (2): it is your responsibility to ensure that the shared library defined in
+# ONNXRUNTIME_SHARED_LIBS is copied to the final executable (particularly for Windows). If
+# you're using RAD, you may use CopySharedLibs. See the README for more details.
 
-set(_POSSIBLE_ORT_INCLUDE include include/onnxruntime)
+# ONNXRuntime has several different ways in which the headers may be placed, so we need to
+# make sure we cover all of them.
+set(_POSSIBLE_ORT_INCLUDE
+    include                             # Pre-built package
+    include/onnxruntime                 # Linux local install to /usr/local
+    include/onnxruntime/core/session    # Windows local install
+    )
 set(_POSSIBLE_ORT_SHARED_LIBS onnxruntime.dll onnxruntime.so)
 set(_POSSIBLE_ORT_LIB onnxruntime.lib)
+
+# DirectML is for Windows only!
+if (WIN32)
+    set(_POSSIBLE_ORT_DML_SHARED_LIB DirectML.dll)
+endif()
+
 if (onnxruntime_FIND_VERSION_MAJOR AND
         onnxruntime_FIND_VERSION_MINOR AND
         onnxruntime_FIND_VERSION_PATCH)
@@ -55,18 +70,48 @@ find_path(ONNXRUNTIME_INCLUDE_DIR onnxruntime_c_api.h
     PATHS ${_POSSIBLE_PATHS}
     )
 
+foreach(provider ${onnxruntime_FIND_COMPONENTS})
+    if (${provider} STREQUAL "DML")
+        find_path(ONNXRUNTIME_DML_INCLUDE dml_provider_factory.h
+            PATH_SUFFIXES ${_POSSIBLE_ORT_INCLUDE}
+            PATHS ${_POSSIBLE_PATHS}
+            )
+
+        # DirectML is installed by default on newer versions of Windows 10/11, but that
+        # version tends to be very old. It is likely that while searching it will get
+        # picked up (especially if System is in the path), so make sure we exclude it from
+        # the search options.
+        # NOTE: I'm assuming that the correct version of DirectML is placed next to the
+        # DLL of onxxruntime itself, since otherwise we'd have no way of finding it.
+        find_file(ONNXRUNTIME_DML_SHARED_LIB
+            NAMES ${_POSSIBLE_ORT_DML_SHARED_LIB}
+            PATHS ${_POSSIBLE_PATHS}
+            PATH_SUFFIXES lib lib64
+            NO_SYSTEM_ENVIRONMENT_PATH
+            )
+
+        # Mark these as advanced so the user doesn't see them.
+        mark_as_advanced(ONNXRUNTIME_DML_SHARED_LIB ONNXRUNTIME_DML_INCLUDE)
+
+        # If both the header and the DLL are found, then set DML_FOUND to true.
+        if (ONNXRUNTIME_DML_INCLUDE AND ONNXRUNTIME_DML_SHARED_LIB)
+            set(onnxruntime_DML_FOUND TRUE)
+        endif()
+    endif()
+endforeach()
+
 # Windows 11 ships with a version of onnxruntime that is very old, and it will likely be
 # hit before the options that we give (especially if System is in the path somewhere). To
 # solve this, exclude the system path from the search for Windows.
 if (WIN32)
-    find_file(ONNXRUNTIME_SHARED_LIBS 
+    find_file(ONNXRUNTIME_SHARED_LIBS
         NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
         PATH_SUFFIXES lib lib64
         PATHS ${_POSSIBLE_PATHS}
         NO_SYSTEM_ENVIRONMENT_PATH
         )
 else()
-    find_file(ONNXRUNTIME_SHARED_LIBS 
+    find_file(ONNXRUNTIME_SHARED_LIBS
         NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
         PATH_SUFFIXES lib lib64
         PATHS ${_POSSIBLE_PATHS}
@@ -74,19 +119,21 @@ else()
 endif()
 
 # Find the version file. For Windows, assume it is located at the installation root. For
-# Linux, assume it is located next to the header file.
+# Linux, assume it is located next to the header file. Make sure we mark it as advanced so
+# it's not shown to the user.
 find_file(ONNXRUNTIME_VERSION_FILE
     NAMES VERSION_NUMBER
     PATHS ${_POSSIBLE_PATHS}
     PATH_SUFFIXES ${_POSSIBLE_ORT_INCLUDE}
     )
+mark_as_advanced(ONNXRUNTIME_VERSION_FILE)
 
 if (WIN32)
-    find_file(ONNXRUNTIME_LIBRARIES 
+    find_file(ONNXRUNTIME_LIBRARIES
         NAMES ${_POSSIBLE_ORT_LIB}
         PATH_SUFFIXES lib lib64
         PATHS ${_POSSIBLE_PATHS}
-        ) 
+        )
 else()
     set(ONNXRUNTIME_LIBRARIES)
 endif()
@@ -107,6 +154,7 @@ if (WIN32)
     find_package_handle_standard_args(onnxruntime
         REQUIRED_VARS ONNXRUNTIME_INCLUDE_DIR ONNXRUNTIME_SHARED_LIBS ONNXRUNTIME_LIBRARIES
         VERSION_VAR ONNXRUNTIME_VERSION_STRING
+        HANDLE_COMPONENTS
         )
 else()
     find_package_handle_standard_args(onnxruntime

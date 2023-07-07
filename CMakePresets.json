@@ -29,6 +29,16 @@
             }
         },
         {
+            "name": "msvc-onnx-dml",
+            "displayName": "MSVC ONNX + DML",
+            "description": "Default build for MSVC using ONNXRuntime with DML provider",
+            "inherits": "msvc",
+            "cacheVariables": {
+                "RAD_USE_ONNX": "ON",
+                "RAD_USE_ONNX_DML": "ON"
+            }
+        },
+        {
             "name": "gcc",
             "displayName": "GCC",
             "description": "Default build for GCC",
