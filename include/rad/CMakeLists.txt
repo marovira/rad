@@ -15,9 +15,9 @@ set(INCLUDE_LIST
     )
 
 if (RAD_USE_ONNX)
+    add_subdirectory(${INCLUDE_ROOT}/onnx)
     list(APPEND INCLUDE_LIST
-        ${INCLUDE_ROOT}/onnx.hpp
-        ${INCLUDE_ROOT}/onnxruntime.hpp
+        ${ONNX_INCLUDE}
         )
 endif()
 

@@ -7,10 +7,11 @@ set(SOURCE_LIST
     )
 
 if (RAD_USE_ONNX)
+    add_subdirectory(${SRC_ROOT}/onnx)
     list(APPEND SOURCE_LIST
-        ${SRC_ROOT}/onnx.cpp
+        ${ONNX_SOURCE}
         )
 endif()
 
-set(RAD_SOURCE_LIST ${SOURCE_LIST} PARENT_SCOPE)
 
+set(RAD_SOURCE_LIST ${SOURCE_LIST} PARENT_SCOPE)
