@@ -8,7 +8,13 @@ set(TEST_LIST
 
 if (RAD_USE_ONNX)
     list(APPEND TEST_LIST
-        ${RAD_TEST_ROOT}/onnx_test.cpp
+        ${RAD_TEST_ROOT}/onnx_common_test.cpp
+        ${RAD_TEST_ROOT}/onnx_env_test.cpp
+        ${RAD_TEST_ROOT}/onnx_inference_test.cpp
+        ${RAD_TEST_ROOT}/onnx_session_test.cpp
+        ${RAD_TEST_ROOT}/onnx_tensor_test.cpp
+
+        ${RAD_TEST_ROOT}/model_file_manager.hpp
         )
 endif()
 

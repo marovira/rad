@@ -3,11 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <zeus/float.hpp>
 
-template<typename T>
-inline constexpr T epsilon()
-{
-    return static_cast<T>(0.00001);
-}
+static constexpr float epsilon{0.00001f};
 
 TEST_CASE("[image_utils] - change_colour_space", "[rad]")
 {
@@ -21,15 +17,15 @@ TEST_CASE("[image_utils] - change_colour_space", "[rad]")
 
 TEST_CASE("[image_utils] - to_normalised_float", "[rad]")
 {
-    using zeus::are_equal;
+    using zeus::almost_equal;
 
     cv::Mat orig = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
     orig         = cv::Scalar{255, 255, 255};
 
     auto compare_points = [](cv::Point3f const& lhs, cv::Point3f const& rhs) {
-        return are_equal<float, epsilon>(lhs.x, rhs.x)
-               && are_equal<float, epsilon>(lhs.y, rhs.y)
-               && are_equal<float, epsilon>(lhs.z, rhs.z);
+        return almost_equal<float>(lhs.x, rhs.x, epsilon)
+               && almost_equal<float>(lhs.y, rhs.y, epsilon)
+               && almost_equal<float>(lhs.z, rhs.z, epsilon);
     };
 
     SECTION("Default conversion to float")

@@ -1,13 +1,16 @@
-#include <rad/onnx.hpp>
+#include <rad/onnx/tensor.hpp>
+
+#include <rad/onnx/env.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <type_traits>
+
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
 
 namespace onnx = rad::onnx;
 
-TEST_CASE("[onnx] - image_to_tensor", "[rad]")
+TEST_CASE("[tensor] - image_to_tensor", "[rad]")
 {
-    Ort::InitApi();
+    onnx::init_ort_api();
 
     const cv::Size size{64, 64};
     const int type = CV_32F;
@@ -16,12 +19,11 @@ TEST_CASE("[onnx] - image_to_tensor", "[rad]")
     {
         cv::Mat img = cv::Mat::ones(size, CV_MAKETYPE(type, 1));
 
-        onnx::TensorSet<float> inputs;
-        onnx::image_to_tensor(img, inputs);
+        auto input = onnx::image_to_tensor<float>(img);
+        REQUIRE_FALSE(input.data.empty());
 
-        REQUIRE(inputs.tensors.size() == 1);
+        auto& tensor = input.tensor;
 
-        auto& tensor = inputs.tensors.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -39,12 +41,10 @@ TEST_CASE("[onnx] - image_to_tensor", "[rad]")
     {
         cv::Mat img = cv::Mat::ones(size, CV_MAKETYPE(type, 3));
 
-        onnx::TensorSet<float> inputs;
-        onnx::image_to_tensor(img, inputs);
+        auto input = onnx::image_to_tensor<float>(img);
+        REQUIRE_FALSE(input.data.empty());
 
-        REQUIRE(inputs.tensors.size() == 1);
-
-        auto& tensor = inputs.tensors.front();
+        auto& tensor = input.tensor;
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -59,16 +59,16 @@ TEST_CASE("[onnx] - image_to_tensor", "[rad]")
     }
 }
 
-TEST_CASE("[onnx] - array_to_tensor", "[rad]")
+TEST_CASE("[tensor] - array_to_tensor", "[rad]")
 {
+    onnx::init_ort_api();
+
     const std::vector<float> data{1.0f, 1.0f, 1.0f};
 
-    onnx::TensorSet<float> inputs;
-    onnx::array_to_tensor(data, inputs);
+    auto input = onnx::array_to_tensor<float>(data);
+    REQUIRE_FALSE(input.data.empty());
 
-    REQUIRE(inputs.tensors.size() == 1);
-
-    auto& tensor = inputs.tensors.front();
+    auto& tensor = input.tensor;
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -80,20 +80,20 @@ TEST_CASE("[onnx] - array_to_tensor", "[rad]")
     REQUIRE(shape[1] == 3);
 }
 
-TEST_CASE("[onnx] - image_from_tensor", "[rad]")
+TEST_CASE("[tensor] - image_from_tensor", "[rad]")
 {
+    onnx::init_ort_api();
+
     const int type = CV_32F;
     const cv::Size size{64, 64};
 
     SECTION("Grayscale image")
     {
         cv::Mat img = cv::Mat::ones(size, CV_MAKETYPE(type, 1));
-
-        onnx::TensorSet<float> inputs;
-        onnx::image_to_tensor(img, inputs);
+        auto input  = onnx::image_to_tensor<float>(img);
 
         cv::Mat ret =
-            onnx::image_from_tensor<float>(inputs.tensors[0], cv::Size{64, 64}, CV_32F);
+            onnx::image_from_tensor<float>(input.tensor, cv::Size{64, 64}, CV_32F);
 
         REQUIRE(ret.size() == size);
         REQUIRE(ret.type() == CV_32F);
@@ -102,12 +102,10 @@ TEST_CASE("[onnx] - image_from_tensor", "[rad]")
     SECTION("RGB image")
     {
         cv::Mat img = cv::Mat::ones(size, CV_MAKETYPE(type, 3));
-
-        onnx::TensorSet<float> inputs;
-        onnx::image_to_tensor(img, inputs);
+        auto input  = onnx::image_to_tensor<float>(img);
 
         cv::Mat ret =
-            onnx::image_from_tensor<float>(inputs.tensors[0], cv::Size{64, 64}, CV_32FC3);
+            onnx::image_from_tensor<float>(input.tensor, cv::Size{64, 64}, CV_32FC3);
 
         REQUIRE(ret.size() == size);
         REQUIRE(ret.type() == CV_32FC3);
@@ -133,22 +131,23 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
-TEST_CASE("[onnx] - array_from_tensor", "[rad]")
+TEST_CASE("[tensor] - array_from_tensor", "[rad]")
 {
+    onnx::init_ort_api();
+
     const std::vector<float> src_data{1.0f, 2.0f, 3.0f};
 
-    onnx::TensorSet<float> inputs;
-    onnx::array_to_tensor(src_data, inputs);
+    auto input = onnx::array_to_tensor<float>(src_data);
 
     SECTION("Runtime array")
     {
-        auto ret = onnx::array_from_tensor<float>(inputs.tensors[0], src_data.size());
+        auto ret = onnx::array_from_tensor<float>(input.tensor, src_data.size());
         REQUIRE(ret == src_data);
     }
 
     SECTION("Compile-time array")
     {
-        auto ret = onnx::array_from_tensor<float, 3>(inputs.tensors[0]);
+        auto ret = onnx::array_from_tensor<float, 3>(input.tensor);
         REQUIRE(array_equals(src_data, ret));
     }
 }

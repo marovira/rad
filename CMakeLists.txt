@@ -72,6 +72,9 @@ endif()
 add_subdirectory(${RAD_INCLUDE_ROOT}/rad)
 add_subdirectory(${RAD_SOURCE_ROOT})
 
+source_group(TREE ${RAD_INCLUDE_ROOT} PREFIX "include" FILES ${RAD_INCLUDE_LIST})
+source_group(TREE ${RAD_SOURCE_ROOT} PREFIX "source" FILES ${RAD_SOURCE_LIST})
+
 if (RAD_BUILD_TESTS)
     add_subdirectory(${RAD_TEST_ROOT})
 endif()
@@ -82,14 +85,6 @@ configure_file(${RAD_CMAKE_ROOT}/CopySharedLibs.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake/CopySharedLibs.cmake
     @ONLY
     )
-
-
-#================================
-# Source groups.
-#================================
-source_group("include" FILES)
-source_group("include\\rad" FILES ${RAD_INCLUDE_LIST})
-source_group("source" FILES ${RAD_SOURCE_LIST})
 
 #================================
 # Add library.
@@ -212,8 +207,21 @@ if (RAD_BUILD_TESTS)
     target_link_libraries(rad_test PRIVATE
         rad
         Catch2::Catch2WithMain)
+    add_custom_command(TARGET rad_test
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        ${RAD_TEST_ROOT}/data
+        $<TARGET_FILE_DIR:rad_test>/data
+        )
 
     if (WIN32)
+        # Force VS to use the root where the executable is placed as the working
+        # directory.
+        set_target_properties(rad_test PROPERTIES
+            VS_DEBUGGER_WORKING_DIRECTORY
+            "$<TARGET_FILE_DIR:rad_test>"
+            )
+
         if (${RAD_USE_ONNX} AND ${RAD_USE_ONNX_DML})
             copy_shared_libs(TARGET rad_test COPY_ONNX COPY_DML)
         elseif(${RAD_USE_ONNX})
@@ -222,7 +230,6 @@ if (RAD_BUILD_TESTS)
             copy_shared_libs(TARGET rad_test)
         endif()
     endif()
-
 
     include(CTest)
     include(Catch)

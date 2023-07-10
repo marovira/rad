@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-TEST_CASE("processing_util - get_file_paths_from_root", "[rad]")
+TEST_CASE("[processing_util] - get_file_paths_from_root", "[rad]")
 {
     TestFileManager mgr{TestFileManager::Params{}};
 
@@ -21,7 +21,7 @@ TEST_CASE("processing_util - get_file_paths_from_root", "[rad]")
     }
 }
 
-TEST_CASE("processing_util - load_image", "[rad]")
+TEST_CASE("[processing_util] - load_image", "[rad]")
 {
     TestFileManager::Params params{.num_files = 1};
     const std::string exp_name = "test_img_0";
@@ -66,7 +66,7 @@ TEST_CASE("processing_util - load_image", "[rad]")
     }
 }
 
-TEST_CASE("processing_util - create_result_dir", "[rad]")
+TEST_CASE("[processing_util] - create_result_dir", "[rad]")
 {
     fs::path root = fs::absolute("./test_root");
     rad::create_result_dir(root.string(), "app");
@@ -75,7 +75,7 @@ TEST_CASE("processing_util - create_result_dir", "[rad]")
     fs::remove_all(root);
 }
 
-TEST_CASE("processing_util - save_result", "[rad]")
+TEST_CASE("[processing_util] - save_result", "[rad]")
 {
     const fs::path root        = fs::absolute("./test_root");
     const std::string name     = "test_app";

@@ -24,7 +24,6 @@ public:
         m_root = std::filesystem::absolute("./test_files");
         std::filesystem::create_directories(m_root);
 
-        // Create 10 temporary images which we will delete upon destruction.
         for (int i{0}; i < num_files; ++i)
         {
             cv::Mat img   = cv::Mat::ones(size, type);
