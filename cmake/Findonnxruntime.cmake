@@ -8,9 +8,9 @@
 # FIND_PACKAGE(onnxruntime 15.0.0). If no version is provided, the module will search for
 # any available implementation.
 #
-# Note (1): if you're using versions, then it is recommended that you use the build script
-# bundled with RAD, since the required file isn't guaranteed to be there. Please see the
-# README for details.
+# Note (1): if you're using versions, then you must ensure that the VERSION file is
+# located at the root of your installation (or next to the headers). Please see the README
+# for more details.
 #
 # Note (2): it is your responsibility to ensure that the shared library defined in
 # ONNXRUNTIME_SHARED_LIBS is copied to the final executable (particularly for Windows). If
@@ -86,7 +86,7 @@ foreach(provider ${onnxruntime_FIND_COMPONENTS})
         find_file(ONNXRUNTIME_DML_SHARED_LIB
             NAMES ${_POSSIBLE_ORT_DML_SHARED_LIB}
             PATHS ${_POSSIBLE_PATHS}
-            PATH_SUFFIXES lib lib64
+            PATH_SUFFIXES lib lib64 bin
             NO_SYSTEM_ENVIRONMENT_PATH
             )
 
@@ -106,7 +106,7 @@ endforeach()
 if (WIN32)
     find_file(ONNXRUNTIME_SHARED_LIBS
         NAMES ${_POSSIBLE_ORT_SHARED_LIBS}
-        PATH_SUFFIXES lib lib64
+        PATH_SUFFIXES lib lib64 bin
         PATHS ${_POSSIBLE_PATHS}
         NO_SYSTEM_ENVIRONMENT_PATH
         )
