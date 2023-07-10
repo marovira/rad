@@ -21,7 +21,6 @@
 set(_POSSIBLE_ORT_INCLUDE
     include                             # Pre-built package
     include/onnxruntime                 # Linux local install to /usr/local
-    include/onnxruntime/core/session    # Windows local install
     )
 set(_POSSIBLE_ORT_SHARED_LIBS onnxruntime.dll onnxruntime.so)
 set(_POSSIBLE_ORT_LIB onnxruntime.lib)
@@ -76,6 +75,13 @@ foreach(provider ${onnxruntime_FIND_COMPONENTS})
             PATH_SUFFIXES ${_POSSIBLE_ORT_INCLUDE}
             PATHS ${_POSSIBLE_PATHS}
             )
+
+        # We assume that the paths for dml_provider_factory and onnxruntime_c_api are the
+        # same. Otherwise there's no telling where that header landed.
+        if (NOT ${ONNXRUNTIME_DML_INCLUDE} STREQUAL ${ONNXRUNTIME_INCLUDE_DIR})
+            message(FATAL_ERROR
+                "error: include path to dml_provider_factory.h doesn't match path to onnxruntime_c_api.h")
+        endif()
 
         # DirectML is installed by default on newer versions of Windows 10/11, but that
         # version tends to be very old. It is likely that while searching it will get
