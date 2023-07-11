@@ -23,12 +23,12 @@ function(copy_shared_libs)
         )
 
     if (${ARG_COPY_ONNX})
-        find_package(onnxruntime ${ONNX_VERSION})
+        find_package(onnxruntime ${ONNX_VERSION} REQUIRED)
         list(APPEND DLL_LIST ${ONNXRUNTIME_SHARED_LIBS})
     endif()
 
     if (${ARG_COPY_DML})
-        find_package(onnxruntime ${ONNX_VERSION})
+        find_package(onnxruntime ${ONNX_VERSION} REQUIRED DML)
         list(APPEND DLL_LIST ${ONNXRUNTIME_DML_SHARED_LIB})
     endif()
 
