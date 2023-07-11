@@ -5,6 +5,13 @@
 [![Generic badge](https://img.shields.io/badge/Language-C++20-red.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
 [![CodeFactor](https://www.codefactor.io/repository/github/marovira/rad/badge)](https://www.codefactor.io/repository/github/marovira/rad)
 
+## Table of Contents
+
+1. [What is RAD](#what-is-rad)
+2. [Dependecies](#dependencies)
+3. [Building](BUILDING.md)
+4. [Contributing](#contributing)
+
 ## What is RAD?
 
 *RAD* (Research And Development) is a C++ library that serves as a platform for rapid
@@ -65,7 +72,7 @@ If you are submitting a pull request, the guidelines are the following:
    rejected.
 2. Ensure that *all* unit tests are working prior to submitting the pull
    request. If you are adding a new feature that has been approved, it is your
-   responsibility to provide the corresponding unit tests (if applicable). 
+   responsibility to provide the corresponding unit tests (if applicable).
 
 ## License
 
