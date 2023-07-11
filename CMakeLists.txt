@@ -112,18 +112,12 @@ add_library(rad::rad ALIAS rad)
 # Install targets.
 #================================
 if (RAD_INSTALL_TARGET)
-    if (MSVC)
-        set(INCLUDE_INSTALL_PATH "include")
-    else()
-        set(INCLUDE_INSTALL_PATH "include/librad")
-    endif()
-
     install(TARGETS rad
         EXPORT rad
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION lib
-        INCLUDES DESTINATION ${INCLUDE_INSTALL_PATH}
+        INCLUDES DESTINATION include
         )
 
     include(CMakePackageConfigHelpers)
@@ -161,15 +155,22 @@ if (RAD_INSTALL_TARGET)
         DESTINATION lib/cmake/rad
         )
 
-    if (MSVC)
-        set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}/rad")
+    if (RAD_USE_ONNX)
+        install(DIRECTORY
+            ${RAD_INCLUDE_ROOT}/rad
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING
+            PATTERN "*.hpp"
+            )
     else()
-        set(INCLUDE_INSTALL_DEST "${CMAKE_INSTALL_INCLUDEDIR}/librad")
+        install(DIRECTORY
+            ${RAD_INCLUDE_ROOT}/rad
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING
+            PATTERN "*.hpp"
+            PATTERN "onnx" EXCLUDE
+            )
     endif()
-    install(FILES
-        ${RAD_INCLUDE_LIST}
-        DESTINATION ${INCLUDE_INSTALL_DEST}
-        )
 
     if (MSVC)
         set(PDB_DIR_SUFFIX
