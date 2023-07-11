@@ -9,6 +9,7 @@ if (APPLE)
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
 #================================
 # Option variables.
@@ -41,12 +42,12 @@ list(APPEND CMAKE_MODULE_PATH ${RAD_CMAKE_ROOT})
 # Find packages.
 #================================
 # Include Zeus first so we have access to fetch_library.
-find_package(zeus 1.1.0 QUIET)
+find_package(zeus 1.2.0 QUIET)
 if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
         GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG aec7c460444e1e6edfe175b892c90b3c87614209
+        GIT_TAG 1809ceff4be28f11325b1e2f6cc71137cb31cc05
         )
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
