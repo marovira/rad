@@ -1,5 +1,7 @@
 #include "rad/onnx/session.hpp"
 
+#include <fmt/printf.h>
+
 #if defined(RAD_ONNX_DML_ENABLED)
 #    include <dml_provider_factory.h>
 #endif
@@ -18,7 +20,7 @@ namespace rad::onnx
             return ExecutionProviders::dml;
         }
 
-        throw std::runtime_error{"error: unknown provider found"};
+        throw std::runtime_error{fmt::format("error: {} is an unknown provider", name)};
     }
 
     std::vector<ExecutionProviders> get_execution_providers()

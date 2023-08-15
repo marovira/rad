@@ -52,8 +52,7 @@ namespace rad::onnx
         if (model_to_load.empty())
         {
             throw std::runtime_error{
-                fmt::format("error: unable to find a model load in {}", model_root)
-                    .c_str()};
+                fmt::format("error: unable to find a model load in {}", model_root)};
         }
 
         Ort::Session session{env, model_to_load.c_str(), opt};

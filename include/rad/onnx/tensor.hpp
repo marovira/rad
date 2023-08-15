@@ -151,29 +151,29 @@ namespace rad::onnx
             auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
             if (dims.size() != 4)
             {
-                auto msg = fmt::format(
-                    "error: expected a 4-dimensional tensor but received {} dimensions",
-                    dims.size());
-                throw std::runtime_error{msg.c_str()};
+                throw std::runtime_error{
+                    fmt::format("error: expected a 4-dimensional image tensor but "
+                                "received {} dimensions",
+                                dims.size())};
             }
 
             if (dims[1] != 3)
             {
-                auto msg = fmt::format(
-                    "error: expected a 3-channel tensor but received {} channels",
-                    dims[1]);
-                throw std::runtime_error{msg.c_str()};
+                throw std::runtime_error{
+                    fmt::format("error: expected a 3-channel image tensor but received "
+                                "{} channels",
+                                dims[1])};
             }
 
             if (dims[2] != sz.height || dims[3] != sz.width)
             {
-                auto msg = fmt::format("error: expected a tensor with dimensions {} x {} "
-                                       "but received dimensions {} x {}",
-                                       sz.width,
-                                       sz.height,
-                                       dims[3],
-                                       dims[2]);
-                throw std::runtime_error{msg.c_str()};
+                throw std::runtime_error{
+                    fmt::format("error: expected an image tensor with dimensions {} x {} "
+                                "but received dimensions {} x {}",
+                                sz.width,
+                                sz.height,
+                                dims[3],
+                                dims[2])};
             }
 
             auto data = tensor.GetTensorMutableData<T>();
