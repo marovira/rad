@@ -20,17 +20,8 @@ namespace rad
 
     std::pair<std::string, cv::Mat> load_image(std::string const& path)
     {
-        std::string image_name;
         fs::path entry{path};
-        cv::Mat img;
-        if (entry.extension() == ".jpg" || entry.extension() == ".JPG"
-            || entry.extension() == ".png")
-        {
-            image_name = entry.stem().string();
-            img        = cv::imread(entry.string());
-        }
-
-        return {image_name, img};
+        return {entry.stem().string(), cv::imread(entry.string())};
     }
 
     void create_result_dir(std::string const& root, std::string const& app_name)
