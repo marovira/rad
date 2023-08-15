@@ -16,6 +16,8 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 #================================
 option(RAD_USE_ONNX "Enable features that rely on ONNXRuntime" OFF)
 option(RAD_USE_ONNX_DML "Enable usage of ONNXRuntime with DML provider" OFF)
+option(RAD_ENABLE_THROW_ON_FAILED_ORT_INIT
+    "Enable throwing an exception when ONNXRuntime fails to initialise" OFF)
 option(RAD_BUILD_TESTS "Build RAD unit tests" OFF)
 option(RAD_INSTALL_TARGET "Create install target" OFF)
 
@@ -25,6 +27,11 @@ endif()
 
 if (NOT RAD_USE_ONNX AND RAD_USE_ONNX_DML)
     message(FATAL_ERROR "ONNX usage is disabled but DML is requested")
+endif()
+
+if (NOT RAD_USE_ONNX AND RAD_ENABLE_THROW_ON_FAILED_ORT_INIT)
+    message(WARNING
+        "ONNX usage is disabled, so RAD_ENABLE_THROW_ON_FAILED_ORT_INIT will have no effect")
 endif()
 
 #================================
@@ -98,6 +105,10 @@ target_link_libraries(rad PUBLIC zeus::zeus TBB::tbb ${OpenCV_LIBS})
 
 if(RAD_USE_ONNX)
     target_link_libraries(rad PUBLIC onnxruntime::onnxruntime)
+
+    if (RAD_ENABLE_THROW_ON_FAILED_ORT_INIT)
+        target_compile_definitions(rad PUBLIC RAD_THROW_ON_FAILED_ORT_INIT)
+    endif()
 endif()
 
 if (RAD_USE_ONNX_DML)

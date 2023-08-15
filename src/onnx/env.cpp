@@ -6,12 +6,23 @@
 
 namespace rad::onnx
 {
-    void init_ort_api()
+    bool init_ort_api()
     {
         if (!Ort::Global<void>::api_)
         {
             Ort::InitApi();
         }
+
+        if (!Ort::Global<void>::api_)
+        {
+#if defined(RAD_THROW_ON_FAILED_ORT_INIT)
+            throw std::runtime_error{"error: ONNXRuntime failed to initialise"};
+#else
+            return false;
+#endif
+        }
+
+        return true;
     }
 
     std::string log_level_from_enum(OrtLoggingLevel level)
