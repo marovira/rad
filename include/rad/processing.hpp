@@ -4,8 +4,8 @@
 #include "processing_util.hpp"
 
 #include <functional>
+#include <oneapi/tbb/parallel_for_each.h>
 #include <string>
-#include <tbb/parallel_for_each.h>
 #include <vector>
 
 namespace rad
@@ -60,12 +60,13 @@ namespace rad
         auto files = get_file_paths_from_root(root);
         std::filesystem::directory_iterator ite{root};
 
-        tbb::parallel_for_each(files.begin(),
-                               files.end(),
-                               [fun](std::filesystem::path const& entry) {
-                                   auto [filename, img] = load_image(entry.string());
-                                   fun(filename, img);
-                               });
+        oneapi::tbb::parallel_for_each(files.begin(),
+                                       files.end(),
+                                       [fun](std::filesystem::path const& entry) {
+                                           auto [filename, img] =
+                                               load_image(entry.string());
+                                           fun(filename, img);
+                                       });
     }
 
     template<typename ImageProcessFun>
@@ -73,13 +74,13 @@ namespace rad
                                  std::vector<std::string> const& samples,
                                  ImageProcessFun&& fun)
     {
-        tbb::parallel_for_each(samples.begin(),
-                               samples.end(),
-                               [fun, root](std::string const& sample) {
-                                   std::string path     = root + sample;
-                                   auto [filename, img] = load_image(path);
-                                   fun(filename, img);
-                               });
+        oneapi::tbb::parallel_for_each(samples.begin(),
+                                       samples.end(),
+                                       [fun, root](std::string const& sample) {
+                                           std::string path     = root + sample;
+                                           auto [filename, img] = load_image(path);
+                                           fun(filename, img);
+                                       });
     }
 
     template<typename FileProcessFun>
@@ -87,11 +88,11 @@ namespace rad
     {
         auto files = get_file_paths_from_root(root);
         std::filesystem::directory_iterator ite{root};
-        tbb::parallel_for_each(files.begin(),
-                               files.end(),
-                               [fun](std::filesystem::path const& entry) {
-                                   fun(entry.string());
-                               });
+        oneapi::tbb::parallel_for_each(files.begin(),
+                                       files.end(),
+                                       [fun](std::filesystem::path const& entry) {
+                                           fun(entry.string());
+                                       });
     }
 
     template<typename FileProcessFun>
@@ -99,13 +100,13 @@ namespace rad
                                 std::vector<std::string> const& samples,
                                 FileProcessFun&& fun)
     {
-        tbb::parallel_for_each(samples.begin(),
-                               samples.end(),
-                               [fun, root](std::string const& sample) {
-                                   std::string path     = root + sample;
-                                   auto [filename, img] = load_image(path);
-                                   fun(filename, img);
-                               });
+        oneapi::tbb::parallel_for_each(samples.begin(),
+                                       samples.end(),
+                                       [fun, root](std::string const& sample) {
+                                           std::string path     = root + sample;
+                                           auto [filename, img] = load_image(path);
+                                           fun(filename, img);
+                                       });
     }
 
 } // namespace rad
