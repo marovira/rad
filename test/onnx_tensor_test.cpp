@@ -137,6 +137,54 @@ TEST_CASE("[tensor] - array_to_tensor", "[rad]")
     REQUIRE(shape[1] == 3);
 }
 
+TEST_CASE("[tensor] - images_from_tensor", "[rad]")
+{
+    onnx::init_ort_api();
+
+    const int type = CV_32F;
+    const cv::Size size{64, 64};
+
+    std::vector<cv::Mat> images(4);
+
+    SECTION("Grayscale images")
+    {
+        for (auto& img : images)
+        {
+            img = cv::Mat::ones(size, CV_MAKETYPE(type, 1));
+        }
+
+        auto input = onnx::images_to_tensor<float>(images);
+        auto ret_imgs =
+            onnx::images_from_tensor<float>(input.tensor, cv::Size{64, 64}, CV_32F);
+
+        REQUIRE(ret_imgs.size() == images.size());
+        for (auto ret_img : ret_imgs)
+        {
+            REQUIRE(ret_img.size() == size);
+            REQUIRE(ret_img.type() == CV_32F);
+        }
+    }
+
+    SECTION("RGB images")
+    {
+        for (auto& img : images)
+        {
+            img = cv::Mat::ones(size, CV_MAKETYPE(type, 3));
+        }
+
+        auto input = onnx::images_to_tensor<float>(images);
+        auto ret_imgs =
+            onnx::images_from_tensor<float>(input.tensor, cv::Size{64, 64}, CV_32FC3);
+
+        REQUIRE(ret_imgs.size() == images.size());
+        for (auto ret_img : ret_imgs)
+        {
+            REQUIRE(ret_img.size() == size);
+            REQUIRE(ret_img.type() == CV_32FC3);
+        }
+    }
+}
+
 TEST_CASE("[tensor] - image_from_tensor", "[rad]")
 {
     onnx::init_ort_api();

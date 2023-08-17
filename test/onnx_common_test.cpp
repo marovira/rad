@@ -18,7 +18,7 @@ TEST_CASE("[common] - perform_safe_op", "[rad::onnx]")
     SECTION("Ort::Exception")
     {
         bool ret = onnx::perform_safe_op([]() {
-            throw Ort::Exception{"error", ORT_FAIL};
+            throw Ort::Exception{"", ORT_FAIL};
         });
 
         REQUIRE_FALSE(ret);
@@ -27,7 +27,7 @@ TEST_CASE("[common] - perform_safe_op", "[rad::onnx]")
     SECTION("std::exception")
     {
         bool ret = onnx::perform_safe_op([]() {
-            throw std::runtime_error{"error"};
+            throw std::runtime_error{""};
         });
 
         REQUIRE_FALSE(ret);
