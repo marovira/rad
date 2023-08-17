@@ -8,6 +8,64 @@
 
 namespace onnx = rad::onnx;
 
+TEST_CASE("[tensor] - images_to_tensor", "[rad]")
+{
+    onnx::init_ort_api();
+
+    const cv::Size size{64, 64};
+    const int type{CV_32F};
+
+    std::vector<cv::Mat> images(4);
+
+    SECTION("Grayscale images")
+    {
+        for (auto& img : images)
+        {
+            img = cv::Mat::ones(size, CV_MAKETYPE(type, 1));
+        }
+
+        auto input = onnx::images_to_tensor<float>(images);
+        REQUIRE_FALSE(input.data.empty());
+
+        auto& tensor = input.tensor;
+        REQUIRE(tensor.IsTensor());
+
+        auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
+        REQUIRE(type_and_shape.GetElementType() == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+
+        auto shape = type_and_shape.GetShape();
+        REQUIRE(shape.size() == 4);
+        REQUIRE(shape[0] == 4);
+        REQUIRE(shape[1] == 1);
+        REQUIRE(shape[2] == 64);
+        REQUIRE(shape[3] == 64);
+    }
+
+    SECTION("RGB images")
+    {
+        for (auto& img : images)
+        {
+            img = cv::Mat::ones(size, CV_MAKETYPE(type, 3));
+        }
+
+        auto input = onnx::images_to_tensor<float>(images);
+        REQUIRE_FALSE(input.data.empty());
+
+        auto& tensor = input.tensor;
+        REQUIRE(tensor.IsTensor());
+
+        auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
+        REQUIRE(type_and_shape.GetElementType() == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+
+        auto shape = type_and_shape.GetShape();
+        REQUIRE(shape.size() == 4);
+        REQUIRE(shape[0] == 4);
+        REQUIRE(shape[1] == 3);
+        REQUIRE(shape[2] == 64);
+        REQUIRE(shape[3] == 64);
+    }
+}
+
 TEST_CASE("[tensor] - image_to_tensor", "[rad]")
 {
     onnx::init_ort_api();
@@ -23,7 +81,6 @@ TEST_CASE("[tensor] - image_to_tensor", "[rad]")
         REQUIRE_FALSE(input.data.empty());
 
         auto& tensor = input.tensor;
-
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();

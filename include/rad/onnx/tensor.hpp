@@ -66,10 +66,10 @@ namespace rad::onnx
     };
 
     template<typename T>
-    InputTensor<T> image_to_tensor(cv::Mat const& img)
+    InputTensor<T> images_to_tensor(std::vector<cv::Mat> const& images)
     {
         cv::Mat blob;
-        cv::dnn::blobFromImage(img, blob);
+        cv::dnn::blobFromImages(images, blob);
 
         cv::MatSize sz = blob.size;
         std::vector<std::int64_t> tensor_dims(sz.dims());
@@ -96,6 +96,12 @@ namespace rad::onnx
         }
 
         return InputTensor<T>{std::move(tensor_data), std::move(tensor)};
+    }
+
+    template<typename T>
+    InputTensor<T> image_to_tensor(cv::Mat const& img)
+    {
+        return images_to_tensor<T>({img});
     }
 
     template<typename T, typename Container>
