@@ -49,12 +49,12 @@ list(APPEND CMAKE_MODULE_PATH ${RAD_CMAKE_ROOT})
 # Find packages.
 #================================
 # Include Zeus first so we have access to fetch_library.
-find_package(zeus 1.2.0 QUIET)
+find_package(zeus 1.3.0 QUIET)
 if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
         GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG 1809ceff4be28f11325b1e2f6cc71137cb31cc05
+        GIT_TAG 6642af2359ce50c874e3f5de7839fc1c8ffee566
         )
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
@@ -62,7 +62,7 @@ endif()
 
 set(RAD_OPENCV_VERSION 4.8.0)
 set(RAD_TBB_VERSION 2021.10.0)
-set(RAD_ONNX_VERSION 1.15.0)
+set(RAD_ONNX_VERSION 1.16.0)
 
 find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
