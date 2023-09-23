@@ -13,8 +13,20 @@ namespace rad::onnx
             tensor{std::move(t)}
         {}
 
+        InputTensor(InputTensor&& other) :
+            data{std::move(other.data)},
+            tensor{std::move(other.tensor)}
+        {}
+
         InputTensor(InputTensor const&)            = delete;
         InputTensor& operator=(InputTensor const&) = delete;
+
+        InputTensor& operator=(InputTensor&& other)
+        {
+            data   = std::move(other.data);
+            tensor = std::move(other.tensor);
+            return *this;
+        }
 
         std::vector<T> data;
         Ort::Value tensor;
@@ -24,10 +36,24 @@ namespace rad::onnx
     class InputTensorSet
     {
     public:
-        InputTensorSet() = default;
+        using iterator       = std::vector<Ort::Value>::iterator;
+        using const_iterator = std::vector<Ort::Value>::const_iterator;
 
-        InputTensorSet(InputTensorSet const&)            = delete;
+        InputTensorSet()                      = default;
+        InputTensorSet(InputTensorSet const&) = delete;
+
+        InputTensorSet(InputTensorSet&& other) :
+            m_tensor_data{std::move(other.m_tensor_data)},
+            m_tensors{std::move(other.m_tensors)}
+        {}
+
         InputTensorSet& operator=(InputTensorSet const&) = delete;
+        InputTensorSet& operator=(InputTensorSet&& other)
+        {
+            m_tensor_data = std::move(other.m_tensor_data);
+            m_tensors     = std::move(other.m_tensors);
+            return *this;
+        }
 
         Ort::Value& operator[](std::size_t i)
         {
@@ -58,6 +84,26 @@ namespace rad::onnx
         Ort::Value* tensors()
         {
             return m_tensors.data();
+        }
+
+        iterator begin()
+        {
+            return m_tensors.begin();
+        }
+
+        const_iterator begin() const
+        {
+            return m_tensors.begin();
+        }
+
+        iterator end()
+        {
+            return m_tensors.end();
+        }
+
+        const_iterator end() const
+        {
+            return m_tensors.end();
         }
 
     private:
@@ -104,6 +150,21 @@ namespace rad::onnx
         return images_to_tensor<T>({img});
     }
 
+    template<typename T>
+    InputTensorSet<T> images_to_tensor_set(std::vector<cv::Mat> const& images)
+    {
+        InputTensorSet<T> inputs;
+        auto tensors = images_to_tensor<T>(images);
+        inputs.insert(std::move(tensors));
+        return inputs;
+    }
+
+    template<typename T>
+    InputTensorSet<T> image_to_tensor_set(cv::Mat const& img)
+    {
+        return images_to_tensor_set<T>({img});
+    }
+
     template<typename T, typename Container>
     InputTensor<T> array_to_tensor(Container const& src_data)
     {
@@ -131,6 +192,15 @@ namespace rad::onnx
         }
 
         return InputTensor<T>{std::move(tensor_data), std::move(tensor)};
+    }
+
+    template<typename T, typename Container>
+    InputTensorSet<T> array_to_tensor_set(Container const& src_data)
+    {
+        InputTensorSet<T> inputs;
+        auto tensors = array_to_tensor(src_data);
+        inputs.insert(std::move(tensors));
+        return inputs;
     }
 
     template<typename T, typename Fun>
