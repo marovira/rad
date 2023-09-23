@@ -107,18 +107,18 @@ suggestions for solving common problems:
   <strsafe.h>`, copy the following:
 
   ```c++
-// Deprecated, use the non STRSAFE_ prefixed types instead (e.g. LPSTR or PSTR) as they are the same as these.
-typedef _Null_terminated_ char* STRSAFE_LPSTR;
-typedef _Null_terminated_ const char* STRSAFE_LPCSTR;
-typedef _Null_terminated_ wchar_t* STRSAFE_LPWSTR;
-typedef _Null_terminated_ const wchar_t* STRSAFE_LPCWSTR;
-typedef _Null_terminated_ const wchar_t UNALIGNED* STRSAFE_LPCUWSTR;
+  // Deprecated, use the non STRSAFE_ prefixed types instead (e.g. LPSTR or PSTR) as they are the same as these.
+  typedef _Null_terminated_ char* STRSAFE_LPSTR;
+  typedef _Null_terminated_ const char* STRSAFE_LPCSTR;
+  typedef _Null_terminated_ wchar_t* STRSAFE_LPWSTR;
+  typedef _Null_terminated_ const wchar_t* STRSAFE_LPCWSTR;
+  typedef _Null_terminated_ const wchar_t UNALIGNED* STRSAFE_LPCUWSTR;
 
-// Deprecated, use the base types instead.
-// Strings where the string is NOT guaranteed to be null terminated (does not have _Null_terminated_).
-typedef const char* STRSAFE_PCNZCH;
-typedef const wchar_t* STRSAFE_PCNZWCH;
-typedef const wchar_t UNALIGNED* STRSAFE_PCUNZWCH;
+  // Deprecated, use the base types instead.
+  // Strings where the string is NOT guaranteed to be null terminated (does not have _Null_terminated_).
+  typedef const char* STRSAFE_PCNZCH;
+  typedef const wchar_t* STRSAFE_PCNZWCH;
+  typedef const wchar_t UNALIGNED* STRSAFE_PCUNZWCH;
   ```
 
 * Linker errors appear regarding: `IID_ID3D12Device`, `IID_ID3D12RootSignature`, and
