@@ -7,6 +7,7 @@ function(copy_shared_libs)
     set(OPENCV_VERSION @RAD_OPENCV_VERSION@)
     set(TBB_VERSION @RAD_TBB_VERSION@)
     set(ONNX_VERSION @RAD_ONNX_VERSION@)
+    set(DIRECTML_ROOT @RAD_DIRECTML_PATH@)
 
     if (NOT MSVC)
         message(FATAL_ERROR "Shared libraries can only be copied in Windows builds")
@@ -19,18 +20,22 @@ function(copy_shared_libs)
 
     set(DLL_LIST
         ${OPENCV_DLLS}
-        "$<TARGET_PROPERTY:TBB::tbb,$<$<CONFIG:Debug>:IMPORTED_LOCATION_DEBUG>$<$<CONFIG:MinSizeRel>:IMPORTED_LOCATION_MINSIZEREL>$<$<CONFIG:Release>:IMPORTED_LOCATION_RELEASE>$<$<CONFIG:RelWithDebInfo>:IMPORTED_LOCATION_RELWITHDEBINFO>>"
+        "$<TARGET_PROPERTY:TBB::tbb,$<$<CONFIG:Debug>:IMPORTED_LOCATION_DEBUG>$<$<CONFIG:Release>:IMPORTED_LOCATION_RELEASE>>"
         )
 
     if (${ARG_COPY_ONNX})
-        find_package(onnxruntime ${ONNX_VERSION} REQUIRED)
-        list(APPEND DLL_LIST ${ONNXRUNTIME_SHARED_LIBS})
+        find_package(onnxruntime ${ONNX_VERSION})
+        list(APPEND DLL_LIST
+        "$<TARGET_PROPERTY:onnxruntime::onnxruntime,$<$<CONFIG:Debug>:IMPORTED_LOCATION_DEBUG>$<$<CONFIG:Release>:IMPORTED_LOCATION_RELEASE>>"
+            )
+
+        if (${ARG_COPY_DML} AND NOT "${DIRECTML_ROOT}" STREQUAL "")
+            list(APPEND DLL_LIST
+                "\"${DIRECTML_ROOT}\""
+                )
+        endif()
     endif()
 
-    if (${ARG_COPY_DML})
-        find_package(onnxruntime ${ONNX_VERSION} REQUIRED DML)
-        list(APPEND DLL_LIST ${ONNXRUNTIME_DML_SHARED_LIB})
-    endif()
 
     add_custom_command(TARGET ${ARG_TARGET}
         POST_BUILD

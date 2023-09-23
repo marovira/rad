@@ -18,6 +18,33 @@ if (RAD_USE_ONNX)
         )
 endif()
 
-set(RAD_TEST_LIST
-    ${TEST_LIST}
-    PARENT_SCOPE)
+source_group("source" FILES ${TEST_LIST})
+add_executable(rad_test ${TEST_LIST})
+target_link_libraries(rad_test PRIVATE
+    rad
+    Catch2::Catch2WithMain)
+add_custom_command(TARGET rad_test
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+    ${RAD_TEST_ROOT}/data
+    $<TARGET_FILE_DIR:rad_test>/data
+    )
+
+if (WIN32)
+    # Force VS to use the root where the executable is placed as the working
+    # directory.
+    set_target_properties(rad_test PROPERTIES
+        VS_DEBUGGER_WORKING_DIRECTORY
+        "$<TARGET_FILE_DIR:rad_test>"
+        )
+
+    if (${RAD_USE_ONNX} AND ${RAD_USE_ONNX_DML})
+        copy_shared_libs(TARGET rad_test COPY_ONNX COPY_DML)
+    elseif(${RAD_USE_ONNX})
+        copy_shared_libs(TARGET rad_test COPY_ONNX)
+    else()
+        copy_shared_libs(TARGET rad_test)
+    endif()
+endif()
+
+catch_discover_tests(rad_test)

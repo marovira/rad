@@ -43,8 +43,6 @@ set(RAD_SOURCE_ROOT ${RAD_SOURCE_DIR}/src)
 set(RAD_CMAKE_ROOT ${RAD_SOURCE_DIR}/cmake)
 set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 
-list(APPEND CMAKE_MODULE_PATH ${RAD_CMAKE_ROOT})
-
 #================================
 # Find packages.
 #================================
@@ -68,23 +66,26 @@ find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
 
 if (RAD_USE_ONNX)
+    find_package(onnxruntime ${RAD_ONNX_VERSION} REQUIRED)
+
     if (RAD_USE_ONNX_DML)
-        set(RAD_ONNX_PROVIDERS DML)
+        # The directory where we "find" onnxruntime lives under
+        # <root>/lib/cmake/onnxruntime. The DLLs are stored under <root>/lib so lets move
+        # up the directory twice. We can then use that variable in the CopySharedLibs
+        # script to figure out what version of DirectML to copy.
+        cmake_path(GET onnxruntime_DIR PARENT_PATH RAD_ORT_IMPORTED_LOCATION)
+        cmake_path(GET RAD_ORT_IMPORTED_LOCATION PARENT_PATH RAD_ORT_IMPORTED_LOCATION)
+        if (EXISTS "${RAD_ORT_IMPORTED_LOCATION}/DirectML.dll")
+            set(RAD_DIRECTML_PATH "${RAD_ORT_IMPORTED_LOCATION}/DirectML.dll")
+        else()
+            message(WARNING
+                "warning: DirectML.dll was not found in the installation path for \
+                onnxruntime. RAD will use the default version of DirectML that is \
+                shipped with Windows which may not be compatible with ONNXRuntime \
+                version ${RAD_ONNX_VERSION}. To avoid possible errors, please copy \
+                the correct version of DirectML.dll into the build directory")
+        endif()
     endif()
-    find_package(onnxruntime ${RAD_ONNX_VERSION} REQUIRED ${RAD_ONNX_PROVIDERS})
-endif()
-
-#================================
-# Add subdirectories.
-#================================
-add_subdirectory(${RAD_INCLUDE_ROOT}/rad)
-add_subdirectory(${RAD_SOURCE_ROOT})
-
-source_group(TREE ${RAD_INCLUDE_ROOT} PREFIX "include" FILES ${RAD_INCLUDE_LIST})
-source_group(TREE ${RAD_SOURCE_ROOT} PREFIX "source" FILES ${RAD_SOURCE_LIST})
-
-if (RAD_BUILD_TESTS)
-    add_subdirectory(${RAD_TEST_ROOT})
 endif()
 
 # Generate the CopySharedLibs script. Make sure we only replace @...@ so CMake variables
@@ -95,7 +96,16 @@ configure_file(${RAD_CMAKE_ROOT}/CopySharedLibs.cmake.in
     )
 
 #================================
-# Add library.
+# Add subdirectories.
+#================================
+add_subdirectory(${RAD_INCLUDE_ROOT}/rad)
+add_subdirectory(${RAD_SOURCE_ROOT})
+
+source_group(TREE ${RAD_INCLUDE_ROOT} PREFIX "include" FILES ${RAD_INCLUDE_LIST})
+source_group(TREE ${RAD_SOURCE_ROOT} PREFIX "source" FILES ${RAD_SOURCE_LIST})
+
+#================================
+# RAD library.
 #================================
 add_library(rad ${RAD_INCLUDE_LIST} ${RAD_SOURCE_LIST})
 target_include_directories(rad PUBLIC
@@ -215,36 +225,8 @@ if (RAD_BUILD_TESTS)
         list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     endif()
 
-    source_group("source" FILES ${RAD_TEST_LIST})
-    add_executable(rad_test ${RAD_TEST_LIST})
-    target_link_libraries(rad_test PRIVATE
-        rad
-        Catch2::Catch2WithMain)
-    add_custom_command(TARGET rad_test
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        ${RAD_TEST_ROOT}/data
-        $<TARGET_FILE_DIR:rad_test>/data
-        )
-
-    if (WIN32)
-        # Force VS to use the root where the executable is placed as the working
-        # directory.
-        set_target_properties(rad_test PROPERTIES
-            VS_DEBUGGER_WORKING_DIRECTORY
-            "$<TARGET_FILE_DIR:rad_test>"
-            )
-
-        if (${RAD_USE_ONNX} AND ${RAD_USE_ONNX_DML})
-            copy_shared_libs(TARGET rad_test COPY_ONNX COPY_DML)
-        elseif(${RAD_USE_ONNX})
-            copy_shared_libs(TARGET rad_test COPY_ONNX)
-        else()
-            copy_shared_libs(TARGET rad_test)
-        endif()
-    endif()
-
     include(CTest)
     include(Catch)
-    catch_discover_tests(rad_test)
+
+    add_subdirectory(${RAD_TEST_ROOT})
 endif()
