@@ -48,6 +48,7 @@ namespace rad::onnx
         {}
 
         InputTensorSet& operator=(InputTensorSet const&) = delete;
+
         InputTensorSet& operator=(InputTensorSet&& other)
         {
             m_tensor_data = std::move(other.m_tensor_data);

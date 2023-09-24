@@ -13,6 +13,7 @@ namespace rad::onnx
     };
 
     std::vector<ExecutionProviders> get_execution_providers();
+
     consteval bool is_provider_enabled(ExecutionProviders provider)
     {
         if (provider == ExecutionProviders::cpu)

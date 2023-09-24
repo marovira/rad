@@ -6,7 +6,7 @@
 
 #if defined(ZEUS_PLATFORM_WINDOWS)
 #    pragma warning(push)
-#    pragma warning(disable : 5054)
+#    pragma warning(disable : 5'054)
 #endif
 
 #include <opencv2/opencv.hpp>
