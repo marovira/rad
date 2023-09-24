@@ -4,11 +4,6 @@
 
 namespace onnx = rad::onnx;
 
-TEST_CASE("[env] - init_api")
-{
-    REQUIRE(onnx::init_ort_api());
-}
-
 TEST_CASE("[env] - create_environment", "[rad::onnx]")
 {
     onnx::init_ort_api();

@@ -39,6 +39,3 @@ TEST_CASE("[common] - perform_safe_op", "[rad::onnx]")
         REQUIRE(ret);
     }
 }
-
-TEST_CASE("[common] - init_onnxruntime", "[rad::onnx]")
-{}
