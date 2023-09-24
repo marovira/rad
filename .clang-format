@@ -9,7 +9,7 @@ DeriveLineEnding: true
 DerivePointerAlignment: true
 IndentWidth: 4
 TabWidth: 4
-UseCRLF: false
+LineEnding: LF
 UseTab: Never
 
 # Alignment settings
@@ -21,7 +21,9 @@ AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: Consecutive
 AlignEscapedNewlines: Left
 AlignOperands: Align
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
 
 # Allow on single-line settings
 AllowAllArgumentsOnNextLine: false
@@ -62,8 +64,9 @@ BraceWrapping:
     SplitEmptyNamespace: false
 
 # Break settings
+BreakAfterAttributes: Always
 BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeConceptDeclarations: true
+BreakBeforeConceptDeclarations: Always
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
@@ -102,16 +105,37 @@ SpacesInContainerLiterals: false
 SpacesInLineCommentPrefix:
     Minimum: 1
     Maximum: -1
-SpacesInParentheses: false
 SpacesInSquareBrackets: false
+
+# Spaces in parenthesis settings
+SpacesInParens: Never
 
 # Space before parenthesis settings
 SpaceBeforeParens: Custom
 SpaceBeforeParensOptions:
     AfterControlStatements: true
     AfterFunctionDeclarationName: false
+    AfterFunctionDefinitionName: false
     AfterOverloadedOperator: false
+    AfterRequiresInClause: false
+    AfterRequiresInExpression: false
     BeforeNonEmptyParentheses: false
+
+# Integer literal separators settings
+IntegerLiteralSeparator:
+  Binary: 4
+  BinaryMinDigits: 4
+  Decimal: 3
+  DecimalMinDigits: 4
+  Hex: 0
+
+# Qualifier alignment settings
+QualifierAlignment: Custom
+QualifierOrder: ['inline', 'static', 'constexpr', 'friend', 'volatile', 'type']
+
+# Requires clause settings
+RequiresClausePosition: OwnLine
+RequiresExpressionIndentation: OuterScope
 
 # Miscellaneous settings
 BitFieldColonSpacing: Both
@@ -120,15 +144,19 @@ EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 FixNamespaceComments: true
 IncludeBlocks: Preserve
+KeepEmptyLinesAtEOF: false
+KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: Signature
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PackConstructorInitializers: Never
 PointerAlignment: Left
-QualifierAlignment: Leave
 ReferenceAlignment: Left
 ReflowComments: true
 RemoveBracesLLVM: false
-SeparateDefinitionBlocks: Leave
+RemoveParentheses: Leave
+RemoveSemicolon: true
+SeparateDefinitionBlocks: Always
+ShortNamespaceLines: 0
 SortIncludes: CaseInsensitive
 SortUsingDeclarations: true
