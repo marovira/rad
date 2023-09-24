@@ -5,7 +5,8 @@ set(ONNX_INCLUDE
     ${ONNX_ROOT}/common.hpp
     ${ONNX_ROOT}/onnx.hpp
     ${ONNX_ROOT}/env.hpp
-    ${ONNX_ROOT}/tensor.hpp
     ${ONNX_ROOT}/session.hpp
-    ${ONNX_ROOT}/inference.hpp
+    ${ONNX_ROOT}/concepts.hpp
+    ${ONNX_ROOT}/memory_backed_tensor_set.hpp
+    ${ONNX_ROOT}/tensor_conversion.hpp
     PARENT_SCOPE)
