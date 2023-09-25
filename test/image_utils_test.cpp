@@ -11,7 +11,6 @@ TEST_CASE("[image_utils] - change_colour_space", "[rad]")
     orig         = cv::Scalar{1, 2, 3};
 
     cv::Mat as_rgb = rad::change_colour_space(orig, cv::COLOR_BGR2RGB);
-    auto p         = as_rgb.at<cv::Vec3b>(0, 0);
     REQUIRE(as_rgb.at<cv::Vec3b>(0, 0) == cv::Vec3b{3, 2, 1});
 }
 

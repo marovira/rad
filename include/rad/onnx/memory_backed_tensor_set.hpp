@@ -89,7 +89,7 @@ namespace rad::onnx
             }
 
             std::vector<T> tensor_data(blob.total());
-            tensor_data.assign(blob.begin<T>(), blob.end<T>());
+            tensor_data.assign(blob.template begin<T>(), blob.template end<T>());
 
             Ort::Value tensor{nullptr};
             Ort::MemoryInfo mem_info =

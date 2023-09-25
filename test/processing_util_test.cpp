@@ -4,6 +4,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <unordered_set>
+
 namespace fs = std::filesystem;
 
 TEST_CASE("[processing_util] - get_file_paths_from_root", "[rad]")
@@ -13,11 +15,18 @@ TEST_CASE("[processing_util] - get_file_paths_from_root", "[rad]")
     auto files = rad::get_file_paths_from_root(mgr.root().string());
 
     REQUIRE(files.size() == 10);
-    for (int i{0}; auto file : files)
+
+    // Order is not guaranteed!
+    std::unordered_set<fs::path> exp_paths;
+    for (std::size_t i{0}; i < files.size(); ++i)
     {
         fs::path exp = mgr.root() / fmt::format("test_img_{}.jpg", i);
-        REQUIRE(file == exp);
-        ++i;
+        exp_paths.insert(exp);
+    }
+
+    for (auto file : files)
+    {
+        REQUIRE(exp_paths.find(file) != exp_paths.end());
     }
 }
 

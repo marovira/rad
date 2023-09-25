@@ -39,9 +39,38 @@ namespace rad::onnx
 #endif
 
     template<typename T>
+    struct OrtStringPath : std::false_type
+    {};
+
+    template <>
+    struct OrtStringPath<char>
+    {
+        using value_type = std::string;
+    };
+
+    template <>
+    struct OrtStringPath<wchar_t>
+    {
+        using value_type = std::wstring;
+    };
+
+    template<typename T>
+    consteval bool use_string()
+    {
+        if constexpr(std::is_same_v<T, char>)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    template<typename T>
     concept SelectorFunctor = requires(T fn, std::string str) {
         // clang-format off
-        { fn(str) } -> std::same_as<std::wstring>;
+        { fn(str) } -> std::same_as<OrtStringPath<ORTCHAR_T>::value_type>;
         // clang-format on
     };
 
@@ -51,7 +80,7 @@ namespace rad::onnx
                                         Ort::SessionOptions const& opt,
                                         T&& selector)
     {
-        std::wstring model_to_load = selector(model_root);
+        auto model_to_load = selector(model_root);
         if (model_to_load.empty())
         {
             throw std::runtime_error{

@@ -26,7 +26,7 @@ public:
         dynamic_axes
     };
 
-    std::wstring get_model(Type type) const
+    auto get_model(Type type) const
     {
         std::string name;
         switch (type)
@@ -39,7 +39,14 @@ public:
             break;
         }
 
-        return (m_root / name).wstring();
+        if constexpr(rad::onnx::use_string<ORTCHAR_T>())
+        {
+            return (m_root / name).string();
+        }
+        else
+        {
+            return (m_root / name).wstring();
+        }
     }
 
 private:

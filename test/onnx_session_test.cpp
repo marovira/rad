@@ -48,7 +48,15 @@ TEST_CASE("[session] - make_session_from_file", "[rad::onnx]")
     {
         REQUIRE_THROWS(
             onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
-                return std::wstring{};
+                if constexpr(zeus::current_platform == zeus::Platform::windows)
+                {
+                return std::wstring();
+                    return std::wstring{};
+                }
+                else
+                {
+                    return std::string{};
+                }
             }));
     }
 
