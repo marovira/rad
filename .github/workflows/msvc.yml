@@ -32,6 +32,22 @@ jobs:
             cc: "cl",
             cxx: "cl",
           }
+        - {
+            name: "MSVC (ONNX)",
+            os: windows-latest,
+            build_type: "Release",
+            config_name: "msvc-onnx",
+            cc: "cl",
+            cxx: "cl",
+          }
+        - {
+            name: "MSVC (ONNX + DML)",
+            os: windows-latest,
+            build_type: "Release",
+            config_name: "msvc-onnx-dml",
+            cc: "cl",
+            cxx: "cl",
+          }
     steps:
       - uses: actions/checkout@v3
 
