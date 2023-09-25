@@ -14,7 +14,6 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "/W4 /WX /MP /EHsc -DNOMINMAX",
-                "CMAKE_CXX_FLAGS_DEBUG": "/ZI /Od",
                 "CMAKE_CXX_STANDARD": "20",
                 "RAD_BUILD_TESTS": "ON"
             }
@@ -46,7 +45,6 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror",
-                "CMAKE_CXX_FLAGS_DEBUG": "-g",
                 "CMAKE_CXX_STANDARD": "20",
                 "RAD_BUILD_TESTS": "ON"
             }
@@ -68,7 +66,6 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++",
-                "CMAKE_CXX_FLAGS_DEBUG": "-g",
                 "CMAKE_CXX_STANDARD": "20",
                 "RAD_BUILD_TESTS": "ON"
             }
