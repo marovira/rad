@@ -1,5 +1,6 @@
 #pragma once
 
+#include "concepts.hpp"
 #include "onnxruntime.hpp"
 
 #include <fmt/printf.h>
@@ -11,6 +12,25 @@ namespace rad::onnx
         cpu = 0,
         dml,
     };
+
+    template<typename T>
+    concept SelectorFunctor = requires(T fn, std::string str) {
+        // clang-format off
+        { fn(str) } -> std::same_as<OrtStringPath<ORTCHAR_T>::value_type>;
+        // clang-format on
+    };
+
+    consteval bool use_string_for_paths()
+    {
+        if constexpr (std::is_same_v<OrtStringPath<ORTCHAR_T>::value_type, std::string>)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     std::vector<ExecutionProviders> get_execution_providers();
 
@@ -39,42 +59,6 @@ namespace rad::onnx
     Ort::SessionOptions get_default_dml_session_options(int device_id);
     Ort::SessionOptions get_default_dml_session_options();
 #endif
-
-    template<typename T>
-    struct OrtStringPath : std::false_type
-    {};
-
-    template <>
-    struct OrtStringPath<char>
-    {
-        using value_type = std::string;
-    };
-
-    template <>
-    struct OrtStringPath<wchar_t>
-    {
-        using value_type = std::wstring;
-    };
-
-    template<typename T>
-    consteval bool use_string()
-    {
-        if constexpr(std::is_same_v<T, char>)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    template<typename T>
-    concept SelectorFunctor = requires(T fn, std::string str) {
-        // clang-format off
-        { fn(str) } -> std::same_as<OrtStringPath<ORTCHAR_T>::value_type>;
-        // clang-format on
-    };
 
     template<SelectorFunctor T>
     Ort::Session make_session_from_file(std::string const& model_root,

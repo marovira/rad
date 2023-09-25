@@ -6,6 +6,13 @@
 
 namespace rad::onnx
 {
+    template<typename T>
+    concept ImagePostProcessFunctor = requires(T fn, cv::Mat m) {
+        // clang-format off
+        { fn(m) } -> std::same_as<cv::Mat>;
+        // clang-format on
+    };
+
     template<zeus::ArithmeticType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor(Ort::Value const& tensor,
                                                  cv::Size sz,

@@ -39,13 +39,15 @@ public:
             break;
         }
 
-        if constexpr(rad::onnx::use_string<ORTCHAR_T>())
+        auto ret = m_root / name;
+
+        if constexpr (rad::onnx::use_string_for_paths())
         {
-            return (m_root / name).string();
+            return ret.string();
         }
         else
         {
-            return (m_root / name).wstring();
+            return ret.wstring();
         }
     }
 

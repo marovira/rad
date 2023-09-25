@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../opencv.hpp"
 #include <cstdint>
 #include <zeus/concepts.hpp>
 
@@ -22,12 +21,22 @@ namespace rad::onnx
     concept ContiguousContainer = IsContiguousContainer<T>::value;
 
     template<typename T>
-    concept ImagePostProcessFunctor = requires(T fn, cv::Mat m) {
-        // clang-format off
-        {fn(m)} -> std::same_as<cv::Mat>;
-        // clang-format on
-    };
+    concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>;
 
     template<typename T>
-    concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>;
+    struct OrtStringPath : std::false_type
+    {};
+
+    template<>
+    struct OrtStringPath<char>
+    {
+        using value_type = std::string;
+    };
+
+    template<>
+    struct OrtStringPath<wchar_t>
+    {
+        using value_type = std::wstring;
+    };
+
 } // namespace rad::onnx
