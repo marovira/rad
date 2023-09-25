@@ -53,9 +53,9 @@ jobs:
           {
             git clone https://github.com/marovira/rad_deps.git --depth 1
             cd ./rad_deps/windows
-            Expand-Archive ./onnxruntime.zip -DestinationPath ../..
-            Expand-Archive ./opencv.zip -DestinationPath ../..
-            Expand-Archive ./TBB.zip -DestinationPath ../..
+            Expand-Archive ./onnxruntime.zip -DestinationPath C:/deps
+            Expand-Archive ./opencv.zip -DestinationPath C:/deps
+            Expand-Archive ./TBB.zip -DestinationPath C:/deps
             cd ../..
 
             git clone https://github.com/fmtlib/fmt.git --branch 10.1.1 --depth 1
