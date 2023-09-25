@@ -44,6 +44,7 @@ namespace rad::onnx
         return opts;
     }
 
+#if defined(RAD_ONNX_DML_ENABLED)
     Ort::SessionOptions get_default_dml_session_options(int device_id)
     {
         if constexpr (!is_provider_enabled(ExecutionProviders::dml))
@@ -74,6 +75,7 @@ namespace rad::onnx
     {
         return get_default_dml_session_options(0);
     }
+#endif
 
     std::vector<std::vector<std::int64_t>> get_input_shapes(Ort::Session& session)
     {

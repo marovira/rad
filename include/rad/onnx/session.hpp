@@ -33,8 +33,10 @@ namespace rad::onnx
 
     Ort::SessionOptions get_default_session_options();
 
+#if defined(RAD_ONNX_DML_ENABLED)
     Ort::SessionOptions get_default_dml_session_options(int device_id);
     Ort::SessionOptions get_default_dml_session_options();
+#endif
 
     template<typename T>
     concept SelectorFunctor = requires(T fn, std::string str) {
