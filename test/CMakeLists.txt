@@ -8,9 +8,15 @@ set(TEST_SOURCE
     )
 
 if (RAD_USE_ONNX)
+    set(RAD_TEST_DATA_ROOT ${RAD_TEST_ROOT}/data)
+    set(RAD_TEST_DATA_HEADER
+        ${RAD_TEST_ROOT}/test_data_root.hpp)
+    configure_file(${RAD_TEST_ROOT}/test_data_root.hpp.in ${RAD_TEST_DATA_HEADER})
+
     list(APPEND TEST_INCLUDE
         ${RAD_TEST_ROOT}/model_file_manager.hpp
         ${RAD_TEST_ROOT}/onnx_test_helpers.hpp
+        ${RAD_TEST_DATA_HEADER}
         )
 
     list(APPEND TEST_SOURCE
@@ -29,21 +35,8 @@ add_executable(rad_test ${TEST_INCLUDE} ${TEST_SOURCE})
 target_link_libraries(rad_test PRIVATE
     rad
     Catch2::Catch2WithMain)
-add_custom_command(TARGET rad_test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-    ${RAD_TEST_ROOT}/data
-    $<TARGET_FILE_DIR:rad_test>/data
-    )
 
 if (WIN32)
-    # Force VS to use the root where the executable is placed as the working
-    # directory.
-    set_target_properties(rad_test PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY
-        "$<TARGET_FILE_DIR:rad_test>"
-        )
-
     if (${RAD_USE_ONNX} AND ${RAD_USE_ONNX_DML})
         copy_shared_libs(TARGET rad_test COPY_ONNX COPY_DML)
     elseif(${RAD_USE_ONNX})

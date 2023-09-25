@@ -1,0 +1,8 @@
+#pragma once
+
+#include <string_view>
+
+namespace test
+{
+    static constexpr std::string_view data_root{"@RAD_TEST_DATA_ROOT@/"};
+} // namespace test

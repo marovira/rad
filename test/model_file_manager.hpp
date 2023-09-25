@@ -1,5 +1,7 @@
 #pragma once
 
+#include "test_data_root.hpp"
+
 #include <rad/onnx/session.hpp>
 
 #include <filesystem>
@@ -10,7 +12,7 @@ class ModelFileManager
 public:
     ModelFileManager()
     {
-        m_root = std::filesystem::absolute("./data");
+        m_root = std::filesystem::absolute(test::data_root);
     }
 
     std::string get_root() const
