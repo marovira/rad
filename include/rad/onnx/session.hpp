@@ -29,6 +29,8 @@ namespace rad::onnx
             return false;
 #endif
         }
+
+        return false;
     }
 
     Ort::SessionOptions get_default_session_options();
