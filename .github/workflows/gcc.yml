@@ -84,11 +84,11 @@ jobs:
         shell: bash
         env:
           BUILD_TYPE: ${{ matrix.config.build_type }}
-          CONFIG_TYPE: ${{ matrix.config.config_name}}
+          CONFIG_TYPE: ${{ matrix.config.config_name }}
           CC: ${{ matrix.config.cc }}
           CXX: ${{ matrix.config.cxx }}
         run: |
-          cmake --preset=$env:CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
+          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
           cd ./build
           make
 
