@@ -170,7 +170,6 @@ if (RAD_INSTALL_TARGET)
         )
 
     install(FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Findonnxruntime.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/CopySharedLibs.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/radConfigVersion.cmake"
         DESTINATION lib/cmake/rad
