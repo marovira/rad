@@ -3,6 +3,9 @@
 
 [![Generic badge](https://img.shields.io/badge/License-BSD3-blue)](LICENSE)
 [![Generic badge](https://img.shields.io/badge/Language-C++20-red.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
+[![Clang](https://github.com/marovira/rad/actions/workflows/clang.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/clang.yml)
+[![GCC](https://github.com/marovira/rad/actions/workflows/gcc.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/gcc.yml)
+[![MSVC](https://github.com/marovira/rad/actions/workflows/msvc.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/msvc.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/marovira/rad/badge)](https://www.codefactor.io/repository/github/marovira/rad)
 
 ## Table of Contents

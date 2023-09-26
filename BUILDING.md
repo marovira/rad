@@ -1,16 +1,24 @@
 # Building RAD
 
-Due to the complexity of the libraries that RAD relies on, they are not bundled in the
-library itself, nor are they kept submodules or fetched through CMake. As a result, it is
-expected that you build the libraries yourself and have them installed in your system
-prior to using RAD. In order to streamline this, we present a quick guide for how to setup
-the different libraries that RAD relies on. Please note that Zeus is the only library that
-is fetched by RAD if it hasn't been found, so we'll skip it from this guide.
+## Using Pre-built Binaries
+
+For convenience, we provide the dependencies for each release of RAD in a separate
+repository called [rad_deps](https://github.com/marovira/rad_deps). You are strongly
+recommended to build the libraries RAD depends on from source, but you may also want to
+use the pre-built binaries to avoid conflicts between versions. To use the binaries,
+please see the [usage
+instructions](https://github.com/marovira/rad_deps/blob/master/README.md).
+
+## Building from Source
+
+Below is a quick guide on the configurations used to build the libraries RAD depends on.
+Note that while RAD does depend on Zeus it (and its dependencies) can be pulled directly
+through CMake if you don't wish to build everything yourself.
 
 RAD only supports Debug and Release builds, so it is recommended that all SDKs that are
 built from source are built for both of these configurations.
 
-## Installing OneAPI TBB
+### Installing OneAPI TBB
 
 RAD uses TBB internally for multi-threading operations, and it is also recommended that
 OpenCV be built with TBB to avoid clashes between different threading systems. As a
@@ -20,7 +28,7 @@ result, TBB should be installed first. To do so, clone the code from
 false in order to speed up compilation. Once it is built, install it using the install
 target.
 
-## Installing OpenCV
+### Installing OpenCV
 
 OpenCV can be cloned from these two repositories:
 
@@ -37,7 +45,7 @@ directory. The following variables must also be set:
 
 Once cmake runs, build and install OpenCV as usual.
 
-## Installing ONNXRuntime
+### Installing ONNXRuntime
 
 ONNXRuntime is an optional dependecy for RAD that is only used for inferencing neural
 networks. Currently, the only supported way of linking with ONNXRuntime is by building the
@@ -60,11 +68,9 @@ code is checked out, we can build the library depending on which backend is requ
 that we must build both Debug and Release configurations of ONNXRuntime (for Windows
 only).
 
-> **Note:**
-> The following instructions have been tested on Windows only. Linux should be able to
-> follow similar steps, but this has not been tested.
-
 ### Building for CPU
+
+#### Windows
 
 Open an administrator terminal and navigate to the directory where the code is checked
 out. Then enter:
@@ -84,6 +90,15 @@ For release builds, the commands are as follows:
 ```bat
 .\build.bat --config Release --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022"
 .\build.bat --config Release --target install --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022"
+```
+
+#### Linux
+
+Open a terminal and navigate tot he code where the code is checked out. Then enter:
+
+```sh
+./build.sh --config Release --build_shared_lib --parallel --skip_tests
+./build.sh --config Release --build_shared_lib --parallel --skip_tests --target install
 ```
 
 ### Building for DirectML (Windows only)
