@@ -1,0 +1,107 @@
+name: Clang
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.clang-format'
+      - 'data/**'
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.clang-format'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Clang (default)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            config_name: "clang",
+            cc: "clang",
+            cxx: "clang++"
+          }
+        - {
+            name: "Clang (ONNX)",
+            os: ubuntu-latest,
+            build_type: "Release",
+            config_name: "clang-onnx",
+            cc: "clang",
+            cxx: "clang++"
+          }
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install clang
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: 15
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: zeus_deps
+        with:
+          path: ~/deps
+          key: ${{ env.cache-name }}-clang-${{ matrix.config.build_type }}
+
+      - name: Install dependencies
+        shell: bash
+        env:
+          BUILD_TYPE: ${{ matrix.config.build_type }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          if [ ! -d ~/deps ]; then
+            mkdir ~/deps
+            git clone https://github.com/marovira/rad_deps.git --branch 2.0.0 --depth 1
+            cd ./rad_deps/linux
+            tar --use-compress-program=unzstd -xvf onnxruntime.tar.zst -C ~/deps
+            tar --use-compress-program=unzstd -xvf opencv.tar.zst -C ~/deps
+            tar --use-compress-program=unzstd -xvf TBB.tar.zst -C ~/deps
+            cd ../..
+
+            git clone https://github.com/fmtlib/fmt.git --branch 10.1.1 --depth 1
+            cmake -S fmt -B fmt/build -DCMAKE_CXX_STANDARD=20 -DFMT_INSTALL=ON -DFMT_TEST=OFF -DCMAKE_INSTALL_PREFIX=~/deps/fmt
+            cd ./fmt/build
+            make
+            make install
+            cd ../..
+            git clone https://github.com/catchorg/Catch2.git --branch v3.3.2 --depth 1
+            cmake -S Catch2 -B Catch2/build -DCMAKE_CXX_STANDARD=20 -DCATCH_INSTALL_DOCS=OFF -DCMAKE_INSTALL_PREFIX=~/deps/Catch2
+            cd ./Catch2/build
+            make
+            make install
+          fi
+
+      - name: Build
+        shell: bash
+        env:
+          BUILD_TYPE: ${{ matrix.config.build_type }}
+          CONFIG_TYPE: ${{ matrix.config.config_name }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
+          cd ./build
+          make
+
+      - name: Run tests
+        shell: bash
+        working-directory: ./build
+        env:
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          make test
