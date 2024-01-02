@@ -1,10 +1,10 @@
-#include <rad/onnx/common.hpp>
+#include <rad/onnx/perform_safe_op.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 namespace onnx = rad::onnx;
 
-TEST_CASE("[common] - perform_safe_op", "[rad::onnx]")
+TEST_CASE("[perform_safe_op] - perform_safe_op", "[rad::onnx]")
 {
     SECTION("cv::Exception")
     {

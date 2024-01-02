@@ -21,7 +21,7 @@ if (RAD_USE_ONNX)
 
     list(APPEND TEST_SOURCE
         ${RAD_TEST_ROOT}/onnx_reporters.cpp
-        ${RAD_TEST_ROOT}/onnx_common_test.cpp
+        ${RAD_TEST_ROOT}/onnx_perform_safe_op_test.cpp
         ${RAD_TEST_ROOT}/onnx_env_test.cpp
         ${RAD_TEST_ROOT}/onnx_session_test.cpp
         ${RAD_TEST_ROOT}/onnx_memory_backed_tensor_set_test.cpp
