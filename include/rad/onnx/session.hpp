@@ -2,6 +2,7 @@
 
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
+#include "perform_safe_op.hpp"
 
 #include <fmt/printf.h>
 

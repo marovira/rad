@@ -3,6 +3,7 @@
 #include "../opencv.hpp"
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
+#include "perform_safe_op.hpp"
 
 namespace rad::onnx
 {

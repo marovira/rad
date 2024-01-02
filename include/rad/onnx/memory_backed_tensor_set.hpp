@@ -3,6 +3,9 @@
 #include "../opencv.hpp"
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
+#include "perform_safe_op.hpp"
+
+#include <zeus/container_traits.hpp>
 
 namespace rad::onnx
 {
@@ -114,7 +117,7 @@ namespace rad::onnx
             insert_tensor_from_batched_images({img});
         }
 
-        template<ContiguousContainer U>
+        template<zeus::ContiguousContainer U>
         void insert_tensor_from_array(U const& src_data)
         {
             static_assert(std::is_same_v<typename U::value_type, value_type>);
