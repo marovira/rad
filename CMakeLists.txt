@@ -47,12 +47,12 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 # Find packages.
 #================================
 # Include Zeus first so we have access to fetch_library.
-find_package(zeus 1.3.0 QUIET)
+find_package(zeus 1.4.0 QUIET)
 if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
         GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG 6642af2359ce50c874e3f5de7839fc1c8ffee566
+        GIT_TAG a442ea14cb490df8dc34bbc561fe2910ae6e515d
         )
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
@@ -213,13 +213,13 @@ if (RAD_BUILD_TESTS)
     include(FetchLibrary)
     include(CopySharedLibs)
 
-    find_package(Catch2 3.3.2 QUIET)
+    find_package(Catch2 3.5.1 QUIET)
 
     if (NOT Catch2_FOUND)
         fetch_library(
             NAME Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG 97c48e0c343d26d50764fafdc90b1e630fbd10ce
+            GIT_TAG f981c9cbcac07a2690e5a86767eba490b5465463
             )
         list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     endif()
