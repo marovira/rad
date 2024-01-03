@@ -1,7 +1,7 @@
 #================================
 # Project setup.
 #================================
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.27)
 project(rad VERSION 2.0.0 LANGUAGES CXX)
 
 if (APPLE)
