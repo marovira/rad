@@ -67,7 +67,7 @@ jobs:
           $c="C:/deps"
           if(-not (Test-Path $c))
           {
-            git clone https://github.com/marovira/rad_deps.git --branch 2.0.0 --depth 1
+            git clone https://github.com/marovira/rad_deps.git --branch 2.1.0 --depth 1
             cd ./rad_deps/windows
             Expand-Archive ./onnxruntime.zip -DestinationPath C:/deps
             Expand-Archive ./opencv.zip -DestinationPath C:/deps

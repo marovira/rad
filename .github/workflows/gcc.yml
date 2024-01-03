@@ -60,7 +60,7 @@ jobs:
         run: |
           if [ ! -d ~/deps ]; then
             mkdir ~/deps
-            git clone https://github.com/marovira/rad_deps.git --branch 2.0.0 --depth 1
+            git clone https://github.com/marovira/rad_deps.git --branch 2.1.0 --depth 1
             cd ./rad_deps/linux
             tar --use-compress-program=unzstd -xvf onnxruntime.tar.zst -C ~/deps
             tar --use-compress-program=unzstd -xvf opencv.tar.zst -C ~/deps
