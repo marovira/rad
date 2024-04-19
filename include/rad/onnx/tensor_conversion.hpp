@@ -142,19 +142,53 @@ namespace rad::onnx
     }
 
     template<zeus::ArithmeticType T>
-    std::vector<T> array_from_tensor(Ort::Value const& tensor, std::size_t size)
+    std::vector<std::vector<T>> array_batch_from_tensor(Ort::Value const& tensor,
+                                                        std::size_t size)
     {
-        std::vector<T> ret(size);
-        std::memcpy(ret.data(), tensor.GetTensorData<T>(), size * sizeof(T));
-        return ret;
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        if (dims.size() != 2)
+        {
+            throw std::runtime_error{std::format(
+                "error: expected a 2-dimensional tensor but received {} dimensions",
+                dims.size())};
+        }
+
+        if (dims[1] != static_cast<std::int64_t>(size))
+        {
+            throw std::runtime_error{
+                std::format("error: expected an array tensor with length {} but "
+                            "received length {}",
+                            size,
+                            dims[1])};
+        }
+
+        const auto batch_stride = dims[1];
+        std::vector<std::vector<T>> arrays(dims[0]);
+        auto batch_ptr = tensor.GetTensorData<T>();
+        for (auto& a : arrays)
+        {
+            a = std::vector<T>(size);
+            std::memcpy(a.data(), batch_ptr, size * sizeof(T));
+            batch_ptr += batch_stride;
+        }
+
+        return arrays;
     }
 
-    template<zeus::ArithmeticType T, std::size_t N>
-    std::array<T, N> array_from_tensor(Ort::Value const& tensor)
+    template<zeus::ArithmeticType T>
+    std::vector<T> array_from_tensor(Ort::Value const& tensor, std::size_t size)
     {
-        std::array<T, N> ret;
-        std::memcpy(ret.data(), tensor.GetTensorData<T>(), N * sizeof(T));
-        return ret;
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        if (dims[0] != 1)
+        {
+            throw std::runtime_error{std::format(
+                "error: attempting to retrieve a single array from a batched tensor with "
+                "{} arrays. Please use array_batch_from_tensor instead",
+                dims[0])};
+        }
+
+        auto arrays = array_batch_from_tensor<T>(tensor, size);
+        return arrays.front();
     }
 
 } // namespace rad::onnx

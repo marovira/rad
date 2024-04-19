@@ -118,16 +118,24 @@ namespace rad::onnx
         }
 
         template<zeus::ContiguousContainer U>
-        void insert_tensor_from_array(U const& src_data)
+        void insert_tensor_from_batched_arrays(std::vector<U> const& src_data)
         {
-            static_assert(std::is_same_v<typename U::value_type, value_type>);
+            if (src_data.empty())
+            {
+                throw std::runtime_error{"error: array batch cannot be empty"};
+            }
 
             std::vector<std::int64_t> tensor_dims{
-                1,
-                static_cast<std::int64_t>(src_data.size())};
+                static_cast<std::int64_t>(src_data.size()),
+                static_cast<std::int64_t>(src_data[0].size())};
 
-            std::vector<T> tensor_data(src_data.size());
-            tensor_data.assign(src_data.begin(), src_data.end());
+            std::vector<T> tensor_data(tensor_dims[0] * tensor_dims[1]);
+            auto data_ptr = tensor_data.data();
+            for (auto const& elem : src_data)
+            {
+                std::memcpy(data_ptr, elem.data(), elem.size() * sizeof(T));
+                data_ptr += elem.size();
+            }
 
             Ort::Value tensor{nullptr};
             Ort::MemoryInfo mem_info =
@@ -146,6 +154,12 @@ namespace rad::onnx
 
             m_tensors.emplace_back(std::move(tensor));
             m_tensor_data.emplace_back(std::move(tensor_data));
+        }
+
+        template<zeus::ContiguousContainer U>
+        void insert_tensor_from_array(U const& src_data)
+        {
+            insert_tensor_from_batched_arrays<U>({src_data});
         }
 
     private:
