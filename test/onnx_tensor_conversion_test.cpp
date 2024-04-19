@@ -115,6 +115,26 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
+TEMPLATE_TEST_CASE("[tensor] - array_batch_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    onnx::MemoryBackedTensorSet<TestType> s;
+    static constexpr std::size_t size{10};
+    static constexpr std::size_t batch_size{4};
+
+    const std::vector<std::vector<TestType>> batched_data(
+        batch_size,
+        std::vector<TestType>(size, TestType{1}));
+
+    s.insert_tensor_from_batched_arrays(batched_data);
+    REQUIRE_FALSE(s.empty());
+
+    auto ret = onnx::array_batch_from_tensor<TestType>(s[0], size);
+    REQUIRE(ret == batched_data);
+}
+
 TEMPLATE_TEST_CASE("[tensor] - array_from_tensor", "[rad::onnx]", float, std::uint8_t)
 {
     static constexpr std::size_t size{10};
@@ -122,16 +142,8 @@ TEMPLATE_TEST_CASE("[tensor] - array_from_tensor", "[rad::onnx]", float, std::ui
 
     onnx::MemoryBackedTensorSet<TestType> s;
     s.insert_tensor_from_array(src_data);
+    REQUIRE_FALSE(s.empty());
 
-    SECTION("Vector")
-    {
-        auto ret = onnx::array_from_tensor<TestType>(s[0], size);
-        REQUIRE(array_equals(src_data, ret));
-    }
-
-    SECTION("Array")
-    {
-        auto ret = onnx::array_from_tensor<TestType, size>(s[0]);
-        REQUIRE(array_equals(src_data, ret));
-    }
+    auto ret = onnx::array_from_tensor<TestType>(s[0], size);
+    REQUIRE(array_equals(src_data, ret));
 }

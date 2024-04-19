@@ -211,6 +211,36 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
     }
 }
 
+TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_arrays",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    onnx::MemoryBackedTensorSet<TestType> s;
+    static constexpr std::size_t size{10};
+    static constexpr std::size_t batch_size{4};
+
+    const std::vector<std::vector<TestType>> batched_data(
+        batch_size,
+        std::vector<TestType>(size, TestType{1}));
+
+    s.insert_tensor_from_batched_arrays(batched_data);
+    REQUIRE_FALSE(s.empty());
+
+    for (auto const& tensor : s.tensors())
+    {
+        REQUIRE(tensor.IsTensor());
+
+        auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
+        REQUIRE(type_and_shape.GetElementType() == get_onnx_element_type<TestType>());
+
+        auto shape = type_and_shape.GetShape();
+        REQUIRE(shape.size() == 2);
+        REQUIRE(shape[0] == batch_size);
+        REQUIRE(shape[1] == size);
+    }
+}
+
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_array",
                    "[rad::onnx]",
                    float,
@@ -219,41 +249,19 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_array",
     onnx::MemoryBackedTensorSet<TestType> s;
     static constexpr std::size_t size{10};
 
-    SECTION("Vector")
-    {
-        const std::vector<TestType> data(size, TestType{1});
+    const std::vector<TestType> data(size, TestType{1});
 
-        s.insert_tensor_from_array(data);
-        REQUIRE_FALSE(s.empty());
+    s.insert_tensor_from_array(data);
+    REQUIRE_FALSE(s.empty());
 
-        auto& tensor = s[0];
-        REQUIRE(tensor.IsTensor());
+    auto& tensor = s[0];
+    REQUIRE(tensor.IsTensor());
 
-        auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
-        REQUIRE(type_and_shape.GetElementType() == get_onnx_element_type<TestType>());
+    auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
+    REQUIRE(type_and_shape.GetElementType() == get_onnx_element_type<TestType>());
 
-        auto shape = type_and_shape.GetShape();
-        REQUIRE(shape.size() == 2);
-        REQUIRE(shape[0] == 1);
-        REQUIRE(shape[1] == size);
-    }
-
-    SECTION("Array")
-    {
-        const std::array<TestType, size> data{TestType{1}};
-
-        s.insert_tensor_from_array(data);
-        REQUIRE_FALSE(s.empty());
-
-        auto& tensor = s[0];
-        REQUIRE(tensor.IsTensor());
-
-        auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
-        REQUIRE(type_and_shape.GetElementType() == get_onnx_element_type<TestType>());
-
-        auto shape = type_and_shape.GetShape();
-        REQUIRE(shape.size() == 2);
-        REQUIRE(shape[0] == 1);
-        REQUIRE(shape[1] == size);
-    }
+    auto shape = type_and_shape.GetShape();
+    REQUIRE(shape.size() == 2);
+    REQUIRE(shape[0] == 1);
+    REQUIRE(shape[1] == size);
 }

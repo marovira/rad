@@ -6,7 +6,7 @@ namespace onnx = rad::onnx;
 
 TEST_CASE("[env] - create_environment", "[rad::onnx]")
 {
-    onnx::init_ort_api();
+    REQUIRE(onnx::init_ort_api());
 
     auto env = onnx::create_environment("test_env");
     REQUIRE(static_cast<OrtEnv*>(env) != nullptr);
