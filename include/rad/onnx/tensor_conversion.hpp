@@ -148,7 +148,7 @@ namespace rad::onnx
         const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
         if (dims.size() != 2)
         {
-            throw std::runtime_error{std::format(
+            throw std::runtime_error{fmt::format(
                 "error: expected a 2-dimensional tensor but received {} dimensions",
                 dims.size())};
         }
@@ -156,7 +156,7 @@ namespace rad::onnx
         if (dims[1] != static_cast<std::int64_t>(size))
         {
             throw std::runtime_error{
-                std::format("error: expected an array tensor with length {} but "
+                fmt::format("error: expected an array tensor with length {} but "
                             "received length {}",
                             size,
                             dims[1])};
@@ -181,7 +181,7 @@ namespace rad::onnx
         const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
         if (dims[0] != 1)
         {
-            throw std::runtime_error{std::format(
+            throw std::runtime_error{fmt::format(
                 "error: attempting to retrieve a single array from a batched tensor with "
                 "{} arrays. Please use array_batch_from_tensor instead",
                 dims[0])};
