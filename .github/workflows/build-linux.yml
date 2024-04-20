@@ -18,12 +18,12 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.config.settings.base }}${{ matrix.config.suffix }}
+    name: ${{ matrix.config.base }}${{ matrix.suffix }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        settings:
+        config:
           - {cxx: "clang++-15", cc: "clang-15", base: "clang"}
           - {cxx: "g++-13", cc: "gcc-13", base: "gcc"}
         suffix: ["", "-onnx"]
@@ -71,9 +71,9 @@ jobs:
         shell: bash
         env:
           BUILD_TYPE: Release
-          CONFIG_TYPE: ${{ matrix.config.settings.base }}${{ matrix.config.suffix }}
-          CC: ${{ matrix.config.settings.cc }}
-          CXX: ${{ matrix.config.settings.cxx }}
+          CONFIG_TYPE: ${{ matrix.config.base }}${{ matrix.suffix }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         run: |
           cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
           cd ./build
@@ -83,7 +83,7 @@ jobs:
         shell: bash
         working-directory: ./build
         env:
-          CC: ${{ matrix.config.settings.cc }}
-          CXX: ${{ matrix.config.settings.cxx }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
         run: |
           make test
