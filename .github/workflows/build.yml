@@ -1,0 +1,23 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.clang-format'
+      - 'data/**'
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.clang-format'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    uses: ./.github/workflows/build-linux.yml
+  build-msvc:
+    uses: ./.github/workflows/build-msvc.yml
