@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      build_type: "Release"
       matrix:
         compiler: [{cxx: "clang++", cc: "clang"}, {cxx: "g++-12", cc: "gcc-12"}]
         config_name: ["clang", "clang-onnx", "gcc", "gcc-onnx"]
