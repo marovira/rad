@@ -1,7 +1,7 @@
 name: Build Linux
 
 on:
-  workflow-call:
+  workflow_call:
   workflow_dispatch:
 
 jobs:
