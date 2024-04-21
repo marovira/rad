@@ -52,6 +52,7 @@ set(RAD_TBB_VERSION 2021.11.0)
 set(RAD_ONNX_VERSION 1.16.3)
 set(RAD_ZEUS_VERSION 1.4.0)
 set(RAD_FMT_VERSION 10.2.0) # Must match Zeus!
+set(RAD_MAGIC_ENUM_VERSION 0.9.5) # Must match Zeus!
 set(RAD_CATCH_VERSION 3.5.1)
 
 #================================

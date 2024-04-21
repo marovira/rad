@@ -11,6 +11,8 @@ if [ ! -d ~/deps ]; then
     rad_deps=$(<~/rad_deps_version.txt)
     fmt_ver=$(<~/rad_fmt_version.txt)
     catch_ver="v$(<~/rad_catch_version.txt)"
+    me_ver="v$(<~/rad_magic_enum_version.txt)"
+    zeus_ver=$(<~/rad_zeus_version.txt)
 
     mkdir ~/deps
     git clone https://github.com/marovira/rad_deps.git --branch $rad_deps --depth 1
@@ -18,6 +20,20 @@ if [ ! -d ~/deps ]; then
     tar --use-compress-program=unzstd -xvf onnxruntime.tar.zst -C ~/deps
     tar --use-compress-program=unzstd -xvf opencv.tar.zst -C ~/deps
     tar --use-compress-program=unzstd -xvf TBB.tar.zst -C ~/deps
+    cd ../..
+
+    git clone https://github.com/Neargye/magic_enum --branch $me_ver --depth 1
+    cmake -S magic_enum -B magic_enum/build -DCMAKE_CXX_STANDARD=20 -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF -DMAGIC_ENUM_OPT_INSTALL=ON -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
+    cd ./magic_enum/build
+    make
+    make install
+    cd ../..
+
+    git clone https://github.com/marovira/zeus --branch $zeus_ver --depth 1
+    cmake -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON
+    cd ./zeus/build
+    make
+    make install
     cd ../..
 
     git clone https://github.com/fmtlib/fmt.git --branch $fmt_ver --depth 1
