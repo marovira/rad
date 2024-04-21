@@ -17,7 +17,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  format:
+    uses: ./.github/workflows/clang-format.yml
   build-linux:
+    needs: format
     uses: ./.github/workflows/build-linux.yml
   build-msvc:
+    needs: format
     uses: ./.github/workflows/build-msvc.yml

@@ -1,0 +1,36 @@
+name: Check clang-format
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - 'data/**'
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+
+jobs:
+  formatting-check:
+    name: Formatting check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - check: "include"
+            exclude: "(rad\\.hpp)"
+          - check: "src"
+            exclude: ""
+          - check: "test"
+            exclude: ""
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run clang-format
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: "17"
+        check-path: ${{ matrix.path }}
