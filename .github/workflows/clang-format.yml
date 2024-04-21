@@ -5,7 +5,7 @@ on:
 
 jobs:
   formatting-check:
-    name: Formatting check
+    name: check ${{ matrix.path['check'] }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

@@ -17,42 +17,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Cache dependencies
+        id: cache-deps
         uses: actions/cache@v4
-        env:
-          cache-name: rad_deps-msvc
         with:
           path: C:/deps
-          key: ${{ env.cache-name }}
+          key: deps-${{ runner.os }}-${{ hashfiles('dependencies.txt') }}
 
       - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         shell: powershell
         env:
           BUILD_TYPE: Release
-        run: |
-          $c="C:/deps"
-          if(-not (Test-Path $c))
-          {
-            git clone https://github.com/marovira/rad_deps.git --branch 2.1.0 --depth 1
-            cd ./rad_deps/windows
-            Expand-Archive ./onnxruntime.zip -DestinationPath C:/deps
-            Expand-Archive ./opencv.zip -DestinationPath C:/deps
-            Expand-Archive ./TBB.zip -DestinationPath C:/deps
-            cd ../..
-
-            git clone https://github.com/fmtlib/fmt.git --branch 10.2.0 --depth 1
-            cmake -G "Visual Studio 17 2022" -S fmt -B fmt/build -DCMAKE_CXX_STANDARD=20 -DFMT_INSTALL=ON -DFMT_TEST=OFF -DCMAKE_INSTALL_PREFIX=C:/deps/fmt
-            cd ./fmt/build
-            cmake --build . --config $env:BUILD_TYPE
-            cmake --build . --target INSTALL --config $env:BUILD_TYPE
-            cd ../..
-
-            git clone https://github.com/catchorg/Catch2.git --branch v3.5.1 --depth 1
-            cmake -G "Visual Studio 17 2022" -S Catch2 -B Catch2/build -DCMAKE_CXX_STANDARD=20 -DCATCH_INSTALL_DOCS=OFF -DCMAKE_INSTALL_PREFIX=C:/deps/Catch2
-            cd ./Catch2/build
-            cmake --build . --config $env:BUILD_TYPE
-            cmake --build . --target INSTALL --config $env:BUILD_TYPE
-            cd ../..
-          }
+        run: ./.github/workflows/scripts/install_deps.ps1
 
       - name: Build
         shell: powershell
