@@ -22,4 +22,4 @@ jobs:
       uses: jidicula/clang-format-action@v4.11.0
       with:
         clang-format-version: "17"
-        check-path: ${{ matrix.path["check"] }}
+        check-path: ${{ matrix.path['check'] }}
