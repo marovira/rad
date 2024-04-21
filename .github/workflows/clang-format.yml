@@ -1,18 +1,7 @@
 name: Check clang-format
 
 on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'data/**'
-  pull_request:
-    branches: [ master ]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   formatting-check:
@@ -33,4 +22,4 @@ jobs:
       uses: jidicula/clang-format-action@v4.11.0
       with:
         clang-format-version: "17"
-        check-path: ${{ matrix.path }}
+        check-path: ${{ matrix.path["check"] }}

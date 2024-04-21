@@ -6,14 +6,12 @@ on:
     paths-ignore:
       - '**.md'
       - 'LICENSE'
-      - '.clang-format'
       - 'data/**'
   pull_request:
     branches: [ master ]
     paths-ignore:
       - '**.md'
       - 'LICENSE'
-      - '.clang-format'
   workflow_dispatch:
 
 jobs:
