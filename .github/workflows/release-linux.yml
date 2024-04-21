@@ -64,7 +64,7 @@ jobs:
         working-directory: ./install
         env:
           CONFIG_TYPE: ${{ matrix.suffix }}
-        run: tar cvf --zstd rad$CONFIG_TYPE-$GITHUB_REF_NAME-gcc-x64.tar.zst rad
+        run: tar cfv - rad -P | zstd > rad$CONFIG_TYPE-$GITHUB_REF_NAME-gcc-x64.tar.zst
 
       - name: Publish
         uses: softprops/action-gh-release@v2
