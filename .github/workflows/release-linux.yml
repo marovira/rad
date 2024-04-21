@@ -47,26 +47,24 @@ jobs:
         shell: bash
         working-directory: ./build
         env:
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
+          CC: gcc-13
+          CXX: g++-13
         run: make test
 
       - name: Install
         shell: bash
         working-directory: ./build
         env:
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
+          CC: gcc-13
+          CXX: g++-13
         run: make install
 
       - name: Package
         shell: bash
         working-directory: ./install
         env:
-          CC: ${{ matrix.config.cc }}
-          CXX: ${{ matrix.config.cxx }}
           CONFIG_TYPE: ${{ matrix.suffix }}
-        run: tar -cvf --zstd rad$CONFIG_TYPE-$GITHUB_REF_NAME-gcc-x64.tar.zst rad
+        run: tar cvf --zstd rad$CONFIG_TYPE-$GITHUB_REF_NAME-gcc-x64.tar.zst rad
 
       - name: Publish
         uses: softprops/action-gh-release@v2
