@@ -46,6 +46,7 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
+set(RAD_DEPS_VERSION 2.1.0) # Used to pin the rad_deps tag.
 set(RAD_OPENCV_VERSION 4.9.0)
 set(RAD_TBB_VERSION 2021.11.0)
 set(RAD_ONNX_VERSION 1.16.3)
