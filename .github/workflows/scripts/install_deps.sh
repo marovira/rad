@@ -23,14 +23,14 @@ if [ ! -d ~/deps ]; then
     cd ../..
 
     git clone https://github.com/Neargye/magic_enum --branch $me_ver --depth 1
-    cmake -S magic_enum -B magic_enum/build -DCMAKE_CXX_STANDARD=20 -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF -DMAGIC_ENUM_OPT_INSTALL=ON -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF
+    cmake -S magic_enum -B magic_enum/build -DCMAKE_CXX_STANDARD=20 -DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF -DMAGIC_ENUM_OPT_INSTALL=ON -DMAGIC_ENUM_OPT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=~/deps/magic_enum
     cd ./magic_enum/build
     make
     make install
     cd ../..
 
     git clone https://github.com/marovira/zeus --branch $zeus_ver --depth 1
-    cmake -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON
+    cmake -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON -DCMAKE_INSTALL_PREFIX=~/deps/zeus
     cd ./zeus/build
     make
     make install
