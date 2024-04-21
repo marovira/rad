@@ -1,12 +1,10 @@
 <a id="top"></a>
 ![RAD logo](data/logo/logo-transparent.png)
 
-[![Generic badge](https://img.shields.io/badge/License-BSD3-blue)](LICENSE)
-[![Generic badge](https://img.shields.io/badge/Language-C++20-red.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
-[![Clang](https://github.com/marovira/rad/actions/workflows/clang.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/clang.yml)
-[![GCC](https://github.com/marovira/rad/actions/workflows/gcc.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/gcc.yml)
-[![MSVC](https://github.com/marovira/rad/actions/workflows/msvc.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/msvc.yml)
+[![Build](https://github.com/marovira/rad/actions/workflows/build.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/build.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/marovira/rad/badge)](https://www.codefactor.io/repository/github/marovira/rad)
+[![Generic badge](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://opensource.org/license/bsd-3-clause)
+[![Generic badge](https://img.shields.io/badge/c%2B%2B-20-blue)](https://en.cppreference.com/w/cpp/20)
 
 ## Table of Contents
 
@@ -24,23 +22,19 @@ development of R&D applications in computer vision. It supports the following wo
 * Parallel development through oneAPI's TBB,
 * Inference of neural networks through ONNXRuntime.
 
-## Dependencies
+## Requirements
 
-The following are **core** requirements of RAD:
-
-* CMake 3.27+
-
-RAD supports the following platforms and compilers:
+RAD requires a minimum version of 3.27 and supports the following platforms and compilers:
 
 | Platform (Compiler) | Version |
 |---------------------|---------|
-| Windows (MSVC) | 19.34 |
-| Linux (GCC) | 12 |
-| Linux (LLVM Clang) | 15.0 |
+| Windows (MSVC) | 19.38+ |
+| Linux (GCC) | 13.1.0+ |
+| Linux (LLVM Clang) | 15.0.7+ |
 
-Please note that macOS is **not** supported.
+> **Warning:** RAD does not support macOS.
 
-In addition, RAD depends on the following libraries:
+## Dependencies
 
 | Library | Version |
 |---------------------|---------|
