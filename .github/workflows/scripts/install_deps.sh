@@ -29,13 +29,6 @@ if [ ! -d ~/deps ]; then
     make install
     cd ../..
 
-    git clone https://github.com/marovira/zeus --branch $zeus_ver --depth 1
-    cmake -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON -DCMAKE_INSTALL_PREFIX=~/deps/zeus
-    cd ./zeus/build
-    make
-    make install
-    cd ../..
-
     git clone https://github.com/fmtlib/fmt.git --branch $fmt_ver --depth 1
     cmake -S fmt -B fmt/build -DCMAKE_CXX_STANDARD=20 -DFMT_INSTALL=ON -DFMT_TEST=OFF -DCMAKE_INSTALL_PREFIX=~/deps/fmt
     cd ./fmt/build
@@ -47,4 +40,11 @@ if [ ! -d ~/deps ]; then
     cd ./Catch2/build
     make
     make install
+
+    git clone https://github.com/marovira/zeus --branch $zeus_ver --depth 1
+    cmake -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON -DCMAKE_INSTALL_PREFIX=~/deps/zeus -DCMAKE_PREFIX_PATH=~/deps
+    cd ./zeus/build
+    make
+    make install
+    cd ../..
 fi
