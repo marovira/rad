@@ -8,12 +8,16 @@ on:
       - '**.rst'
       - 'LICENSE'
       - 'data/**'
+    tags-ignore:
+      - "*.*.*"
   pull_request:
     branches: [ master ]
     paths-ignore:
       - '**.md'
       - '**.rst'
       - 'LICENSE'
+    tags-ignore:
+      - "*.*.*"
   workflow_dispatch:
 
 jobs:
