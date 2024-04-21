@@ -9,7 +9,27 @@ repos:
         args: [--allow-multiple-documents]
       - id: check-added-large-files
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.1
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.9.0
+    hooks:
+      - id: mypy
+
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v18.1.4
     hooks:
       - id: clang-format
+
+  - repo: local
+    hooks:
+      - id: generate_dependencies.py
+        name: generate_dependencies.py
+        language: system
+        entry: python tools/generate_dependencies.py
+        files: "CMakeLists.txt|dependencies.txt|tools/generate_dependencies.py"
