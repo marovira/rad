@@ -44,10 +44,20 @@ set(RAD_CMAKE_ROOT ${RAD_SOURCE_DIR}/cmake)
 set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 
 #================================
+# SDK Versions
+#================================
+set(RAD_OPENCV_VERSION 4.9.0)
+set(RAD_TBB_VERSION 2021.11.0)
+set(RAD_ONNX_VERSION 1.16.3)
+set(RAD_ZEUS_VERSION 1.4.0)
+set(RAD_FMT_VERSION 10.2.0) # Must match Zeus!
+set(RAD_CATCH_VERSION 3.5.1)
+
+#================================
 # Find packages.
 #================================
 # Include Zeus first so we have access to fetch_library.
-find_package(zeus 1.4.0 QUIET)
+find_package(zeus ${RAD_ZEUS_VERSION} QUIET)
 if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
@@ -57,10 +67,6 @@ if (NOT zeus_FOUND)
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
 endif()
-
-set(RAD_OPENCV_VERSION 4.9.0)
-set(RAD_TBB_VERSION 2021.11.0)
-set(RAD_ONNX_VERSION 1.16.3)
 
 find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
@@ -213,7 +219,7 @@ if (RAD_BUILD_TESTS)
     include(FetchLibrary)
     include(CopySharedLibs)
 
-    find_package(Catch2 3.5.1 QUIET)
+    find_package(Catch2 ${RAD_CATCH_VERSION} QUIET)
 
     if (NOT Catch2_FOUND)
         fetch_library(
