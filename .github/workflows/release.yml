@@ -1,0 +1,16 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  format:
+    uses: ./.github/workflows/clang-format.yml
+  release-linux:
+    needs: format
+    uses: ./.github/workflows/release-linux.yml
+  release-windows:
+    needs: format
+    uses: ./.github/workflows/release-windows.yml
