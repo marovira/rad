@@ -8,6 +8,7 @@ on:
       - '**.rst'
       - 'LICENSE'
       - 'data/**'
+      - '**/release-*.yml'
     tags-ignore:
       - "*.*.*"
   pull_request:
@@ -16,6 +17,7 @@ on:
       - '**.md'
       - '**.rst'
       - 'LICENSE'
+      - '**/release-*.yml'
     tags-ignore:
       - "*.*.*"
   workflow_dispatch:
