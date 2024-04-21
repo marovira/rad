@@ -40,6 +40,7 @@ if(-not (Test-Path $c))
 
     git clone https://github.com/marovira/zeus --branch $zeus_ver --depth 1
     cmake -G "Visual Studio 17 2022" -S zeus -B zeus/build -DCMAKE_CXX_STANDARD=20 -DZEUS_INSTALL_TARGET=ON -DCMAKE_INSTALL_PREFIX=C:/deps/zeus -DCMAKE_PREFIX_PATH=C:/deps
+    cd ./zeus/build
     cmake --build . --config $env:BUILD_TYPE
     cmake --build . --target INSTALL --config $env:BUILD_TYPE
     cd ../..
