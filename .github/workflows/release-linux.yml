@@ -39,7 +39,7 @@ jobs:
           BUILD_TYPE: Release
           CONFIG_TYPE: gcc${{ matrix.suffix }}
         run: |
-          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps -DCMAKE_INSTALL_PREFIX=install/rad
+          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps -DCMAKE_INSTALL_PREFIX=install/rad -DRAD_INSTALL_TARGET=ON
           cd ./build
           make
 

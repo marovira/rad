@@ -32,9 +32,9 @@ jobs:
         shell: powershell
         env:
           BUILD_TYPE: Release
-          CONFIG_TYPE: ${{ matrix.config }}
+          CONFIG_TYPE: msvc${{ matrix.suffix }}
         run: |
-          cmake --preset=$env:CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=C:/deps -DCMAKE_INSTALL_PREFIX=install/rad
+          cmake --preset=$env:CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=C:/deps -DCMAKE_INSTALL_PREFIX=install/rad -DRAD_INSTALL_TARGET=ON
           cd ./build
           cmake --build . --config $env:BUILD_TYPE
 
