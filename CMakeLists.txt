@@ -46,10 +46,10 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
-set(RAD_DEPS_VERSION 2.1.0) # Used to pin the rad_deps tag.
+set(RAD_DEPS_VERSION 2.2.0) # Used to pin the rad_deps tag.
 set(RAD_OPENCV_VERSION 4.9.0)
-set(RAD_TBB_VERSION 2021.11.0)
-set(RAD_ONNX_VERSION 1.16.3)
+set(RAD_TBB_VERSION 2021.12.0)
+set(RAD_ONNX_VERSION 1.17.3)
 set(RAD_ZEUS_VERSION 1.4.0)
 set(RAD_FMT_VERSION 10.2.0) # Must match Zeus!
 set(RAD_MAGIC_ENUM_VERSION 0.9.5) # Must match Zeus!
@@ -78,13 +78,17 @@ if (RAD_USE_ONNX)
 
     if (RAD_USE_ONNX_DML)
         # The directory where we "find" onnxruntime lives under
-        # <root>/lib/cmake/onnxruntime. The DLLs are stored under <root>/lib so lets move
-        # up the directory twice. We can then use that variable in the CopySharedLibs
-        # script to figure out what version of DirectML to copy.
-        cmake_path(GET onnxruntime_DIR PARENT_PATH RAD_ORT_IMPORTED_LOCATION)
-        cmake_path(GET RAD_ORT_IMPORTED_LOCATION PARENT_PATH RAD_ORT_IMPORTED_LOCATION)
-        if (EXISTS "${RAD_ORT_IMPORTED_LOCATION}/DirectML.dll")
-            set(RAD_DIRECTML_PATH "${RAD_ORT_IMPORTED_LOCATION}/DirectML.dll")
+        # <root>/lib/cmake/onnxruntime. The DLLs are stored under <root>/bin (this changed
+        # in version 1.17, previously they were stored under <root>/lib). Since we need
+        # the path where DirectML is stored, we need to retrieve the parent directory
+        # twice and then append "bin/DirectML.dll" to the path. If it exists, we can then
+        # assign the variable so CopySharedLibs knows what to copy.
+        cmake_path(GET onnxruntime_DIR PARENT_PATH RAD_ORT_DIRECTML_PATH)
+        cmake_path(GET RAD_ORT_DIRECTML_PATH PARENT_PATH RAD_ORT_DIRECTML_PATH)
+        cmake_path(GET RAD_ORT_DIRECTML_PATH PARENT_PATH RAD_ORT_DIRECTML_PATH)
+        cmake_path(APPEND RAD_ORT_DIRECTML_PATH "bin" "DirectML.dll")
+        if (EXISTS "${RAD_ORT_DIRECTML_PATH}")
+            set(RAD_DIRECTML_PATH "${RAD_ORT_DIRECTML_PATH}")
         else()
             message(WARNING
                 "warning: DirectML.dll was not found in the installation path for \
