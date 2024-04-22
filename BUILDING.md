@@ -112,7 +112,7 @@ building through the provided `CopySharedLibs` script.
 
 ### Troubleshooting
 
-Building ONNXRuntime can fail due to incongruence's in the code. Below are some
+Building ONNXRuntime can fail due to incongruences in the code. Below are some
 suggestions for solving common problems:
 
 * Compiler errors appear regarding undefined symbols for `STRSAFE_LPSTR` and similar
@@ -141,3 +141,17 @@ suggestions for solving common problems:
     `onnxruntime/onnxruntime/core/providers/dml/DMLExecutionProvider/src/Operators` and
     open `DmlDFT.h`. Replace any instances of those types with
     `__uuidof(<name-without-IID>)`. Also open `DmlGridSample.h` and do the same.
+
+* Linker errors appear regarding: `DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS` and
+  `DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE`. Navigate to
+  `onnxruntime/onnxruntime/core/providers/dml` and open `dml_provider_factory.cc`. At the
+  top of the file, after the final include, copy the following:
+
+  ```c++
+#if !defined(INITGUID)
+#define INITGUID
+#include <guiddef.h>
+#endif
+DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS, 0x0c9ece4d, 0x2f6e, 0x4f01, 0x8c, 0x96, 0xe8, 0x9e, 0x33, 0x1b, 0x47, 0xb1);
+DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE, 0x248e2800, 0xa793, 0x4724, 0xab, 0xaa, 0x23, 0xa6, 0xde, 0x1b, 0xe0, 0x90);
+  ```
