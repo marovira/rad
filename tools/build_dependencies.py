@@ -157,13 +157,15 @@ def configure_opencv(
     cmake_cfg: CMakeConfig,
     build_root: pathlib.Path,
     install_root: pathlib.Path,
+    generating_archive: bool = False,
 ) -> None:
     assert name == "opencv"
 
-    clone_repo("opencv_contrib", DEPENDENCIES["opencv_contrib"])
+    if not generating_archive:
+        clone_repo("opencv_contrib", DEPENDENCIES["opencv_contrib"])
 
-    module_path = pathlib.Path().cwd() / "opencv_contrib/modules"
-    sdk_info.flags.append(f"-DOPENCV_EXTRA_MODULES_PATH={module_path}")
+        module_path = pathlib.Path().cwd() / "opencv_contrib/modules"
+        sdk_info.flags.append(f"-DOPENCV_EXTRA_MODULES_PATH={module_path}")
 
     configure_cmake(name, sdk_info, cmake_cfg, build_root, install_root)
 
@@ -228,8 +230,8 @@ def build_onnxruntime(
         "--parallel",
         "--skip_submodule_sync",
         "--use_dml" if platform.system() == "Windows" else "",
+        "--skip_tests",
         "--cmake_extra_defines",
-        "onnxruntime_BUILD_UNIT_TESTS=OFF",
         f"CMAKE_INSTALL_PREFIX={str(install_root)}",
     ]
     args = list(filter(None, args))
@@ -322,11 +324,21 @@ def install_dependencies(
             continue
 
         if name == "opencv":
-            configure_opencv(name, info, cmake_cfg, build_root, install_root)
+            configure_opencv(
+                name,
+                info,
+                cmake_cfg,
+                build_root,
+                install_root,
+                generating_archive=generate_archive,
+            )
         else:
             configure_cmake(name, info, cmake_cfg, build_root, install_root)
         build(name, build_root, config)
         install(name, build_root, config)
+
+    os.chdir(deps_root)
+    shutil.rmtree(src_root, onerror=rmtree_error)
 
     if generate_archive:
         for path in deps_root.iterdir():
@@ -335,7 +347,6 @@ def install_dependencies(
             compress_folder(path.stem, path, DEPENDENCIES[path.stem])
 
     os.chdir(cur_dir)
-    shutil.rmtree(src_root, onerror=rmtree_error)
 
 
 def read_versions(root: pathlib.Path) -> None:
@@ -392,7 +403,7 @@ def main() -> None:
     cmake_cfg = get_cmake_config(project_root)
 
     deps_root.mkdir(exist_ok=True, parents=True)
-    install_dependencies(cmake_cfg, deps_root, config)
+    install_dependencies(cmake_cfg, deps_root, config, args.archive)
 
 
 if __name__ == "__main__":
