@@ -4,12 +4,18 @@
 cmake_minimum_required(VERSION 3.27)
 project(rad VERSION 2.2.0 LANGUAGES CXX)
 
+# Don't allow builds for Apple.
 if (APPLE)
     message(ERROR "RAD does not support Apple platforms.")
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
+# Generate compilation database on all Unix systems
+if (NOT MSVC)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+endif()
 
 #================================
 # Option variables.
@@ -46,30 +52,16 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
-set(RAD_DEPS_VERSION 2.2.0) # Used to pin the rad_deps tag.
-set(RAD_OPENCV_VERSION 4.9.0)
-set(RAD_TBB_VERSION 2021.12.0)
-set(RAD_ONNX_VERSION 1.17.3)
-set(RAD_ZEUS_VERSION 1.4.0)
-set(RAD_FMT_VERSION 10.2.0) # Must match Zeus!
-set(RAD_MAGIC_ENUM_VERSION 0.9.5) # Must match Zeus!
-set(RAD_CATCH_VERSION 3.5.1)
+set(RAD_ZEUS_VERSION 1.5.0)
+set(RAD_TBB_VERSION 2021.13.0)
+set(RAD_OPENCV_VERSION 4.10.0)
+set(RAD_ONNX_VERSION 1.19.2)
+set(RAD_CATCH_VERSION 3.7.1) # This must match the version that Zeus uses.
 
 #================================
 # Find packages.
 #================================
-# Include Zeus first so we have access to fetch_library.
-find_package(zeus ${RAD_ZEUS_VERSION} QUIET)
-if (NOT zeus_FOUND)
-    include(FetchContent)
-    FetchContent_Declare(zeus
-        GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG a442ea14cb490df8dc34bbc561fe2910ae6e515d
-        )
-    FetchContent_MakeAvailable(zeus)
-    list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
-endif()
-
+find_package(zeus ${RAD_ZEUS_VERSION} REQUIRED)
 find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
 
