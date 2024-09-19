@@ -38,15 +38,23 @@
             }
         },
         {
-            "name": "gcc",
-            "displayName": "GCC",
-            "description": "Default build for GCC",
+            "name": "unix_base",
+            "hidden": true,
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror",
                 "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -DDEBUG",
                 "RAD_BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "gcc",
+            "displayName": "GCC",
+            "description": "Default build for GCC",
+            "inherits": "unix_base",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror"
             }
         },
         {
@@ -62,12 +70,9 @@
             "name": "clang",
             "displayName": "Clang",
             "description": "Default build for Clang",
-            "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/build",
+            "inherits": "unix_base",
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++",
-                "CMAKE_CXX_STANDARD": "20",
-                "RAD_BUILD_TESTS": "ON"
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++"
             }
         },
         {
