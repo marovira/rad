@@ -1,6 +1,14 @@
+# Build folders
+build/
+
+# Generated files
 rad.hpp
 test_data_root.hpp
-compile_commands.json
 
 # Python
 .ruff_cache/
+.mypy_cache/
+.venv/
+
+# C++
+compile_commands.json
