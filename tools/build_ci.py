@@ -8,9 +8,14 @@ import typing
 
 import gdown
 from build_dependencies import (
+    CMakeConfig,
     SDKInfo,
+    build,
     build_from_script,
     clone_repo,
+    configure_cmake,
+    get_cmake_config,
+    install,
     rmtree_error,
 )
 
@@ -29,9 +34,12 @@ class CIInfo:
     gdrive_url: GDriveURL | None = None
     tag: str = ""
     tag_prefix: str = ""
+    flags: list[str] = dc.field(default_factory=list)
 
     def to_sdk_info(self) -> SDKInfo:
-        return SDKInfo(url=self.url, cmake_var=self.cmake_var, tag=self.tag)
+        return SDKInfo(
+            url=self.url, cmake_var=self.cmake_var, tag=self.tag, flags=self.flags
+        )
 
 
 DEPENDENCIES: dict[str, CIInfo] = {
@@ -39,6 +47,9 @@ DEPENDENCIES: dict[str, CIInfo] = {
         url="https://github.com/marovira/zeus.git",
         cmake_var="RAD_ZEUS_VERSION",
         uses_build_script=True,
+        flags=[
+            "-DZEUS_INSTALL_TARGET=ON",
+        ],
     ),
     "opencv": CIInfo(
         url="",
@@ -86,7 +97,7 @@ def check_dependencies(deps_root: pathlib.Path) -> bool:
     return all(name in installed_deps for name in DEPENDENCIES)
 
 
-def install_dependencies(deps_root: pathlib.Path) -> None:
+def install_dependencies(cmake_cfg: CMakeConfig, deps_root: pathlib.Path) -> None:
     if check_dependencies(deps_root):
         return
 
@@ -101,6 +112,8 @@ def install_dependencies(deps_root: pathlib.Path) -> None:
     cur_dir = pathlib.Path.cwd()
     os.chdir(src_root)
 
+    config = "Release"
+
     for name, info in DEPENDENCIES.items():
         if name in existing_deps:
             continue
@@ -109,9 +122,11 @@ def install_dependencies(deps_root: pathlib.Path) -> None:
             get_from_gdrive(name, info, deps_root)
             continue
 
+        install_root = deps_root / name
+        build_root = src_root / (name + "/build")
         clone_repo(name, info.to_sdk_info())
         if info.uses_build_script:
-            build_from_script(name, src_root, deps_root / name, "Release")
+            build_from_script(name, src_root, install_root, config)
 
             # Move all the installed folders to the deps root.
             for path in (deps_root / name).iterdir():
@@ -120,7 +135,10 @@ def install_dependencies(deps_root: pathlib.Path) -> None:
                 path.rename(deps_root / path.stem)
 
             (deps_root / name).rmdir()
-            continue
+
+        configure_cmake(name, info.to_sdk_info(), cmake_cfg, build_root, install_root)
+        build(name, build_root, "Release")
+        install(name, build_root, config)
 
     os.chdir(cur_dir)
     shutil.rmtree(src_root, onerror=rmtree_error)
@@ -160,8 +178,9 @@ def main() -> None:
     project_root = pathlib.Path(__file__).parent.parent
 
     read_versions(project_root)
+    cmake_cfg = get_cmake_config(project_root)
     deps_root.mkdir(exist_ok=True, parents=True)
-    install_dependencies(deps_root)
+    install_dependencies(cmake_cfg, deps_root)
 
 
 if __name__ == "__main__":

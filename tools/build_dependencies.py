@@ -148,6 +148,9 @@ def configure_cmake(
     args.append(f"-DCMAKE_INSTALL_PREFIX={str(install_root)}")
     args.append("-DCMAKE_DEBUG_POSTFIX=d")
 
+    if sdk_info.uses_build_script:
+        args.append(f"-DCMAKE_PREFIX_PATH={install_root}")
+
     execute_command(f"Configuring {name}", args)
 
 
@@ -317,7 +320,6 @@ def install_dependencies(
                 path.rename(deps_root / path.stem)
 
             (deps_root / name).rmdir()
-            continue
 
         if name == "onnxruntime":
             build_onnxruntime(name, info, install_root, config)
