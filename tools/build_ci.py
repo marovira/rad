@@ -44,7 +44,7 @@ DEPENDENCIES: dict[str, CIInfo] = {
         url="",
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1Dm7zbKo9yqyJY3qW_yZSrX7GgcOKA-2z",
-            "Linux": "",
+            "Linux": "https://drive.google.com/uc?id=1whhqtS6_YSlcnF2_MzRFu0ZnvKa-T7Mn",
             "output": "opencv.zip",
         },
     ),
@@ -52,7 +52,7 @@ DEPENDENCIES: dict[str, CIInfo] = {
         url="",
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1uBVLn-8Ny2REmsO5nvnJBXJbTBR0r5QV",
-            "Linux": "",
+            "Linux": "https://drive.google.com/uc?id=1wdc5Emwa8Ft3a0fQRttLygs3UUF6wWw8",
             "output": "TBB.zip",
         },
     ),
@@ -60,7 +60,7 @@ DEPENDENCIES: dict[str, CIInfo] = {
         url="",
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1FdjUi9VaXdNjQOErClBF15n-521k8MM2",
-            "Linux": "",
+            "Linux": "https://drive.google.com/uc?id=1we8HonPhBK2AKsAsHOdmoCQRRFluX8cp",
             "output": "onnxruntime.zip",
         },
     ),
