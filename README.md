@@ -3,8 +3,8 @@
 
 [![Build](https://github.com/marovira/rad/actions/workflows/build.yml/badge.svg)](https://github.com/marovira/rad/actions/workflows/build.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/marovira/rad/badge)](https://www.codefactor.io/repository/github/marovira/rad)
-[![Generic badge](https://img.shields.io/badge/license-BSD--3--Clause-green)](https://opensource.org/license/bsd-3-clause)
-[![Generic badge](https://img.shields.io/badge/c%2B%2B-20-blue)](https://en.cppreference.com/w/cpp/20)
+[![Generic badge](https://img.shields.io/badge/Language-C++20-red.svg)](https://en.wikipedia.org/wiki/C%2B%2B17)
+[![Generic badge](https://img.shields.io/badge/License-BSD3-blue)](LICENSE)
 
 ## Table of Contents
 
