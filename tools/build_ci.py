@@ -38,7 +38,11 @@ class CIInfo:
 
     def to_sdk_info(self) -> SDKInfo:
         return SDKInfo(
-            url=self.url, cmake_var=self.cmake_var, tag=self.tag, flags=self.flags
+            url=self.url,
+            cmake_var=self.cmake_var,
+            tag=self.tag,
+            flags=self.flags,
+            uses_build_script=self.uses_build_script,
         )
 
 

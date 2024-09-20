@@ -149,7 +149,7 @@ def configure_cmake(
     args.append("-DCMAKE_DEBUG_POSTFIX=d")
 
     if sdk_info.uses_build_script:
-        args.append(f"-DCMAKE_PREFIX_PATH={install_root}")
+        args.append(f"-DCMAKE_PREFIX_PATH={install_root.parent}")
 
     execute_command(f"Configuring {name}", args)
 
@@ -271,8 +271,23 @@ def compress_folder(name: str, root: pathlib.Path, info: SDKInfo) -> None:
     if platform.system() == "Windows":
         args.append("a")
 
-    args.extend([info.archive_name, "-r", str(root)])
+    install_root = root.parent
+    args.extend(
+        [
+            info.archive_name,
+            "-r",
+            str(root)
+            if platform.system() == "Windows"
+            else str(root.relative_to(install_root)),
+        ]
+    )
+
+    cur_dir = pathlib.Path().cwd()
+    if platform.system() == "Linux":
+        os.chdir(install_root)
+
     execute_command(f"Archiving {name}", args)
+    os.chdir(cur_dir)
 
 
 def install_dependencies(
