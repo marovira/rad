@@ -17,7 +17,7 @@ dependencies. The script requires Python 3.12+ and can be used as follows:
 
 ```sh
 python3 -m venv .venv
-. .venv/bin/activate // or .venv/Scripts/activate for Windows
+. .venv/bin/activate # or .venv/Scripts/activate for Windows
 pip install -r requirements.txt
 
 python3 ./tools/build_dependencies.py <install-root>
@@ -162,10 +162,10 @@ some workarounds to the compiler errors that may arise:
   top of the file, after the final include, copy the following:
 
   ```c++
-    #if !defined(INITGUID)
-    #define INITGUID
-    #include <guiddef.h>
-    #endif
-    DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS, 0x0c9ece4d, 0x2f6e, 0x4f01, 0x8c, 0x96, 0xe8, 0x9e, 0x33, 0x1b, 0x47, 0xb1);
-    DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE, 0x248e2800, 0xa793, 0x4724, 0xab, 0xaa, 0x23, 0xa6, 0xde, 0x1b, 0xe0, 0x90);
+  #if !defined(INITGUID)
+  #define INITGUID
+  #include <guiddef.h>
+  #endif
+  DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS, 0x0c9ece4d, 0x2f6e, 0x4f01, 0x8c, 0x96, 0xe8, 0x9e, 0x33, 0x1b, 0x47, 0xb1);
+  DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE, 0x248e2800, 0xa793, 0x4724, 0xab, 0xaa, 0x23, 0xa6, 0xde, 0x1b, 0xe0, 0x90);
   ```
