@@ -2,7 +2,7 @@
 # Project setup.
 #================================
 cmake_minimum_required(VERSION 3.30)
-project(rad VERSION 2.2.0 LANGUAGES CXX)
+project(rad VERSION 2.3.0 LANGUAGES CXX)
 
 # Don't allow builds for Apple.
 if (APPLE)
