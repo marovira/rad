@@ -58,6 +58,8 @@ jobs:
 
       - name: Install Python dependencies
         shell: bash
+        env:
+          RUNNER: ${{ matrix.os }}
         run: |
           python -m venv venv
           if [[ "$RUNNER" == "windows-latest" ]]; then
@@ -88,7 +90,6 @@ jobs:
         env:
           BUILD_TYPE: ${{ matrix.build }}
         run: |
-          pip install gdown
           if [[ "$OSTYPE" == "msys" ]]; then
             python tools/build_dependencies.py ~/deps -c
           else
