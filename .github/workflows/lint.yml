@@ -20,6 +20,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Run clang-format
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: "17"
+          check-path: ${{ matrix.path['check'] }}
+
+  python-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         id: setup_python
@@ -40,12 +52,6 @@ jobs:
           python -m pip install -r requirements.txt
           echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
-
-      - name: Run clang-format
-        uses: jidicula/clang-format-action@v4.11.0
-        with:
-          clang-format-version: "17"
-          check-path: ${{ matrix.path['check'] }}
 
       - name: Ruff
         shell: bash

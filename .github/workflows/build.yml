@@ -59,7 +59,7 @@ jobs:
       - name: Install Python dependencies
         shell: bash
         env:
-          RUNNER: ${{ matrix.os }}
+          RUNNER: ${{ matrix.config.os }}
         run: |
           python -m venv venv
           if [[ "$RUNNER" == "windows-latest" ]]; then
