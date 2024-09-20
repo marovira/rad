@@ -198,6 +198,7 @@ def configure_cmake(
     cmake_cfg: CMakeConfig,
     build_root: pathlib.Path,
     install_root: pathlib.Path,
+    config: str,
 ) -> None:
     args = ["cmake"]
     args.extend(cmake_cfg.get_generator_flags())
@@ -208,6 +209,8 @@ def configure_cmake(
     args.append(f"-DCMAKE_INSTALL_PREFIX={str(install_root)}")
     args.append("-DCMAKE_DEBUG_POSTFIX=d")
     args.append(f"-DCMAKE_PREFIX_PATH={install_root.parent}")
+    if platform.system() == "Linux":
+        args.append(f"-DCMAKE_BUILD_TYPE={config}")
 
     execute_command(f"Configuring {name}", args)
 
@@ -218,6 +221,7 @@ def configure_opencv(
     cmake_cfg: CMakeConfig,
     build_root: pathlib.Path,
     install_root: pathlib.Path,
+    config: str,
     create_archives: bool = False,
 ) -> None:
     if not create_archives:
@@ -226,11 +230,13 @@ def configure_opencv(
         module_path = pathlib.Path().cwd() / "opencv_contrib/modules"
         sdk_info.flags.append(f"-DOPENCV_EXTRA_MODULES_PATH={module_path}")
 
-    configure_cmake(name, sdk_info, cmake_cfg, build_root, install_root)
+    configure_cmake(name, sdk_info, cmake_cfg, build_root, install_root, config)
 
 
 def build(name: str, build_root: pathlib.Path, config: str) -> None:
-    args = ["cmake", "--build", f"{str(build_root)}", "--parallel", "--config", config]
+    args = ["cmake", "--build", f"{str(build_root)}", "--parallel"]
+    if platform.system() == "Windows":
+        args.extend(["--config", config])
     execute_command(f"Building {name}", args)
 
 
@@ -417,10 +423,11 @@ def install_dependencies(
                 cmake_cfg,
                 build_root,
                 install_root,
+                config,
                 create_archives=create_archives,
             )
         else:
-            configure_cmake(name, info, cmake_cfg, build_root, install_root)
+            configure_cmake(name, info, cmake_cfg, build_root, install_root, config)
         build(name, build_root, config)
         install(name, build_root, config)
 
