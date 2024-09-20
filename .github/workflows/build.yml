@@ -23,11 +23,104 @@ on:
   workflow_dispatch:
 
 jobs:
-  format:
-    uses: ./.github/workflows/clang-format.yml
-  build-linux:
-    needs: format
-    uses: ./.github/workflows/build-linux.yml
-  build-msvc:
-    needs: format
-    uses: ./.github/workflows/build-msvc.yml
+  lint:
+    uses: ./.github/workflows/lint.yml
+  build:
+    name: ${{ matrix.config.os }}-${{ matrix.config.preset }}
+    runs-on: ${{ matrix.config.os }}
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc"}
+          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc-onnx"}
+          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc-onnx-dml"}
+          - {os: "ubuntu-24.04", cxx: "clang++-18", cc: "clang-18", preset: "clang"}
+          - {os: "ubuntu-24.04", cxx: "clang++-18", cc: "clang-18", preset: "clang-onnx"}
+          - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc"}
+          - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc-onnx"}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        id: setup_python
+        with:
+          python-version: "3.12"
+
+      - name: Cache virtualenv
+        uses: actions/cache@v4
+        with:
+          key: venv_${{ matrix.config.os }}_py-${{ steps.setup_python.outputs.python-version }}_${{ hashFiles('requirements.txt') }}
+          path: venv
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python -m venv venv
+          if [[ "$RUNNER" == "windows-latest" ]]; then
+           source venv/Scripts/activate
+          else
+            source venv/bin/activate
+          fi
+
+          python -m pip install -r requirements.txt
+
+          if [[ "$RUNNER" == "windows-latest" ]]; then
+            echo "$VIRTUAL_ENV/Scripts" >> $GITHUB_PATH
+          else
+            echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+          fi
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: ~/deps
+          key: deps_${{ matrix.config.os }}_${{ hashfiles('dependencies.txt') }}
+
+      - name: Build dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          BUILD_TYPE: ${{ matrix.build }}
+        run: |
+          pip install gdown
+          if [[ "$OSTYPE" == "msys" ]]; then
+            python tools/build_dependencies.py ~/deps -c
+          else
+            # Clang and GCC binaries are compatible, so only compile with GCC.
+            export CC="gcc-14"
+            export CXX="g++-14"
+            python3 tools/build_dependencies.py ~/deps -c
+          fi
+
+      - name: Build RAD
+        shell: bash
+        env:
+          BUILD_TYPE: Release
+          CONFIG_TYPE: ${{ matrix.config.preset }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          cmake --preset=$CONFIG_TYPE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
+          cd ./build
+          cmake --build . --config $BUILD_TYPE
+
+      - name: Run tests
+        shell: bash
+        working-directory: ./build
+        env:
+          BUILD_TYPE: Release
+          CONFIG_TYPE: ${{ matrix.config.preset }}
+          CC: ${{ matrix.config.cc }}
+          CXX: ${{ matrix.config.cxx }}
+        run: |
+          if [[ "$OSTYPE" == "msys" ]]; then
+            cmake --build . --target RUN_TESTS --config $BUILD_TYPE
+          else
+            make test
+          fi
