@@ -1,7 +1,7 @@
 #================================
 # Project setup.
 #================================
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.30)
 project(rad VERSION 2.2.0 LANGUAGES CXX)
 
 # Don't allow builds for Apple.
@@ -61,7 +61,17 @@ set(RAD_CATCH_VERSION 3.7.1) # This must match the version that Zeus uses.
 #================================
 # Find packages.
 #================================
-find_package(zeus ${RAD_ZEUS_VERSION} REQUIRED)
+find_package(zeus ${RAD_ZEUS_VERSION} QUIET)
+if (NOT zeus_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(zeus
+        GIT_REPOSITORY https://github.com/marovira/zeus.git
+        GIT_TAG a442ea14cb490df8dc34bbc561fe2910ae6e515d
+        )
+    FetchContent_MakeAvailable(zeus)
+    list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
+endif()
+
 find_package(OpenCV ${RAD_OPENCV_VERSION} REQUIRED)
 find_package(TBB ${RAD_TBB_VERSION} REQUIRED)
 
