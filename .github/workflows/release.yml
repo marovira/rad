@@ -13,7 +13,7 @@ jobs:
   lint:
     uses: ./.github/workflows/lint.yml
   build:
-    name: ${{ matrix.config.os }}
+    name: ${{ matrix.config.preset }}
     runs-on: ${{ matrix.config.os }}
     needs: lint
     strategy:
