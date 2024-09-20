@@ -40,7 +40,7 @@ namespace rad
             return img;
         }
 
-        float factor = static_cast<float>(max_size);
+        auto factor = static_cast<float>(max_size);
         cv::Size scale;
         if (img.cols > img.rows)
         {

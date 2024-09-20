@@ -65,7 +65,7 @@ namespace rad::onnx
     Ort::Session make_session_from_file(std::string const& model_root,
                                         Ort::Env& env,
                                         Ort::SessionOptions const& opt,
-                                        T&& selector)
+                                        T selector)
     {
         auto model_to_load = selector(model_root);
         if (model_to_load.empty())
@@ -80,7 +80,7 @@ namespace rad::onnx
 
     template<SelectorFunctor T>
     Ort::Session
-    make_session_from_file(std::string const& model_root, Ort::Env& env, T&& selector)
+    make_session_from_file(std::string const& model_root, Ort::Env& env, T selector)
     {
         return make_session_from_file(model_root,
                                       env,

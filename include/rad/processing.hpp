@@ -3,7 +3,6 @@
 #include "opencv.hpp"
 #include "processing_util.hpp"
 
-#include <functional>
 #include <oneapi/tbb/parallel_for_each.h>
 #include <string>
 #include <vector>
@@ -11,7 +10,7 @@
 namespace rad
 {
     template<typename ImageProcessFun>
-    void process_images(std::string const& root, ImageProcessFun&& fun)
+    void process_images(std::string const& root, ImageProcessFun fun)
     {
         for (auto const& entry : get_file_paths_from_root(root))
         {
@@ -23,7 +22,7 @@ namespace rad
     template<typename ImageProcessFun>
     void process_images(std::string const& root,
                         std::vector<std::string> const& samples,
-                        ImageProcessFun&& fun)
+                        ImageProcessFun fun)
     {
         for (auto sample : samples)
         {
@@ -34,7 +33,7 @@ namespace rad
     }
 
     template<typename FileProcessFun>
-    void process_files(std::string const& root, FileProcessFun&& fun)
+    void process_files(std::string const& root, FileProcessFun fun)
     {
         for (auto const& entry : get_file_paths_from_root(root))
         {
@@ -45,7 +44,7 @@ namespace rad
     template<typename FileProcessFun>
     void process_files(std::string const& root,
                        std::vector<std::string> const& samples,
-                       FileProcessFun&& fun)
+                       FileProcessFun fun)
     {
         for (auto sample : samples)
         {
@@ -55,7 +54,7 @@ namespace rad
     }
 
     template<typename ImageProcessFun>
-    void process_images_parallel(std::string const& root, ImageProcessFun&& fun)
+    void process_images_parallel(std::string const& root, ImageProcessFun fun)
     {
         auto files = get_file_paths_from_root(root);
         std::filesystem::directory_iterator ite{root};
@@ -72,7 +71,7 @@ namespace rad
     template<typename ImageProcessFun>
     void process_images_parallel(std::string const& root,
                                  std::vector<std::string> const& samples,
-                                 ImageProcessFun&& fun)
+                                 ImageProcessFun fun)
     {
         oneapi::tbb::parallel_for_each(samples.begin(),
                                        samples.end(),
@@ -84,7 +83,7 @@ namespace rad
     }
 
     template<typename FileProcessFun>
-    void process_files_parallel(std::string const& root, FileProcessFun&& fun)
+    void process_files_parallel(std::string const& root, FileProcessFun fun)
     {
         auto files = get_file_paths_from_root(root);
         std::filesystem::directory_iterator ite{root};
@@ -98,7 +97,7 @@ namespace rad
     template<typename FileProcessFun>
     void process_files_parallel(std::string const& root,
                                 std::vector<std::string> const& samples,
-                                FileProcessFun&& fun)
+                                FileProcessFun fun)
     {
         oneapi::tbb::parallel_for_each(samples.begin(),
                                        samples.end(),

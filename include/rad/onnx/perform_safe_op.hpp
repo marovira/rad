@@ -8,7 +8,7 @@
 namespace rad::onnx
 {
     template<typename T>
-    bool perform_safe_op(T&& fun)
+    bool perform_safe_op(T fun)
     {
         try
         {

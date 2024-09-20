@@ -18,7 +18,7 @@ namespace rad::onnx
     std::vector<cv::Mat> image_batch_from_tensor(Ort::Value const& tensor,
                                                  cv::Size sz,
                                                  int type,
-                                                 Fun&& post_process)
+                                                 Fun post_process)
     {
         int num_channels = 1 + (type >> CV_CN_SHIFT);
         int depth        = type & CV_MAT_DEPTH_MASK;
@@ -119,7 +119,7 @@ namespace rad::onnx
 
     template<zeus::ArithmeticType T, ImagePostProcessFunctor Fun>
     cv::Mat
-    image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type, Fun&& post_process)
+    image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type, Fun post_process)
     {
         auto images =
             image_batch_from_tensor<T, Fun>(tensor, sz, type, std::move(post_process));

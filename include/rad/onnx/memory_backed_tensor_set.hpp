@@ -20,14 +20,14 @@ namespace rad::onnx
         MemoryBackedTensorSet(MemoryBackedTensorSet const&) = delete;
         ~MemoryBackedTensorSet()                            = default;
 
-        MemoryBackedTensorSet(MemoryBackedTensorSet&& other) :
+        MemoryBackedTensorSet(MemoryBackedTensorSet&& other) noexcept :
             m_tensors{std::move(other.m_tensors)},
             m_tensor_data{std::move(other.m_tensor_data)}
         {}
 
         MemoryBackedTensorSet& operator=(MemoryBackedTensorSet const&) = delete;
 
-        MemoryBackedTensorSet& operator=(MemoryBackedTensorSet&& other)
+        MemoryBackedTensorSet& operator=(MemoryBackedTensorSet&& other) noexcept
         {
             m_tensors     = std::move(other.m_tensors);
             m_tensor_data = std::move(other.m_tensor_data);
@@ -38,26 +38,31 @@ namespace rad::onnx
             return m_tensors[i];
         }
 
+        [[nodiscard]]
         const_iterator begin() const
         {
             return m_tensors.begin();
         }
 
+        [[nodiscard]]
         const_iterator end() const
         {
             return m_tensors.end();
         }
 
+        [[nodiscard]]
         std::size_t size() const
         {
             return m_tensors.size();
         }
 
+        [[nodiscard]]
         bool empty() const
         {
             return m_tensors.empty();
         }
 
+        [[nodiscard]]
         std::vector<Ort::Value> const& tensors() const
         {
             return m_tensors;
