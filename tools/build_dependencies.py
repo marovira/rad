@@ -9,6 +9,14 @@ import stat
 import subprocess
 import typing
 
+import gdown
+
+
+class GDriveURL(typing.TypedDict):
+    Windows: str
+    Linux: str
+    output: str
+
 
 @dc.dataclass
 class SDKInfo:
@@ -18,12 +26,38 @@ class SDKInfo:
     flags: list[str] = dc.field(default_factory=list)
     cmake_var: str = ""
     is_extra_dependency: bool = False
-    uses_build_script: bool = False
     clone_recursive: bool = False
     archive_name: str | None = None
+    gdrive_url: GDriveURL | None = None
 
 
 DEPENDENCIES: dict[str, SDKInfo] = {
+    "magic_enum": SDKInfo(
+        url="https://github.com/Neargye/magic_enum.git",
+        tag_prefix="v",
+        flags=[
+            "-DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF",
+            "-DMAGIC_ENUM_OPT_INSTALL=ON",
+            "-DMAGIC_ENUM_OPT_BUILD_TESTS=OFF",
+        ],
+        cmake_var="ZEUS_MAGIC_ENUM_VERSION",
+    ),
+    "fmt": SDKInfo(
+        url="https://github.com/fmtlib/fmt.git",
+        flags=[
+            "-DFMT_INSTALL=ON",
+            "-DFMT_TEST=OFF",
+        ],
+        cmake_var="ZEUS_FMT_VERSION",
+    ),
+    "Catch2": SDKInfo(
+        url="https://github.com/catchorg/Catch2.git",
+        tag_prefix="v",
+        flags=[
+            "-DCATCH_INSTALL_DOCS=OFF",
+        ],
+        cmake_var="RAD_CATCH_VERSION",
+    ),
     "tbb": SDKInfo(
         url="https://github.com/oneapi-src/oneTBB.git",
         tag_prefix="v",
@@ -34,6 +68,11 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         ],
         cmake_var="RAD_TBB_VERSION",
         archive_name="TBB.zip",
+        gdrive_url={
+            "Windows": "https://drive.google.com/uc?id=1uBVLn-8Ny2REmsO5nvnJBXJbTBR0r5QV",
+            "Linux": "https://drive.google.com/uc?id=1wdc5Emwa8Ft3a0fQRttLygs3UUF6wWw8",
+            "output": "TBB.zip",
+        },
     ),
     "opencv": SDKInfo(
         url="https://github.com/opencv/opencv.git",
@@ -49,6 +88,11 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         ],
         cmake_var="RAD_OPENCV_VERSION",
         archive_name="opencv.zip",
+        gdrive_url={
+            "Windows": "https://drive.google.com/uc?id=1Dm7zbKo9yqyJY3qW_yZSrX7GgcOKA-2z",
+            "Linux": "https://drive.google.com/uc?id=1whhqtS6_YSlcnF2_MzRFu0ZnvKa-T7Mn",
+            "output": "opencv.zip",
+        },
     ),
     "opencv_contrib": SDKInfo(
         url="https://github.com/opencv/opencv_contrib.git",
@@ -58,16 +102,32 @@ DEPENDENCIES: dict[str, SDKInfo] = {
     "onnxruntime": SDKInfo(
         url="https://github.com/microsoft/onnxruntime.git",
         tag_prefix="v",
+        flags=[
+            "--build_shared_lib",
+            "--parallel",
+            "--skip_submodule_sync",
+            "--use_dml" if platform.system() == "Windows" else "",
+            "--skip_tests",
+        ],
         cmake_var="RAD_ONNX_VERSION",
         clone_recursive=True,
         archive_name="onnxruntime.zip",
+        gdrive_url={
+            "Windows": "https://drive.google.com/uc?id=1FdjUi9VaXdNjQOErClBF15n-521k8MM2",
+            "Linux": "https://drive.google.com/uc?id=1we8HonPhBK2AKsAsHOdmoCQRRFluX8cp",
+            "output": "onnxruntime.zip",
+        },
     ),
     "zeus": SDKInfo(
         url="https://github.com/marovira/zeus.git",
-        uses_build_script=True,
         cmake_var="RAD_ZEUS_VERSION",
+        flags=[
+            "-DZEUS_INSTALL_TARGET=ON",
+        ],
     ),
 }
+
+BASE_DEPENDENCIES: list[str] = ["zeus"]
 
 
 @dc.dataclass
@@ -147,9 +207,7 @@ def configure_cmake(
     args.extend(sdk_info.flags)
     args.append(f"-DCMAKE_INSTALL_PREFIX={str(install_root)}")
     args.append("-DCMAKE_DEBUG_POSTFIX=d")
-
-    if sdk_info.uses_build_script:
-        args.append(f"-DCMAKE_PREFIX_PATH={install_root.parent}")
+    args.append(f"-DCMAKE_PREFIX_PATH={install_root.parent}")
 
     execute_command(f"Configuring {name}", args)
 
@@ -160,11 +218,9 @@ def configure_opencv(
     cmake_cfg: CMakeConfig,
     build_root: pathlib.Path,
     install_root: pathlib.Path,
-    generating_archive: bool = False,
+    create_archives: bool = False,
 ) -> None:
-    assert name == "opencv"
-
-    if not generating_archive:
+    if not create_archives:
         clone_repo("opencv_contrib", DEPENDENCIES["opencv_contrib"])
 
         module_path = pathlib.Path().cwd() / "opencv_contrib/modules"
@@ -173,43 +229,14 @@ def configure_opencv(
     configure_cmake(name, sdk_info, cmake_cfg, build_root, install_root)
 
 
-def build(name: str, build_root: pathlib.Path, config: str | None) -> None:
-    assert config in (None, "Debug", "Release")
-
-    args = ["cmake", "--build", f"{str(build_root)}", "--parallel"]
-    if config is not None:
-        args.extend(["--config", config])
-    execute_command(f"Building {name}", args)
-
-
-def build_from_script(
-    name: str,
-    src_root: pathlib.Path,
-    install_root: pathlib.Path,
-    config: str | None,
-) -> None:
-    assert config in (None, "Debug", "Release")
-
-    root = src_root / name
-
-    args = [
-        "python" if platform.system() == "Windows" else "python3",
-        f"{root / 'tools/build_dependencies.py'}",
-        str(install_root),
-    ]
-
-    if config is not None:
-        args.extend(["-b", config])
-
+def build(name: str, build_root: pathlib.Path, config: str) -> None:
+    args = ["cmake", "--build", f"{str(build_root)}", "--parallel", "--config", config]
     execute_command(f"Building {name}", args)
 
 
 def build_onnxruntime(
-    name: str, info: SDKInfo, install_root: pathlib.Path, config: str | None
+    name: str, info: SDKInfo, install_root: pathlib.Path, config: str
 ) -> None:
-    assert name == "onnxruntime"
-    assert config in (None, "Debug", "Release")
-
     ort_root = pathlib.Path.cwd() / name
     build_script_name = "build.bat" if platform.system() == "Windows" else "build.sh"
 
@@ -220,35 +247,49 @@ def build_onnxruntime(
         build_script_name if platform.system() == "Windows" else f"./{build_script_name}"
     )
 
-    if config is None:
-        config = "Release"
-
     args = [
         script_cmd,
         "--config",
         config,
         "--target",
         "install",
-        "--build_shared_lib",
-        "--parallel",
-        "--skip_submodule_sync",
-        "--use_dml" if platform.system() == "Windows" else "",
-        "--skip_tests",
-        "--cmake_extra_defines",
-        f"CMAKE_INSTALL_PREFIX={str(install_root)}",
     ]
+    args.extend(info.flags)
+    args.extend(
+        [
+            "--cmake_extra_defines",
+            f"CMAKE_INSTALL_PREFIX={str(install_root)}",
+            "onnxruntime_BUILD_UNIT_TESTS=OFF",
+        ]
+    )
+
     args = list(filter(None, args))
     execute_command(f"Installing {name}", args)
     os.chdir(cur_dir)
 
+    if platform.system() == "Windows":
+        build_root = ort_root / "build"
+        dml_path = build_root / f"Windows/{config}/{config}/DirectML.dll"
+        shutil.copy2(str(dml_path), f"{install_root / 'bin'}")
 
-def install(name: str, build_root: pathlib.Path, config: str | None) -> None:
-    assert config in (None, "Debug", "Release")
 
-    args = ["cmake", "--install", f"{str(build_root)}"]
-    if config is not None:
-        args.extend(["--config", config])
+def install(name: str, build_root: pathlib.Path, config: str) -> None:
+    args = ["cmake", "--install", f"{str(build_root)}", "--config", config]
     execute_command(f"Installing {name}", args)
+
+
+def get_from_gdrive(name: str, info: SDKInfo, install_root: pathlib.Path) -> None:
+    assert info.gdrive_url is not None
+    out_path = install_root / info.gdrive_url["output"]
+    if not gdown.cached_download(
+        info.gdrive_url[platform.system()],  # type: ignore[literal-required]
+        str(out_path),
+        postprocess=gdown.extractall,
+    ):
+        raise RuntimeError(f"error: unable to download archive for {name}")
+
+    # Ensure we remove the archive
+    out_path.unlink()
 
 
 def check_dependencies(deps_root: pathlib.Path) -> bool:
@@ -258,112 +299,6 @@ def check_dependencies(deps_root: pathlib.Path) -> bool:
         for name in DEPENDENCIES
         if not DEPENDENCIES[name].is_extra_dependency
     )
-
-
-def compress_folder(name: str, root: pathlib.Path, info: SDKInfo) -> None:
-    assert info.archive_name is not None
-
-    prog = "7z" if platform.system() == "Windows" else "zip"
-    if shutil.which(prog) is None:
-        raise RuntimeError(f"error: {prog} is required to generate archives")
-
-    args = [prog]
-    if platform.system() == "Windows":
-        args.append("a")
-
-    install_root = root.parent
-    args.extend(
-        [
-            info.archive_name,
-            "-r",
-            str(root)
-            if platform.system() == "Windows"
-            else str(root.relative_to(install_root)),
-        ]
-    )
-
-    cur_dir = pathlib.Path().cwd()
-    if platform.system() == "Linux":
-        os.chdir(install_root)
-
-    execute_command(f"Archiving {name}", args)
-    os.chdir(cur_dir)
-
-
-def install_dependencies(
-    cmake_cfg: CMakeConfig,
-    deps_root: pathlib.Path,
-    config: str | None,
-    generate_archive: bool = False,
-) -> None:
-    if check_dependencies(deps_root):
-        return
-
-    existing_deps = [
-        dir_name.stem for dir_name in deps_root.iterdir() if dir_name.is_dir()
-    ]
-
-    src_root = deps_root / "src"
-    if src_root.exists():
-        shutil.rmtree(src_root, onerror=rmtree_error)
-    src_root.mkdir(exist_ok=True, parents=True)
-
-    cur_dir = pathlib.Path.cwd()
-    os.chdir(src_root)
-
-    for name, info in DEPENDENCIES.items():
-        if name in existing_deps:
-            continue
-
-        if info.is_extra_dependency:
-            continue
-
-        if generate_archive and info.archive_name is None:
-            continue
-
-        install_root = deps_root / name
-        build_root = src_root / (name + "/build")
-
-        clone_repo(name, info)
-        if info.uses_build_script:
-            build_from_script(name, src_root, install_root, config)
-
-            # Move all the installed folders to the deps root.
-            for path in (deps_root / name).iterdir():
-                if not path.is_dir():
-                    continue
-                path.rename(deps_root / path.stem)
-
-            (deps_root / name).rmdir()
-
-        if name == "onnxruntime":
-            build_onnxruntime(name, info, install_root, config)
-            continue
-
-        if name == "opencv":
-            configure_opencv(
-                name,
-                info,
-                cmake_cfg,
-                build_root,
-                install_root,
-                generating_archive=generate_archive,
-            )
-        else:
-            configure_cmake(name, info, cmake_cfg, build_root, install_root)
-        build(name, build_root, config)
-        install(name, build_root, config)
-
-    os.chdir(deps_root)
-    shutil.rmtree(src_root, onerror=rmtree_error)
-
-    if generate_archive:
-        for path in deps_root.iterdir():
-            if not path.is_dir():
-                continue
-            compress_folder(path.stem, path, DEPENDENCIES[path.stem])
-
-    os.chdir(cur_dir)
 
 
 def read_versions(root: pathlib.Path) -> None:
@@ -380,6 +315,118 @@ def read_versions(root: pathlib.Path) -> None:
         for sdk in DEPENDENCIES.values():
             if sdk.cmake_var == elems[0]:
                 sdk.tag = sdk.tag_prefix + elems[1]
+
+
+def set_sdk_versions(project_root: pathlib.Path, tmp_root: pathlib.Path) -> None:
+    # Read the version numbers from the current project first.
+    read_versions(project_root)
+
+    # Now loop through the base external dependencies and fill in the versions for the
+    # remaining SDKs.
+    tmp_root.mkdir(exist_ok=True)
+    cur_dir = pathlib.Path().cwd()
+    os.chdir(tmp_root)
+
+    for name in BASE_DEPENDENCIES:
+        info = DEPENDENCIES[name]
+
+        clone_repo(name, info)
+        read_versions(tmp_root / name)
+
+    os.chdir(cur_dir)
+    shutil.rmtree(tmp_root, onerror=rmtree_error)
+
+
+def generate_archives(deps_root: pathlib.Path, create_archives: bool) -> None:
+    if not create_archives:
+        return
+
+    prog = "7z" if platform.system() == "Windows" else "zip"
+    if shutil.which(prog) is None:
+        raise RuntimeError(f"error: {prog} is required to generate archives")
+
+    cur_dir = pathlib.Path.cwd()
+    os.chdir(deps_root)
+
+    for name, info in DEPENDENCIES.items():
+        if info.archive_name is None:
+            continue
+
+        args = [prog]
+        if platform.system() == "Windows":
+            args.append("a")
+
+        args.extend([info.archive_name, "-r", name])
+        execute_command(f"Archiving {name}", args)
+
+    os.chdir(cur_dir)
+
+
+def install_dependencies(
+    deps_root: pathlib.Path,
+    config: str,
+    create_archives: bool = False,
+    ci_build: bool = False,
+) -> None:
+    if check_dependencies(deps_root):
+        generate_archives(deps_root, create_archives)
+        return
+
+    project_root = pathlib.Path(__file__).parent.parent
+    existing_deps = [
+        dir_name.stem for dir_name in deps_root.iterdir() if dir_name.is_dir()
+    ]
+    src_root = deps_root / "src"
+    if src_root.exists():
+        shutil.rmtree(src_root, onerror=rmtree_error)
+    src_root.mkdir(exist_ok=True, parents=True)
+
+    cur_dir = pathlib.Path.cwd()
+    os.chdir(src_root)
+
+    set_sdk_versions(project_root, src_root / "tmp")
+
+    cmake_cfg = get_cmake_config(project_root)
+
+    for name, info in DEPENDENCIES.items():
+        install_root = deps_root / name
+        build_root = src_root / (name + "/build")
+
+        if name in existing_deps:
+            continue
+
+        if info.is_extra_dependency:
+            continue
+
+        if create_archives and info.archive_name is None:
+            continue
+
+        if ci_build and info.gdrive_url is not None:
+            get_from_gdrive(name, info, deps_root)
+            continue
+
+        clone_repo(name, info)
+        if name == "onnxruntime":
+            build_onnxruntime(name, info, install_root, config)
+            continue
+
+        if name == "opencv":
+            configure_opencv(
+                name,
+                info,
+                cmake_cfg,
+                build_root,
+                install_root,
+                create_archives=create_archives,
+            )
+        else:
+            configure_cmake(name, info, cmake_cfg, build_root, install_root)
+        build(name, build_root, config)
+        install(name, build_root, config)
+
+    os.chdir(cur_dir)
+    shutil.rmtree(src_root, onerror=rmtree_error)
+    generate_archives(deps_root, create_archives)
 
 
 def main() -> None:
@@ -404,23 +451,19 @@ def main() -> None:
     parser.add_argument(
         "-a", "--archive", action="store_true", help="Generate archives for CI builds"
     )
+    parser.add_argument("-c", "--ci", action="store_true", help="Build for CI")
 
     args = parser.parse_args()
 
     deps_root = pathlib.Path(args.root[0]).resolve()
-    config = args.build[0] if args.build is not None else None
+    config = args.build[0] if args.build is not None else "Release"
 
     # Only generate release builds for CI, since we never test Debug.
     if args.archive:
         config = "Release"
 
-    project_root = pathlib.Path(__file__).parent.parent
-
-    read_versions(project_root)
-    cmake_cfg = get_cmake_config(project_root)
-
     deps_root.mkdir(exist_ok=True, parents=True)
-    install_dependencies(cmake_cfg, deps_root, config, args.archive)
+    install_dependencies(deps_root, config, args.archive, args.ci)
 
 
 if __name__ == "__main__":
