@@ -1,15 +1,39 @@
 # Building RAD
 
-## Using Pre-built Binaries
+There are two ways to build the dependencies for RAD:
 
-For convenience, we provide the dependencies for each release of RAD in a separate
-repository called [rad_deps](https://github.com/marovira/rad_deps). You are strongly
-recommended to build the libraries RAD depends on from source, but you may also want to
-use the pre-built binaries to avoid conflicts between versions. To use the binaries,
-please see the [usage
-instructions](https://github.com/marovira/rad_deps/blob/master/README.md).
+1. Use the built-in script, or
+2. Build the dependencies manually.
 
-## Building from Source
+It is recommended that you build the dependencies yourself if you require specific
+configurations for OpenCV and ONNXRuntime or if you are going to be sharing these
+libraries with other projects. If you need to build a specific version of RAD, then you're
+encouraged to use the built-in script.
+
+## Using the Script
+
+Starting with RAD 2.3.0, a Python script is provided to automatically build all
+dependencies. The script requires Python 3.12+ and can be used as follows:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate // or .venv/Scripts/activate for Windows
+pip install -r requirements.txt
+
+python3 ./tools/build_dependencies.py <install-root>
+```
+
+The script will automatically clone, build, and install the correct versions for all
+dependencies in the `<install-root>` directory. Once the script finishes, you can build
+RAD by appending `-DCMAKE_PREFIX_PATH=<install-root>` to the list of CMake options when
+configuring the build system.
+
+> **Note:**
+> ONNXRuntime can fail to compile in certain Windows systems. This issue is currently
+> tracked [here](https://github.com/microsoft/onnxruntime/issues/22158). Please see the
+> section for building ONNXRuntime manually for a workaround to this problem.
+
+## Manually Building
 
 Below is a quick guide on the configurations used to build the libraries RAD depends on.
 Note that while RAD does depend on Zeus it (and its dependencies) can be pulled directly
@@ -48,19 +72,15 @@ Once cmake runs, build and install OpenCV as usual.
 ### Installing ONNXRuntime
 
 ONNXRuntime is an optional dependecy for RAD that is only used for inferencing neural
-networks. Currently, the only supported way of linking with ONNXRuntime is by building the
-library from source directly. This is an unfortunate limitation as the pre-built packages
-do not contain the necessary CMake scripts to allow linking with the library, but they do
-appear when building from source. Below we provide steps for building ONNXRuntime from
-source.
+networks. It is important to note that CMake **cannot** link with the pre-built libraries
+as they don't contain the correct setup to allow CMake to properly include them.
 
 Before continuing, please ensure you have all the required dependencies as listed
 [here](https://onnxruntime.ai/docs/build/inferencing.html). Once you do, clone the code:
 
 ```bash
-git clone --recursive https://github.com/Microsoft/onnxruntime.git
+git clone https://github.com/Microsoft/onnxruntime.git --branch <version> --depth 1 --recurse-submodules
 cd onnxruntime
-git checkout <latest-supported-tag>
 ```
 
 The latest supported version of ONNXRuntime can be found in the project's README. Once the
@@ -72,48 +92,42 @@ only).
 
 #### Windows
 
-Open an administrator terminal and navigate to the directory where the code is checked
-out. Then enter:
+Open a terminal and navigate to the directory where the code is checked out. Then enter:
 
 ```bat
-.\build.bat --config Debug --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022" --cmake_extra_defines CMAKE_DEBUG_POSTFIX=d
+.\build.bat --config <config> --target install --build_shared_lib --parallel --skip_submodule_sync --skip_tests --cmake_extra_defines CMAKE_INSTALL_PREFIX=<install-path> onnxruntime_BUILD_UNIT_TESTS=OFF
 ```
 
-After the code builds, it can be installed like this:
+Where `<config>` is the config you wish to build and `<install-path>` is the path where
+the library should be installed to.
 
-```bat
-.\build.bat --config Debug --target install --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022" --cmake_extra_defines CMAKE_DEBUG_POSTFIX=d
-```
+> **Note:**
+> If you wish to install to the system directories, you **must** use an administrator
+> prompt to do so.
 
-For release builds, the commands are as follows:
-
-```bat
-.\build.bat --config Release --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022"
-.\build.bat --config Release --target install --build_shared_lib --skip_tests --parallel --cmake_generator "Visual Studio 17 2022"
-```
 
 #### Linux
 
 Open a terminal and navigate tot he code where the code is checked out. Then enter:
 
 ```sh
-./build.sh --config Release --build_shared_lib --parallel --skip_tests
-./build.sh --config Release --build_shared_lib --parallel --skip_tests --target install
+./build.sh --config <config> --target install --build_shared_lib --parallel --skip_submodule_sync --skip_tests --cmake_extra_defines CMAKE_INSTALL_PREFIX=<install-path> onnxruntime_BUILD_UNIT_TESTS=OFF
 ```
 
 ### Building for DirectML (Windows only)
 
 The process for building with DML is identical to the CPU process, with the exception that
 for all build commands, you must add the `--use_dml` flag. Once both versions of
-ONNXRuntiem have been built and installed, navigate to
-`onnxruntime/build/Windows/Release/Release` and copy `DirectML.dll` to the `lib` folder in
+ONNXRuntime have been built and installed, navigate to
+`onnxruntime/build/Windows/Release/Release` and copy `DirectML.dll` to the `bin` folder in
 the install location. This will ensure that RAD can automatically copy the DLL when
 building through the provided `CopySharedLibs` script.
 
 ### Troubleshooting
 
-Building ONNXRuntime can fail due to incongruences in the code. Below are some
-suggestions for solving common problems:
+In certain Windows platforms, building ONNXRuntime can fail due to compiler errors. The
+issue is tracked [here](https://onnxruntime.ai/docs/build/inferencing.html). Below are
+some workarounds to the compiler errors that may arise:
 
 * Compiler errors appear regarding undefined symbols for `STRSAFE_LPSTR` and similar
   aliases. To solve this, navigate to
@@ -148,10 +162,10 @@ suggestions for solving common problems:
   top of the file, after the final include, copy the following:
 
   ```c++
-#if !defined(INITGUID)
-#define INITGUID
-#include <guiddef.h>
-#endif
-DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS, 0x0c9ece4d, 0x2f6e, 0x4f01, 0x8c, 0x96, 0xe8, 0x9e, 0x33, 0x1b, 0x47, 0xb1);
-DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE, 0x248e2800, 0xa793, 0x4724, 0xab, 0xaa, 0x23, 0xa6, 0xde, 0x1b, 0xe0, 0x90);
+    #if !defined(INITGUID)
+    #define INITGUID
+    #include <guiddef.h>
+    #endif
+    DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS, 0x0c9ece4d, 0x2f6e, 0x4f01, 0x8c, 0x96, 0xe8, 0x9e, 0x33, 0x1b, 0x47, 0xb1);
+    DEFINE_GUID(DXCORE_ADAPTER_ATTRIBUTE_D3D12_CORE_COMPUTE, 0x248e2800, 0xa793, 0x4724, 0xab, 0xaa, 0x23, 0xa6, 0xde, 0x1b, 0xe0, 0x90);
   ```

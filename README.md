@@ -24,13 +24,13 @@ development of R&D applications in computer vision. It supports the following wo
 
 ## Requirements
 
-RAD requires a minimum version of 3.27 and supports the following platforms and compilers:
+RAD requires a minimum version of 3.30 and supports the following platforms and compilers:
 
 | Platform (Compiler) | Version |
 |---------------------|---------|
-| Windows (MSVC) | 19.38+ |
-| Linux (GCC) | 13.1.0+ |
-| Linux (LLVM Clang) | 15.0.7+ |
+| Windows (MSVC) | 19.41 |
+| Linux (GCC) | 14.0.1 |
+| Linux (LLVM Clang) | 18.1 |
 
 > **Warning:** RAD does not support macOS.
 
@@ -38,10 +38,10 @@ RAD requires a minimum version of 3.27 and supports the following platforms and 
 
 | Library | Version |
 |---------------------|---------|
-| [Zeus](https://github.com/marovira/zeus) | 1.4.0 |
-| [OpenCV](https://github.com/opencv/opencv) |4.9.0 |
-| [TBB](https://github.com/oneapi-src/oneTBB) |2021.12.0 |
-| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.17.3 |
+| [Zeus](https://github.com/marovira/zeus) | 1.5.0 |
+| [OpenCV](https://github.com/opencv/opencv) |4.10.0 |
+| [TBB](https://github.com/oneapi-src/oneTBB) |2021.13.0 |
+| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.19.2 |
 
 > **Note:** ONNXRuntime is an optional dependency that may be removed when the library is
 > built.
