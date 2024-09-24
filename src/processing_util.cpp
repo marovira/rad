@@ -18,10 +18,15 @@ namespace rad
         return files;
     }
 
-    std::pair<std::string, cv::Mat> load_image(std::string const& path)
+    std::pair<std::string, cv::Mat> load_image(std::string const& path, int flags)
     {
         fs::path entry{path};
-        return {entry.stem().string(), cv::imread(entry.string())};
+        return {entry.stem().string(), cv::imread(entry.string(), flags)};
+    }
+
+    std::pair<std::string, cv::Mat> load_image(std::string const& path)
+    {
+        return load_image(path, cv::IMREAD_COLOR);
     }
 
     void create_result_dir(std::string const& root, std::string const& app_name)

@@ -9,56 +9,91 @@ namespace fs = std::filesystem;
 
 TEST_CASE("processing - process_images", "[rad]")
 {
-    TestFileManager::Params params;
-    TestFileManager mgr{params};
-
-    std::vector<bool> seen_files(params.num_files, false);
-
-    auto fun = [&seen_files](std::string const& name, cv::Mat const&) {
-        // Order may be arbitrary
-        auto num           = zeus::split(name, '_')[2];
-        auto as_int        = std::stoi(num);
-        seen_files[as_int] = true;
-    };
-
-    SECTION("Full list")
+    SECTION("Check files")
     {
-        rad::process_images(mgr.root().string(), fun);
-        for (auto seen : seen_files)
+        TestFileManager::Params params;
+        TestFileManager mgr{params};
+
+        std::vector<bool> seen_files(params.num_files, false);
+
+        auto fun = [&seen_files](std::string const& name, cv::Mat const&) {
+            // Order may be arbitrary
+            auto num           = zeus::split(name, '_')[2];
+            auto as_int        = std::stoi(num);
+            seen_files[as_int] = true;
+        };
+
+        SECTION("Full list")
         {
-            REQUIRE(seen);
+            rad::process_images(mgr.root().string(), fun);
+            for (auto seen : seen_files)
+            {
+                REQUIRE(seen);
+            }
+        }
+
+        SECTION("Full list - parallel")
+        {
+            rad::process_images_parallel(mgr.root().string(), fun);
+            for (auto seen : seen_files)
+            {
+                REQUIRE(seen);
+            }
+        }
+
+        SECTION("Partial list")
+        {
+            std::vector<std::string> samples{"test_img_0.jpg",
+                                             "test_img_2.jpg",
+                                             "test_img_4.jpg"};
+            rad::process_images(mgr.root().string(), fun);
+            REQUIRE(seen_files[0]);
+            REQUIRE(seen_files[2]);
+            REQUIRE(seen_files[4]);
+        }
+
+        SECTION("Partial list - parallel")
+        {
+            std::vector<std::string> samples{"test_img_0.jpg",
+                                             "test_img_2.jpg",
+                                             "test_img_4.jpg"};
+            rad::process_images_parallel(mgr.root().string(), fun);
+            REQUIRE(seen_files[0]);
+            REQUIRE(seen_files[2]);
+            REQUIRE(seen_files[4]);
         }
     }
 
-    SECTION("Full list - parallel")
+    SECTION("Check loading")
     {
-        rad::process_images_parallel(mgr.root().string(), fun);
-        for (auto seen : seen_files)
+        static constexpr int num_files{10};
+        SECTION("8-bit")
         {
-            REQUIRE(seen);
+            TestFileManager::Params params{.num_files = num_files};
+            TestFileManager mgr{params};
+
+            auto fun = [params](std::string const&, cv::Mat const& img) {
+                REQUIRE(img.type() == params.type);
+            };
+
+            rad::process_images(mgr.root().string(), fun);
+            rad::process_images_parallel(mgr.root().string(), fun);
         }
-    }
 
-    SECTION("Partial list")
-    {
-        std::vector<std::string> samples{"test_img_0.jpg",
-                                         "test_img_2.jpg",
-                                         "test_img_4.jpg"};
-        rad::process_images(mgr.root().string(), fun);
-        REQUIRE(seen_files[0]);
-        REQUIRE(seen_files[2]);
-        REQUIRE(seen_files[4]);
-    }
+        SECTION("16-bit")
+        {
+            TestFileManager::Params params{.num_files = num_files,
+                                           .ext       = "png",
+                                           .type      = CV_16UC3};
+            TestFileManager mgr{params};
 
-    SECTION("Partial list - parallel")
-    {
-        std::vector<std::string> samples{"test_img_0.jpg",
-                                         "test_img_2.jpg",
-                                         "test_img_4.jpg"};
-        rad::process_images_parallel(mgr.root().string(), fun);
-        REQUIRE(seen_files[0]);
-        REQUIRE(seen_files[2]);
-        REQUIRE(seen_files[4]);
+            auto fun = [params](std::string const&, cv::Mat const& img) {
+                REQUIRE(img.type() == params.type);
+            };
+
+            rad::process_images(mgr.root().string(), fun, cv::IMREAD_UNCHANGED);
+            rad::process_images_parallel(mgr.root().string(), fun, cv::IMREAD_UNCHANGED);
+        }
     }
 }
 

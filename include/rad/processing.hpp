@@ -10,11 +10,31 @@
 namespace rad
 {
     template<typename ImageProcessFun>
-    void process_images(std::string const& root, ImageProcessFun fun)
+    void process_images(std::string const& root, ImageProcessFun fun, int flags)
     {
         for (auto const& entry : get_file_paths_from_root(root))
         {
-            auto [filename, img] = load_image(entry.string());
+            auto [filename, img] = load_image(entry.string(), flags);
+            fun(filename, img);
+        }
+    }
+
+    template<typename ImageProcessFun>
+    void process_images(std::string const& root, ImageProcessFun fun)
+    {
+        process_images(root, fun, cv::IMREAD_COLOR);
+    }
+
+    template<typename ImageProcessFun>
+    void process_images(std::string const& root,
+                        std::vector<std::string> const& samples,
+                        ImageProcessFun fun,
+                        int flags)
+    {
+        for (auto sample : samples)
+        {
+            std::string path     = root + sample;
+            auto [filename, img] = load_image(path, flags);
             fun(filename, img);
         }
     }
@@ -24,12 +44,7 @@ namespace rad
                         std::vector<std::string> const& samples,
                         ImageProcessFun fun)
     {
-        for (auto sample : samples)
-        {
-            std::string path     = root + sample;
-            auto [filename, img] = load_image(path);
-            fun(filename, img);
-        }
+        process_images(root, samples, fun, cv::IMREAD_COLOR);
     }
 
     template<typename FileProcessFun>
@@ -54,16 +69,37 @@ namespace rad
     }
 
     template<typename ImageProcessFun>
-    void process_images_parallel(std::string const& root, ImageProcessFun fun)
+    void process_images_parallel(std::string const& root, ImageProcessFun fun, int flags)
     {
         auto files = get_file_paths_from_root(root);
         std::filesystem::directory_iterator ite{root};
 
         oneapi::tbb::parallel_for_each(files.begin(),
                                        files.end(),
-                                       [fun](std::filesystem::path const& entry) {
+                                       [fun, flags](std::filesystem::path const& entry) {
                                            auto [filename, img] =
-                                               load_image(entry.string());
+                                               load_image(entry.string(), flags);
+                                           fun(filename, img);
+                                       });
+    }
+
+    template<typename ImageProcessFun>
+    void process_images_parallel(std::string const& root, ImageProcessFun fun)
+    {
+        process_images_parallel(root, fun, cv::IMREAD_COLOR);
+    }
+
+    template<typename ImageProcessFun>
+    void process_images_parallel(std::string const& root,
+                                 std::vector<std::string> const& samples,
+                                 ImageProcessFun fun,
+                                 int flags)
+    {
+        oneapi::tbb::parallel_for_each(samples.begin(),
+                                       samples.end(),
+                                       [fun, root, flags](std::string const& sample) {
+                                           std::string path     = root + sample;
+                                           auto [filename, img] = load_image(path, flags);
                                            fun(filename, img);
                                        });
     }
@@ -73,13 +109,7 @@ namespace rad
                                  std::vector<std::string> const& samples,
                                  ImageProcessFun fun)
     {
-        oneapi::tbb::parallel_for_each(samples.begin(),
-                                       samples.end(),
-                                       [fun, root](std::string const& sample) {
-                                           std::string path     = root + sample;
-                                           auto [filename, img] = load_image(path);
-                                           fun(filename, img);
-                                       });
+        process_images_parallel(root, samples, fun, cv::IMREAD_COLOR);
     }
 
     template<typename FileProcessFun>
