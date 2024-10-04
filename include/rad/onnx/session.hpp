@@ -91,6 +91,9 @@ namespace rad::onnx
     std::vector<std::vector<std::int64_t>> get_input_shapes(Ort::Session& session);
     std::vector<std::vector<std::int64_t>> get_output_shapes(Ort::Session& session);
 
+    std::vector<ONNXTensorElementDataType> get_input_types(Ort::Session& session);
+    std::vector<ONNXTensorElementDataType> get_output_types(Ort::Session& session);
+
     std::vector<Ort::Value> perform_inference(Ort::Session& session,
                                               std::vector<Ort::Value> const& inputs);
 } // namespace rad::onnx

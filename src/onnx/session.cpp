@@ -101,6 +101,31 @@ namespace rad::onnx
         return shapes;
     }
 
+    std::vector<ONNXTensorElementDataType> get_input_types(Ort::Session& session)
+    {
+        std::vector<ONNXTensorElementDataType> types;
+        for (std::size_t i{0}; i < session.GetInputCount(); ++i)
+        {
+            types.push_back(
+                session.GetInputTypeInfo(i).GetTensorTypeAndShapeInfo().GetElementType());
+        }
+
+        return types;
+    }
+
+    std::vector<ONNXTensorElementDataType> get_output_types(Ort::Session& session)
+    {
+        std::vector<ONNXTensorElementDataType> types;
+        for (std::size_t i{0}; i < session.GetOutputCount(); ++i)
+        {
+            types.push_back(session.GetOutputTypeInfo(i)
+                                .GetTensorTypeAndShapeInfo()
+                                .GetElementType());
+        }
+
+        return types;
+    }
+
     std::vector<Ort::Value> perform_inference(Ort::Session& session,
                                               std::vector<Ort::Value> const& inputs)
     {
