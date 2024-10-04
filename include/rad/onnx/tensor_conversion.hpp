@@ -88,14 +88,13 @@ namespace rad::onnx
                         dims[1])};
                 }
 
-                auto data = batch_ptr;
-                std::vector<T> slice(dims[2] * dims[3]);
+                auto data                = batch_ptr;
+                const std::size_t stride = dims[2] * dims[3];
                 std::vector<cv::Mat> channels(dims[1]);
                 for (auto& channel : channels)
                 {
-                    std::memcpy(slice.data(), data, sizeof(T) * slice.size());
-                    channel = cv::Mat{sz, CV_MAKE_TYPE(depth, 1), slice.data()}.clone();
-                    data += slice.size();
+                    channel = cv::Mat{sz, CV_MAKE_TYPE(depth, 1), data};
+                    data += stride;
                 }
 
                 cv::merge(channels, image);
