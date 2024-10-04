@@ -25,6 +25,32 @@ namespace rad
         return as_float;
     }
 
+    cv::Mat to_fp16(cv::Mat const& img)
+    {
+        if (img.depth() != CV_32F)
+        {
+            throw std::runtime_error(
+                "error: only conversions from 32-bit to 16-bit floats are supported");
+        }
+
+        cv::Mat ret;
+        cv::convertFp16(img, ret);
+        return ret;
+    }
+
+    cv::Mat to_fp32(cv::Mat const& img)
+    {
+        if (img.depth() != CV_16S)
+        {
+            throw std::runtime_error(
+                "error: only conversions from 32-bit to 16-bit floats are supported");
+        }
+
+        cv::Mat ret;
+        cv::convertFp16(img, ret);
+        return ret;
+    }
+
     cv::Mat downscale_to(cv::Mat const& img, cv::Size size)
     {
         cv::Mat resized;

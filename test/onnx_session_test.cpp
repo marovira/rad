@@ -144,12 +144,77 @@ TEST_CASE("[session] - get_output_shapes", "[rad::onnx]")
     REQUIRE(output_shape[1] == 10);
 }
 
+TEST_CASE("[session] - get_input_types", "[rad::onnx]")
+{
+    ModelFileManager mgr;
+    auto env = onnx::create_environment("session_test");
+
+    SECTION("32-bit float")
+    {
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::static_axes);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        auto types = onnx::get_input_types(session);
+        REQUIRE(types.size() == 1);
+        REQUIRE(types[0] == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+    }
+
+    SECTION("16-bit float")
+    {
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::half_float);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        auto types = onnx::get_input_types(session);
+        REQUIRE(types.size() == 1);
+
+        REQUIRE(types[0] == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16);
+    }
+}
+
+TEST_CASE("[session] - get_output_types", "[rad::onnx]")
+{
+    ModelFileManager mgr;
+    auto env = onnx::create_environment("session_test");
+
+    SECTION("32-bit float")
+    {
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::static_axes);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        auto types = onnx::get_output_types(session);
+        REQUIRE(types.size() == 1);
+        REQUIRE(types[0] == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+    }
+
+    SECTION("16-bit float")
+    {
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::half_float);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        auto types = onnx::get_output_types(session);
+        REQUIRE(types.size() == 1);
+        REQUIRE(types[0] == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16);
+    }
+}
+
 TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
 {
     ModelFileManager mgr;
     auto env = onnx::create_environment("inference_test");
 
-    SECTION("CPU inference")
+    SECTION("CPU inference: 32-bit float")
     {
         auto session =
             onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
@@ -167,8 +232,26 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         REQUIRE(result.size() == 10);
     }
 
+    SECTION("CPU inference: 16-bit float")
+    {
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::half_float);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
+        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
+
+        auto out_tensors = onnx::perform_inference(session, set.tensors());
+        REQUIRE(out_tensors.size() == 1);
+
+        auto result = onnx::array_from_tensor<std::uint16_t>(out_tensors.front(), 10);
+        REQUIRE(result.size() == 10);
+    }
+
 #if defined(RAD_ONNX_DML_ENABLED)
-    SECTION("DML inference")
+    SECTION("DML inference: 32-bit float")
     {
         auto opt = onnx::get_default_dml_session_options();
         auto session =
@@ -184,6 +267,25 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         REQUIRE(out_tensors.size() == 1);
 
         auto result = onnx::array_from_tensor<float>(out_tensors.front(), 10);
+        REQUIRE(result.size() == 10);
+    }
+
+    SECTION("DML inference: 16-bit float")
+    {
+        auto opt = onnx::get_default_dml_session_options();
+        auto session =
+            onnx::make_session_from_file(mgr.get_root(), env, opt, [mgr](std::string) {
+                return mgr.get_model(ModelFileManager::Type::half_float);
+            });
+        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
+
+        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
+        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
+
+        auto out_tensors = onnx::perform_inference(session, set.tensors());
+        REQUIRE(out_tensors.size() == 1);
+
+        auto result = onnx::array_from_tensor<std::uint16_t>(out_tensors.front(), 10);
         REQUIRE(result.size() == 10);
     }
 #endif

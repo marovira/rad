@@ -23,7 +23,8 @@ public:
     enum class Type
     {
         static_axes,
-        dynamic_axes
+        dynamic_axes,
+        half_float,
     };
 
     auto get_model(Type type) const
@@ -36,6 +37,10 @@ public:
             break;
         case Type::dynamic_axes:
             name = "test_dynamic.onnx";
+            break;
+
+        case Type::half_float:
+            name = "test_fp16.onnx";
             break;
         }
 

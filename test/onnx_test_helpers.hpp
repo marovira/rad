@@ -16,6 +16,10 @@ int get_test_image_type(int channels)
         {
             return CV_32F;
         }
+        else if constexpr (std::is_same_v<T, Ort::Float16_t>)
+        {
+            return CV_16S;
+        }
         else
         {
             return CV_8U;
@@ -33,11 +37,28 @@ cv::Mat make_test_image(int channels)
 }
 
 template<typename T>
+constexpr T make_test_value()
+{
+    if constexpr (std::is_same_v<T, Ort::Float16_t>)
+    {
+        return Ort::Float16_t{1.0f};
+    }
+    else
+    {
+        return T{1};
+    }
+}
+
+template<typename T>
 consteval int get_onnx_element_type()
 {
     if constexpr (std::is_same_v<T, float>)
     {
         return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
+    }
+    else if constexpr (std::is_same_v<T, Ort::Float16_t>)
+    {
+        return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16;
     }
     else
     {

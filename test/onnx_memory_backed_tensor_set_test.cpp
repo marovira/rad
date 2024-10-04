@@ -9,17 +9,19 @@ namespace onnx = rad::onnx;
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - compile-time constants",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     STATIC_REQUIRE(
         std::is_same_v<typename onnx::MemoryBackedTensorSet<TestType>::value_type,
                        TestType>);
 }
 
-TEMPLATE_TEST_CASE("[MemoryBackedTensor] - Constructors",
+TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - Constructors",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     SECTION("Default constructor")
     {
@@ -57,7 +59,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensor] - Constructors",
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - array operator",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     s.insert_tensor_from_image(make_test_image<TestType>(1));
@@ -69,7 +72,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - array operator",
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - ranged for-loop iterators",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     s.insert_tensor_from_image(make_test_image<TestType>(1));
@@ -83,7 +87,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - ranged for-loop iterators",
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - size/empty",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     SECTION("Empty set")
     {
@@ -105,7 +110,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - size/empty",
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_images",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     std::vector<cv::Mat> images(4);
     const auto exp_size = get_test_image_size();
@@ -163,7 +169,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_images"
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     const auto exp_size = get_test_image_size();
@@ -214,7 +221,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_arrays",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     static constexpr std::size_t size{10};
@@ -222,7 +230,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_arrays"
 
     const std::vector<std::vector<TestType>> batched_data(
         batch_size,
-        std::vector<TestType>(size, TestType{1}));
+        std::vector<TestType>(size, make_test_value<TestType>()));
 
     s.insert_tensor_from_batched_arrays(batched_data);
     REQUIRE_FALSE(s.empty());
@@ -244,12 +252,13 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_arrays"
 TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_array",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     static constexpr std::size_t size{10};
 
-    const std::vector<TestType> data(size, TestType{1});
+    const std::vector<TestType> data(size, make_test_value<TestType>());
 
     s.insert_tensor_from_array(data);
     REQUIRE_FALSE(s.empty());

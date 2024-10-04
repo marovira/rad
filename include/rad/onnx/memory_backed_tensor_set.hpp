@@ -70,34 +70,28 @@ namespace rad::onnx
 
         void insert_tensor_from_batched_images(std::vector<cv::Mat> const& images)
         {
-            const auto depth = []() {
-                if constexpr (std::is_same_v<value_type, float>)
-                {
-                    return CV_32F;
-                }
-                else
-                {
-                    return CV_8U;
-                }
-            }();
+            const auto [num_channels, rows, cols] = validate_batched_images(images);
+            const std::size_t stride              = rows * cols;
 
-            auto blob = cv::dnn::blobFromImages(images,
-                                                1.0,
-                                                cv::Size{},
-                                                cv::Scalar{},
-                                                false,
-                                                false,
-                                                depth);
-
-            cv::MatSize sz = blob.size;
-            std::vector<std::int64_t> tensor_dims(sz.dims());
-            for (int i{0}; i < sz.dims(); ++i)
+            std::vector<T> tensor_data(images.size() * num_channels * rows * cols);
+            T* data_ptr = tensor_data.data();
+            for (auto const& img : images)
             {
-                tensor_dims[i] = sz[i];
+                std::vector<cv::Mat> ch(num_channels);
+                for (auto& c : ch)
+                {
+                    c = cv::Mat(rows, cols, img.depth(), data_ptr);
+                    data_ptr += stride;
+                }
+
+                cv::split(img, ch);
             }
 
-            std::vector<T> tensor_data(blob.total());
-            tensor_data.assign(blob.template begin<T>(), blob.template end<T>());
+            std::vector<std::int64_t> tensor_dims{
+                static_cast<std::int64_t>(images.size()),
+                num_channels,
+                rows,
+                cols};
 
             Ort::Value tensor{nullptr};
             Ort::MemoryInfo mem_info =
@@ -168,6 +162,51 @@ namespace rad::onnx
         }
 
     private:
+        std::tuple<int, int, int>
+        validate_batched_images(std::vector<cv::Mat> const& images) const
+        {
+            auto& front_img        = images.front();
+            const int num_channels = front_img.channels();
+            const int rows         = front_img.rows;
+            const int cols         = front_img.cols;
+
+            for (std::size_t i{0}; auto const& img : images)
+            {
+                if (img.channels() != num_channels)
+                {
+                    throw std::runtime_error(
+                        fmt::format("error: for batched image {}, expected {} channels "
+                                    "but received {}",
+                                    i,
+                                    num_channels,
+                                    img.channels()));
+                }
+
+                if (img.rows != rows)
+                {
+                    throw std::runtime_error(
+                        fmt::format("error: for batched image {}, expected {} rows "
+                                    "but received {}",
+                                    i,
+                                    rows,
+                                    img.rows));
+                }
+
+                if (img.cols != cols)
+                {
+                    throw std::runtime_error(
+                        fmt::format("error: for batched image {}, expected {} columns "
+                                    "but received {}",
+                                    i,
+                                    cols,
+                                    img.cols));
+                }
+                ++i;
+            }
+
+            return {num_channels, rows, cols};
+        }
+
         std::vector<Ort::Value> m_tensors;
         std::vector<std::vector<T>> m_tensor_data;
     };

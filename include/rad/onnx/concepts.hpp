@@ -1,12 +1,13 @@
 #pragma once
 
-#include <cstdint>
+#include "onnxruntime.hpp"
 #include <zeus/concepts.hpp>
 
 namespace rad::onnx
 {
     template<typename T>
-    concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>;
+    concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>
+                             || std::same_as<T, Ort::Float16_t>;
 
     template<typename T>
     struct OrtStringPath : std::false_type

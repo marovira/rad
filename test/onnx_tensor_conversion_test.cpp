@@ -7,10 +7,23 @@
 
 namespace onnx = rad::onnx;
 
-TEMPLATE_TEST_CASE("[tensor] - image_batch_from_tensor",
+template<typename T>
+struct TestDataType
+{
+    using Type = T;
+};
+
+template<>
+struct TestDataType<Ort::Float16_t>
+{
+    using Type = std::uint16_t;
+};
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
                    "[rad::onnx]",
                    float,
-                   std::uint8_t)
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     std::vector<cv::Mat> images(4);
     const auto exp_size = get_test_image_size();
@@ -25,10 +38,11 @@ TEMPLATE_TEST_CASE("[tensor] - image_batch_from_tensor",
         }
 
         s.insert_tensor_from_batched_images(images);
-        auto ret_imgs = onnx::image_batch_from_tensor<TestType>(
-            s[0],
-            exp_size,
-            get_test_image_type<TestType>(channels));
+        auto ret_imgs =
+            onnx::image_batch_from_tensor<typename TestDataType<TestType>::Type>(
+                s[0],
+                exp_size,
+                get_test_image_type<TestType>(channels));
 
         REQUIRE(ret_imgs.size() == images.size());
         for (auto ret_img : ret_imgs)
@@ -47,10 +61,11 @@ TEMPLATE_TEST_CASE("[tensor] - image_batch_from_tensor",
         }
 
         s.insert_tensor_from_batched_images(images);
-        auto ret_imgs = onnx::image_batch_from_tensor<TestType>(
-            s[0],
-            exp_size,
-            get_test_image_type<TestType>(channels));
+        auto ret_imgs =
+            onnx::image_batch_from_tensor<typename TestDataType<TestType>::Type>(
+                s[0],
+                exp_size,
+                get_test_image_type<TestType>(channels));
 
         REQUIRE(ret_imgs.size() == images.size());
         for (auto ret_img : ret_imgs)
@@ -61,7 +76,11 @@ TEMPLATE_TEST_CASE("[tensor] - image_batch_from_tensor",
     }
 }
 
-TEMPLATE_TEST_CASE("[tensor] - image_from_tensor", "[rad::onnx]", float, std::uint8_t)
+TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
 
@@ -71,10 +90,10 @@ TEMPLATE_TEST_CASE("[tensor] - image_from_tensor", "[rad::onnx]", float, std::ui
 
         s.insert_tensor_from_image(make_test_image<TestType>(channels));
 
-        cv::Mat ret =
-            onnx::image_from_tensor<TestType>(s[0],
-                                              get_test_image_size(),
-                                              get_test_image_type<TestType>(channels));
+        cv::Mat ret = onnx::image_from_tensor<typename TestDataType<TestType>::Type>(
+            s[0],
+            get_test_image_size(),
+            get_test_image_type<TestType>(channels));
 
         REQUIRE(ret.size() == get_test_image_size());
         REQUIRE(ret.type() == get_test_image_type<TestType>(channels));
@@ -86,10 +105,10 @@ TEMPLATE_TEST_CASE("[tensor] - image_from_tensor", "[rad::onnx]", float, std::ui
 
         s.insert_tensor_from_image(make_test_image<TestType>(channels));
 
-        cv::Mat ret =
-            onnx::image_from_tensor<TestType>(s[0],
-                                              get_test_image_size(),
-                                              get_test_image_type<TestType>(channels));
+        cv::Mat ret = onnx::image_from_tensor<typename TestDataType<TestType>::Type>(
+            s[0],
+            get_test_image_size(),
+            get_test_image_type<TestType>(channels));
 
         REQUIRE(ret.size() == get_test_image_size());
         REQUIRE(ret.type() == get_test_image_type<TestType>(channels));
@@ -115,7 +134,7 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
-TEMPLATE_TEST_CASE("[tensor] - array_batch_from_tensor",
+TEMPLATE_TEST_CASE("[tensor_conversion] - array_batch_from_tensor",
                    "[rad::onnx]",
                    float,
                    std::uint8_t)
@@ -135,7 +154,10 @@ TEMPLATE_TEST_CASE("[tensor] - array_batch_from_tensor",
     REQUIRE(ret == batched_data);
 }
 
-TEMPLATE_TEST_CASE("[tensor] - array_from_tensor", "[rad::onnx]", float, std::uint8_t)
+TEMPLATE_TEST_CASE("[tensor_conversion] - array_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
 {
     static constexpr std::size_t size{10};
     const std::vector<TestType> src_data(10, TestType{1});
