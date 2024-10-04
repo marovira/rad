@@ -32,7 +32,8 @@ RAD requires a minimum version of 3.30 and supports the following platforms and 
 | Linux (GCC) | 14.0.1 |
 | Linux (LLVM Clang) | 18.1 |
 
-> **Warning:** RAD does not support macOS.
+> [!WARNING]
+> RAD does not support Apple platforms.
 
 ## Dependencies
 
@@ -43,8 +44,8 @@ RAD requires a minimum version of 3.30 and supports the following platforms and 
 | [TBB](https://github.com/oneapi-src/oneTBB) |2021.13.0 |
 | [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.19.2 |
 
-> **Note:** ONNXRuntime is an optional dependency that may be removed when the library is
-> built.
+> [!NOTE]
+> ONNXRuntime is an optional dependency that may be removed when the library is built.
 
 ## Contributing
 
