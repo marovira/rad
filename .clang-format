@@ -38,6 +38,7 @@ AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
+AllowShortCompoundRequirementOnASingleLine: true
 
 # Bin pack argument/parameter settings
 BinPackArguments: false
