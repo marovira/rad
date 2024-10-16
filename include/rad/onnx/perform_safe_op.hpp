@@ -8,6 +8,7 @@
 namespace rad::onnx
 {
     template<typename T>
+    [[nodiscard]]
     bool perform_safe_op(T fun)
     {
         try
