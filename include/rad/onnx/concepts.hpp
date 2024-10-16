@@ -9,6 +9,18 @@ namespace rad::onnx
     concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>
                              || std::same_as<T, Ort::Float16_t>;
 
+    template<TensorDataType T>
+    struct BaseTensorDataType
+    {
+        using type = T;
+    };
+
+    template<>
+    struct BaseTensorDataType<Ort::Float16_t>
+    {
+        using type = std::uint16_t;
+    };
+
     template<typename T>
     struct OrtStringPath : std::false_type
     {};
@@ -16,13 +28,13 @@ namespace rad::onnx
     template<>
     struct OrtStringPath<char>
     {
-        using value_type = std::string;
+        using type = std::string;
     };
 
     template<>
     struct OrtStringPath<wchar_t>
     {
-        using value_type = std::wstring;
+        using type = std::wstring;
     };
 
 } // namespace rad::onnx

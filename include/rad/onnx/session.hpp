@@ -16,14 +16,12 @@ namespace rad::onnx
 
     template<typename T>
     concept SelectorFunctor = requires(T fn, std::string str) {
-        // clang-format off
-        { fn(str) } -> std::same_as<OrtStringPath<ORTCHAR_T>::value_type>;
-        // clang-format on
+        { fn(str) } -> std::same_as<OrtStringPath<ORTCHAR_T>::type>;
     };
 
     consteval bool use_string_for_paths()
     {
-        if constexpr (std::is_same_v<OrtStringPath<ORTCHAR_T>::value_type, std::string>)
+        if constexpr (std::is_same_v<OrtStringPath<ORTCHAR_T>::type, std::string>)
         {
             return true;
         }
