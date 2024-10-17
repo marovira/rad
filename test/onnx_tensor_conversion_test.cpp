@@ -38,43 +38,6 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
-bool image_equals(cv::Mat const& lhs, cv::Mat const& rhs)
-{
-    if (lhs.rows != rhs.rows || lhs.cols != rhs.cols)
-    {
-        return false;
-    }
-
-    cv::Scalar s = cv::sum(lhs - rhs);
-    for (int i{0}; i < s.channels; ++i)
-    {
-        if (s[i] != 0)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool image_array_equals(std::vector<cv::Mat> const& lhs, std::vector<cv::Mat> const& rhs)
-{
-    if (lhs.size() != rhs.size())
-    {
-        return false;
-    }
-
-    for (std::size_t i{0}; i < lhs.size(); ++i)
-    {
-        if (!image_equals(lhs[i], rhs[i]))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 TEST_CASE("[tensor_conversion] - detail::validate_batched_images", "[rad::onnx]")
 {
     const auto generate_batch = [](cv::Size sz, int type) {
@@ -270,68 +233,62 @@ TEMPLATE_TEST_CASE("[tensor_conversion] = image_batch_from_tensor_blob",
         return img;
     };
     std::vector<cv::Mat> images(num_images);
-    const auto exp_size = get_test_image_size();
+    const auto test_size = get_test_image_size();
 
     SECTION("Grayscale images")
     {
         constexpr int channels{1};
+        const int type = get_test_image_type<TestType>(channels);
         for (auto& img : images)
         {
             img = make_test_image<TestType>(channels);
         }
 
         auto blob = onnx::image_batch_to_tensor_blob<TestType>(images);
-        auto ret  = onnx::image_batch_from_tensor_blob(blob,
-                                                      exp_size,
-                                                      images.front().type(),
-                                                      post_process);
+        auto ret =
+            onnx::image_batch_from_tensor_blob(blob, test_size, type, post_process);
 
         REQUIRE(image_array_equals(ret, images));
 
-        auto ret2 =
-            onnx::image_batch_from_tensor_blob(blob, exp_size, images.front().type());
+        auto ret2 = onnx::image_batch_from_tensor_blob(blob, test_size, type);
         REQUIRE(image_array_equals(ret, ret2));
     }
 
     SECTION("RGB images")
     {
         constexpr int channels{3};
+        const int type = get_test_image_type<TestType>(channels);
         for (auto& img : images)
         {
             img = make_test_image<TestType>(channels);
         }
 
         auto blob = onnx::image_batch_to_tensor_blob<TestType>(images);
-        auto ret  = onnx::image_batch_from_tensor_blob(blob,
-                                                      exp_size,
-                                                      images.front().type(),
-                                                      post_process);
+        auto ret =
+            onnx::image_batch_from_tensor_blob(blob, test_size, type, post_process);
 
         REQUIRE(image_array_equals(ret, images));
 
-        auto ret2 =
-            onnx::image_batch_from_tensor_blob(blob, exp_size, images.front().type());
+        auto ret2 = onnx::image_batch_from_tensor_blob(blob, test_size, type);
         REQUIRE(image_array_equals(ret, ret2));
     }
 
     SECTION("RGBA images")
     {
         constexpr int channels{4};
+        const int type = get_test_image_type<TestType>(channels);
         for (auto& img : images)
         {
             img = make_test_image<TestType>(channels);
         }
 
         auto blob = onnx::image_batch_to_tensor_blob<TestType>(images);
-        auto ret  = onnx::image_batch_from_tensor_blob(blob,
-                                                      exp_size,
-                                                      images.front().type(),
-                                                      post_process);
+        auto ret =
+            onnx::image_batch_from_tensor_blob(blob, test_size, type, post_process);
 
         REQUIRE(image_array_equals(ret, images));
 
-        auto ret2 =
-            onnx::image_batch_from_tensor_blob(blob, exp_size, images.front().type());
+        auto ret2 = onnx::image_batch_from_tensor_blob(blob, test_size, type);
         REQUIRE(image_array_equals(ret, ret2));
     }
 }
@@ -369,12 +326,13 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor_blob",
     SECTION("Grayscale image")
     {
         constexpr int channels{1};
+        const auto type   = get_test_image_type<TestType>(channels);
         const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
 
         auto blob = onnx::image_to_tensor_blob<TestType>(img);
-        auto ret =
-            onnx::image_from_tensor_blob(blob, img.size(), img.type(), post_process);
-        auto ret2 = onnx::image_from_tensor_blob(blob, img.size(), img.type());
+        auto ret  = onnx::image_from_tensor_blob(blob, size, type, post_process);
+        auto ret2 = onnx::image_from_tensor_blob(blob, size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -383,12 +341,13 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor_blob",
     SECTION("RGB image")
     {
         constexpr int channels{3};
+        const auto type   = get_test_image_type<TestType>(channels);
         const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
 
         auto blob = onnx::image_to_tensor_blob<TestType>(img);
-        auto ret =
-            onnx::image_from_tensor_blob(blob, img.size(), img.type(), post_process);
-        auto ret2 = onnx::image_from_tensor_blob(blob, img.size(), img.type());
+        auto ret  = onnx::image_from_tensor_blob(blob, size, type, post_process);
+        auto ret2 = onnx::image_from_tensor_blob(blob, size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -397,12 +356,13 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor_blob",
     SECTION("RGBA image")
     {
         constexpr int channels{4};
+        const auto type   = get_test_image_type<TestType>(channels);
         const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
 
         auto blob = onnx::image_to_tensor_blob<TestType>(img);
-        auto ret =
-            onnx::image_from_tensor_blob(blob, img.size(), img.type(), post_process);
-        auto ret2 = onnx::image_from_tensor_blob(blob, img.size(), img.type());
+        auto ret  = onnx::image_from_tensor_blob(blob, size, type, post_process);
+        auto ret2 = onnx::image_from_tensor_blob(blob, size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -417,53 +377,64 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
                    std::uint16_t)
 {
     std::vector<cv::Mat> images(4);
-    const auto exp_size = get_test_image_size();
+    const auto size = get_test_image_size();
     onnx::MemoryBackedTensorSet<TestType> s;
+    const auto post_process = [](cv::Mat img) {
+        return img;
+    };
 
     SECTION("Grayscale images")
     {
         constexpr int channels{1};
+        const auto type = get_test_image_type<TestType>(channels);
         for (auto& img : images)
         {
             img = make_test_image<TestType>(channels);
         }
 
         s.insert_tensor_from_batched_images(images);
-        auto ret_imgs =
-            onnx::image_batch_from_tensor<typename TestDataType<TestType>::Type>(
-                s[0],
-                exp_size,
-                get_test_image_type<TestType>(channels));
+        auto ret =
+            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
 
-        REQUIRE(ret_imgs.size() == images.size());
-        for (auto ret_img : ret_imgs)
-        {
-            REQUIRE(ret_img.size() == exp_size);
-            REQUIRE(ret_img.type() == get_test_image_type<TestType>(channels));
-        }
+        REQUIRE(image_array_equals(ret, ret2));
+        REQUIRE(image_array_equals(ret, images));
     }
 
     SECTION("RGB images")
     {
         constexpr int channels{3};
+        const auto type = get_test_image_type<TestType>(channels);
         for (auto& img : images)
         {
             img = make_test_image<TestType>(channels);
         }
 
         s.insert_tensor_from_batched_images(images);
-        auto ret_imgs =
-            onnx::image_batch_from_tensor<typename TestDataType<TestType>::Type>(
-                s[0],
-                exp_size,
-                get_test_image_type<TestType>(channels));
+        auto ret =
+            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
 
-        REQUIRE(ret_imgs.size() == images.size());
-        for (auto ret_img : ret_imgs)
+        REQUIRE(image_array_equals(ret, ret2));
+        REQUIRE(image_array_equals(ret, images));
+    }
+
+    SECTION("RGBA images")
+    {
+        constexpr int channels{4};
+        const auto type = get_test_image_type<TestType>(channels);
+        for (auto& img : images)
         {
-            REQUIRE(ret_img.size() == exp_size);
-            REQUIRE(ret_img.type() == get_test_image_type<TestType>(channels));
+            img = make_test_image<TestType>(channels);
         }
+
+        s.insert_tensor_from_batched_images(images);
+        auto ret =
+            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
+
+        REQUIRE(image_array_equals(ret, ret2));
+        REQUIRE(image_array_equals(ret, images));
     }
 }
 
@@ -471,38 +442,78 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
+    const auto post_process = [](cv::Mat img) {
+        return img;
+    };
+
+    SECTION("Invalid batch")
+    {
+        std::vector<cv::Mat> images(2);
+        for (auto& img : images)
+        {
+            img = make_test_image<TestType>(1);
+        }
+
+        s.insert_tensor_from_batched_images(images);
+        REQUIRE_THROWS(onnx::image_from_tensor<TestType>(s.tensors().front(),
+                                                         images.front().size(),
+                                                         images.front().type(),
+                                                         post_process));
+        REQUIRE_THROWS(onnx::image_from_tensor<TestType>(s.tensors().front(),
+                                                         images.front().size(),
+                                                         images.front().type()));
+    }
 
     SECTION("Grayscale image")
     {
         constexpr int channels{1};
+        const auto type   = get_test_image_type<TestType>(channels);
+        const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
 
-        s.insert_tensor_from_image(make_test_image<TestType>(channels));
+        s.insert_tensor_from_image(img);
 
-        cv::Mat ret = onnx::image_from_tensor<typename TestDataType<TestType>::Type>(
-            s[0],
-            get_test_image_size(),
-            get_test_image_type<TestType>(channels));
+        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
 
-        REQUIRE(ret.size() == get_test_image_size());
-        REQUIRE(ret.type() == get_test_image_type<TestType>(channels));
+        REQUIRE(image_equals(ret, ret2));
+        REQUIRE(image_equals(ret, img));
     }
 
     SECTION("RGB image")
     {
         constexpr int channels{3};
+        const auto type   = get_test_image_type<TestType>(channels);
+        const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
 
-        s.insert_tensor_from_image(make_test_image<TestType>(channels));
+        s.insert_tensor_from_image(img);
 
-        cv::Mat ret = onnx::image_from_tensor<typename TestDataType<TestType>::Type>(
-            s[0],
-            get_test_image_size(),
-            get_test_image_type<TestType>(channels));
+        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
 
-        REQUIRE(ret.size() == get_test_image_size());
-        REQUIRE(ret.type() == get_test_image_type<TestType>(channels));
+        REQUIRE(image_equals(ret, ret2));
+        REQUIRE(image_equals(ret, img));
+    }
+
+    SECTION("RGBA image")
+    {
+        constexpr int channels{4};
+        const auto type   = get_test_image_type<TestType>(channels);
+        const cv::Mat img = make_test_image<TestType>(channels);
+        const auto size   = img.size();
+
+        s.insert_tensor_from_image(img);
+
+        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
+
+        REQUIRE(image_equals(ret, ret2));
+        REQUIRE(image_equals(ret, img));
     }
 }
 

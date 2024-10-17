@@ -195,13 +195,6 @@ namespace rad::onnx
         int num_channels = 1 + (type >> CV_CN_SHIFT);
         int depth        = type & CV_MAT_DEPTH_MASK;
 
-        if (num_channels != 1 && num_channels != 3)
-        {
-            throw std::runtime_error{fmt::format(
-                "error: invalid number of channels, expected 1 or 3 but received {}",
-                num_channels)};
-        }
-
         const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
         if (dims.size() != 4)
         {
@@ -246,20 +239,12 @@ namespace rad::onnx
 
                 image = cv::Mat{sz, type, batch_ptr}.clone();
             }
-            else if (num_channels == 3)
+            else
             {
-                // 3-channeled images are a bit tricky. OpenCV expects the dimensions to
+                // Multi-channel images are a bit tricky. OpenCV expects the dimensions to
                 // be HxWxC, but tensors come in CxHxW. To get around this problem, we're
                 // going to "slice" up the tensor into its 3 channels and then merge them
                 // to the final image.
-                if (dims[1] != 3)
-                {
-                    throw std::runtime_error{fmt::format(
-                        "error: expected a 3-channel image tensor but received "
-                        "{} channels",
-                        dims[1])};
-                }
-
                 auto data                = batch_ptr;
                 const std::size_t stride = dims[2] * dims[3];
                 std::vector<cv::Mat> channels(dims[1]);
