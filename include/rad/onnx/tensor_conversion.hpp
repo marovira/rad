@@ -5,6 +5,54 @@
 #include "onnxruntime.hpp"
 #include "perform_safe_op.hpp"
 
+namespace rad::onnx::detail
+{
+    inline std::tuple<int, int, int>
+    validate_batched_images(std::vector<cv::Mat> const& images)
+    {
+        auto& front_img        = images.front();
+        const int num_channels = front_img.channels();
+        const int rows         = front_img.rows;
+        const int cols         = front_img.cols;
+
+        for (std::size_t i{0}; auto const& img : images)
+        {
+            if (img.channels() != num_channels)
+            {
+                throw std::runtime_error(
+                    fmt::format("error: for batched image {}, expected {} channels "
+                                "but received {}",
+                                i,
+                                num_channels,
+                                img.channels()));
+            }
+
+            if (img.rows != rows)
+            {
+                throw std::runtime_error(
+                    fmt::format("error: for batched image {}, expected {} rows "
+                                "but received {}",
+                                i,
+                                rows,
+                                img.rows));
+            }
+
+            if (img.cols != cols)
+            {
+                throw std::runtime_error(
+                    fmt::format("error: for batched image {}, expected {} columns "
+                                "but received {}",
+                                i,
+                                cols,
+                                img.cols));
+            }
+            ++i;
+        }
+
+        return {num_channels, rows, cols};
+    }
+} // namespace rad::onnx::detail
+
 namespace rad::onnx
 {
     template<typename T>
@@ -12,7 +60,133 @@ namespace rad::onnx
         { fn(m) } -> std::same_as<cv::Mat>;
     };
 
-    template<zeus::ArithmeticType T, ImagePostProcessFunctor Fun>
+    template<TensorDataType T>
+    struct TensorBlob
+    {
+        std::vector<T> data;
+        std::vector<std::int64_t> shape;
+    };
+
+    template<TensorDataType T>
+    TensorBlob<T> image_batch_to_tensor_blob(std::vector<cv::Mat> const& images)
+    {
+        const auto [num_channels, rows, cols] = detail::validate_batched_images(images);
+        const std::size_t stride              = rows * cols;
+
+        std::vector<T> tensor_data(images.size() * num_channels * rows * cols);
+        T* data_ptr = tensor_data.data();
+        for (auto const& img : images)
+        {
+            std::vector<cv::Mat> ch(num_channels);
+            for (auto& c : ch)
+            {
+                c = cv::Mat(rows, cols, img.depth(), data_ptr);
+                data_ptr += stride;
+            }
+
+            cv::split(img, ch);
+        }
+
+        return {
+            .data  = tensor_data,
+            .shape = {static_cast<std::int64_t>(images.size()),
+                      num_channels, rows,
+                      cols}
+        };
+    }
+
+    template<TensorDataType T>
+    TensorBlob<T> image_to_tensor_blob(cv::Mat const& image)
+    {
+        return image_batch_to_tensor_blob<T>({image});
+    }
+
+    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    std::vector<cv::Mat> image_batch_from_tensor_blob(TensorBlob<T> const& blob,
+                                                      cv::Size sz,
+                                                      int type,
+                                                      Fun post_process)
+    {
+        const auto batch_stride = blob.shape[1] * blob.shape[2] * blob.shape[3];
+        std::vector<cv::Mat> images(blob.shape[0]);
+
+        int num_channels = 1 + (type >> CV_CN_SHIFT);
+        int depth        = type & CV_MAT_DEPTH_MASK;
+
+        // OpenCV only takes pointers by void*, not void const*, so we need to cast away
+        // the const of the returned pointer from the tensor.
+        // Note: this is potentially dangerous and we have to make sure we NEVER modify
+        // the data!
+        auto batch_ptr = const_cast<T*>(blob.data.data());
+        for (auto& image : images)
+        {
+            if (num_channels == 1)
+            {
+                // For single-channel images, just cpy the data directly from the blobl
+                // into the final image.
+                image = cv::Mat{sz, type, batch_ptr}.clone();
+            }
+            else
+            {
+                // For multi-channel images, slice the blob into individual channels and
+                // then merge them together into the final image.
+                auto data                = batch_ptr;
+                const std::size_t stride = blob.shape[2] * blob.shape[3];
+                std::vector<cv::Mat> channels(blob.shape[1]);
+                for (auto& channel : channels)
+                {
+                    channel = cv::Mat{sz, CV_MAKE_TYPE(depth, 1), data};
+                    data += stride;
+                }
+
+                cv::merge(channels, image);
+            }
+
+            image = post_process(image);
+            batch_ptr += batch_stride;
+        }
+
+        return images;
+    }
+
+    template<TensorDataType T>
+    std::vector<cv::Mat>
+    image_batch_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
+    {
+        return image_batch_from_tensor_blob<T>(blob, sz, type, [](cv::Mat img) {
+            return img;
+        });
+    }
+
+    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob,
+                                   cv::Size sz,
+                                   int type,
+                                   Fun post_process)
+    {
+        auto images =
+            image_batch_from_tensor_blob(blob, sz, type, std::move(post_process));
+        if (images.size() != 1)
+        {
+            throw std::runtime_error{
+                fmt::format("error: attempting to retrieve a single image from a batched "
+                            "tensor blob with {} images. Please use "
+                            "image_batch_from_tensor_blob instead",
+                            images.size())};
+        }
+
+        return images.front();
+    }
+
+    template<TensorDataType T>
+    cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
+    {
+        return image_from_tensor_blob<T>(blob, sz, type, [](cv::Mat img) {
+            return img;
+        });
+    }
+
+    template<TensorDataType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor(Ort::Value const& tensor,
                                                  cv::Size sz,
                                                  int type,
@@ -105,7 +279,7 @@ namespace rad::onnx
         return images;
     }
 
-    template<zeus::ArithmeticType T>
+    template<TensorDataType T>
     std::vector<cv::Mat>
     image_batch_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
@@ -114,7 +288,7 @@ namespace rad::onnx
         });
     }
 
-    template<zeus::ArithmeticType T, ImagePostProcessFunctor Fun>
+    template<TensorDataType T, ImagePostProcessFunctor Fun>
     cv::Mat
     image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type, Fun post_process)
     {
@@ -130,7 +304,7 @@ namespace rad::onnx
         return images.front();
     }
 
-    template<zeus::ArithmeticType T>
+    template<TensorDataType T>
     cv::Mat image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
         return image_from_tensor<T>(tensor, sz, type, [](cv::Mat img) {
@@ -138,7 +312,7 @@ namespace rad::onnx
         });
     }
 
-    template<zeus::ArithmeticType T>
+    template<TensorDataType T>
     std::vector<std::vector<T>> array_batch_from_tensor(Ort::Value const& tensor,
                                                         std::size_t size)
     {
@@ -172,7 +346,7 @@ namespace rad::onnx
         return arrays;
     }
 
-    template<zeus::ArithmeticType T>
+    template<TensorDataType T>
     std::vector<T> array_from_tensor(Ort::Value const& tensor, std::size_t size)
     {
         const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
