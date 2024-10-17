@@ -6,8 +6,9 @@
 namespace rad::onnx
 {
     template<typename T>
-    concept TensorDataType = std::same_as<T, float> || std::same_as<T, std::uint8_t>
-                             || std::same_as<T, Ort::Float16_t>;
+    concept TensorDataType =
+        std::same_as<T, float> || std::same_as<T, std::uint8_t>
+        || std::same_as<T, Ort::Float16_t> || std::same_as<T, std::uint16_t>;
 
     template<TensorDataType T>
     struct BaseTensorDataType
