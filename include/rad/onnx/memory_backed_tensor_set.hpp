@@ -4,6 +4,7 @@
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
 #include "perform_safe_op.hpp"
+#include "tensor_conversion.hpp"
 
 #include <zeus/container_traits.hpp>
 
@@ -70,45 +71,24 @@ namespace rad::onnx
 
         void insert_tensor_from_batched_images(std::vector<cv::Mat> const& images)
         {
-            const auto [num_channels, rows, cols] = validate_batched_images(images);
-            const std::size_t stride              = rows * cols;
-
-            std::vector<T> tensor_data(images.size() * num_channels * rows * cols);
-            T* data_ptr = tensor_data.data();
-            for (auto const& img : images)
-            {
-                std::vector<cv::Mat> ch(num_channels);
-                for (auto& c : ch)
-                {
-                    c = cv::Mat(rows, cols, img.depth(), data_ptr);
-                    data_ptr += stride;
-                }
-
-                cv::split(img, ch);
-            }
-
-            std::vector<std::int64_t> tensor_dims{
-                static_cast<std::int64_t>(images.size()),
-                num_channels,
-                rows,
-                cols};
+            auto blob = image_batch_to_tensor_blob<T>(images);
 
             Ort::Value tensor{nullptr};
             Ort::MemoryInfo mem_info =
                 Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
             tensor = Ort::Value::CreateTensor<T>(mem_info,
-                                                 tensor_data.data(),
-                                                 tensor_data.size(),
-                                                 tensor_dims.data(),
-                                                 tensor_dims.size());
+                                                 blob.data.data(),
+                                                 blob.data.size(),
+                                                 blob.shape.data(),
+                                                 blob.shape.size());
             if (!tensor.IsTensor())
             {
                 throw std::runtime_error{"error: could not create a valid tensor"};
             }
 
             m_tensors.emplace_back(std::move(tensor));
-            m_tensor_data.emplace_back(std::move(tensor_data));
+            m_tensor_data.emplace_back(std::move(blob.data));
         }
 
         void insert_tensor_from_image(cv::Mat const& img)
@@ -162,51 +142,6 @@ namespace rad::onnx
         }
 
     private:
-        std::tuple<int, int, int>
-        validate_batched_images(std::vector<cv::Mat> const& images) const
-        {
-            auto& front_img        = images.front();
-            const int num_channels = front_img.channels();
-            const int rows         = front_img.rows;
-            const int cols         = front_img.cols;
-
-            for (std::size_t i{0}; auto const& img : images)
-            {
-                if (img.channels() != num_channels)
-                {
-                    throw std::runtime_error(
-                        fmt::format("error: for batched image {}, expected {} channels "
-                                    "but received {}",
-                                    i,
-                                    num_channels,
-                                    img.channels()));
-                }
-
-                if (img.rows != rows)
-                {
-                    throw std::runtime_error(
-                        fmt::format("error: for batched image {}, expected {} rows "
-                                    "but received {}",
-                                    i,
-                                    rows,
-                                    img.rows));
-                }
-
-                if (img.cols != cols)
-                {
-                    throw std::runtime_error(
-                        fmt::format("error: for batched image {}, expected {} columns "
-                                    "but received {}",
-                                    i,
-                                    cols,
-                                    img.cols));
-                }
-                ++i;
-            }
-
-            return {num_channels, rows, cols};
-        }
-
         std::vector<Ort::Value> m_tensors;
         std::vector<std::vector<T>> m_tensor_data;
     };
