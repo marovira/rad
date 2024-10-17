@@ -126,20 +126,41 @@ namespace rad::onnx
         return types;
     }
 
+    std::vector<std::string> get_input_names(Ort::Session& session)
+    {
+        Ort::AllocatorWithDefaultOptions alloc;
+
+        std::vector<std::string> names;
+        std::size_t num_inputs = session.GetInputCount();
+        for (std::size_t i{0}; i < num_inputs; ++i)
+        {
+            names.emplace_back(session.GetInputNameAllocated(i, alloc).get());
+        }
+
+        return names;
+    }
+
+    std::vector<std::string> get_output_names(Ort::Session& session)
+    {
+        Ort::AllocatorWithDefaultOptions alloc;
+
+        std::vector<std::string> names;
+        std::size_t num_inputs = session.GetOutputCount();
+        for (std::size_t i{0}; i < num_inputs; ++i)
+        {
+            names.emplace_back(session.GetOutputNameAllocated(i, alloc).get());
+        }
+
+        return names;
+    }
+
     std::vector<Ort::Value> perform_inference(Ort::Session& session,
                                               std::vector<Ort::Value> const& inputs)
     {
         Ort::AllocatorWithDefaultOptions alloc;
 
         // Query the number of inputs and the name of said inputs.
-        std::vector<std::string> input_names;
-        {
-            std::size_t num_inputs = session.GetInputCount();
-            for (std::size_t i{0}; i < num_inputs; ++i)
-            {
-                input_names.emplace_back(session.GetInputNameAllocated(i, alloc).get());
-            }
-        }
+        auto input_names = get_input_names(session);
 
         // Verify that the number of inputs is the same as the number of tensors
         // we're receiving. For the sake of sanity, let's throw an exception
@@ -216,14 +237,7 @@ namespace rad::onnx
         // Input tensors are correct, so now we need to query the names of the
         // output tensors. Note that we don't actually have to do any
         // allocations here, ORT will do it for us.
-        std::vector<std::string> output_names;
-        {
-            std::size_t num_outputs = session.GetOutputCount();
-            for (std::size_t i{0}; i < num_outputs; ++i)
-            {
-                output_names.emplace_back(session.GetOutputNameAllocated(i, alloc).get());
-            }
-        }
+        auto output_names = get_output_names(session);
 
         // Everything is ready, so let's perform the inference. Make sure we convert the
         // name vectors into C-strings beforehand.

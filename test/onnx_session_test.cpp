@@ -209,6 +209,32 @@ TEST_CASE("[session] - get_output_types", "[rad::onnx]")
     }
 }
 
+TEST_CASE("[session] - get_input_names", "[rad::onnx]")
+{
+    ModelFileManager mgr;
+    auto env     = onnx::create_environment("session_test");
+    auto session = onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+        return mgr.get_model(ModelFileManager::Type::static_axes);
+    });
+
+    auto names = onnx::get_input_names(session);
+    REQUIRE(names.size() == 1);
+    REQUIRE(names[0] == "input");
+}
+
+TEST_CASE("[session] - get_output_names", "[rad::onnx]")
+{
+    ModelFileManager mgr;
+    auto env     = onnx::create_environment("session_test");
+    auto session = onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+        return mgr.get_model(ModelFileManager::Type::static_axes);
+    });
+
+    auto names = onnx::get_output_names(session);
+    REQUIRE(names.size() == 1);
+    REQUIRE(names[0] == "output");
+}
+
 TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
 {
     ModelFileManager mgr;
