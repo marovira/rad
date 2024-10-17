@@ -9,7 +9,8 @@ TEMPLATE_TEST_CASE("[concepts] - TensorDataType",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     STATIC_REQUIRE(onnx::TensorDataType<TestType>);
 }
@@ -21,6 +22,8 @@ TEST_CASE("[concepts] - BaseTensorDataType", "[rad::onnx]")
         STATIC_REQUIRE(std::is_same_v<float, onnx::BaseTensorDataType<float>::type>);
         STATIC_REQUIRE(
             std::is_same_v<std::uint8_t, onnx::BaseTensorDataType<std::uint8_t>::type>);
+        STATIC_REQUIRE(
+            std::is_same_v<std::uint16_t, onnx::BaseTensorDataType<std::uint16_t>::type>);
     }
 
     SECTION("Ort types")

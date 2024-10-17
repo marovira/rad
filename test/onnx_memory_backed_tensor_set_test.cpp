@@ -10,7 +10,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - compile-time constants",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     STATIC_REQUIRE(
         std::is_same_v<typename onnx::MemoryBackedTensorSet<TestType>::value_type,
@@ -21,7 +22,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - Constructors",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     SECTION("Default constructor")
     {
@@ -60,7 +62,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - array operator",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     s.insert_tensor_from_image(make_test_image<TestType>(1));
@@ -73,7 +76,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - ranged for-loop iterators",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     s.insert_tensor_from_image(make_test_image<TestType>(1));
@@ -88,7 +92,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - size/empty",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     SECTION("Empty set")
     {
@@ -111,7 +116,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_images"
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     std::vector<cv::Mat> images(4);
     const auto exp_size = get_test_image_size();
@@ -170,7 +176,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     const auto exp_size = get_test_image_size();
@@ -222,7 +229,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_batched_arrays"
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     static constexpr std::size_t size{10};
@@ -253,7 +261,8 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_array",
                    "[rad::onnx]",
                    float,
                    std::uint8_t,
-                   Ort::Float16_t)
+                   Ort::Float16_t,
+                   std::uint16_t)
 {
     onnx::MemoryBackedTensorSet<TestType> s;
     static constexpr std::size_t size{10};
