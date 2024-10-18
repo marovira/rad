@@ -8,4 +8,5 @@ set(ONNX_INCLUDE
     ${ONNX_ROOT}/concepts.hpp
     ${ONNX_ROOT}/memory_backed_tensor_set.hpp
     ${ONNX_ROOT}/tensor_conversion.hpp
+    ${ONNX_ROOT}/tensor_data_types.hpp
     PARENT_SCOPE)

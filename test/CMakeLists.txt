@@ -27,6 +27,7 @@ if (RAD_USE_ONNX)
         ${RAD_TEST_ROOT}/onnx_memory_backed_tensor_set_test.cpp
         ${RAD_TEST_ROOT}/onnx_tensor_conversion_test.cpp
         ${RAD_TEST_ROOT}/onnx_concepts_test.cpp
+        ${RAD_TEST_ROOT}/onnx_tensor_data_types_test.cpp
         )
 endif()
 
