@@ -5,6 +5,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <zeus/string.hpp>
 
+#include <atomic>
+
 namespace fs = std::filesystem;
 
 TEST_CASE("processing - process_images", "[rad]")
@@ -14,7 +16,7 @@ TEST_CASE("processing - process_images", "[rad]")
         TestFileManager::Params params;
         TestFileManager mgr{params};
 
-        std::vector<bool> seen_files(params.num_files, false);
+        std::vector<std::atomic<bool>> seen_files(params.num_files);
 
         auto fun = [&seen_files](std::string const& name, cv::Mat const&) {
             // Order may be arbitrary
@@ -26,7 +28,7 @@ TEST_CASE("processing - process_images", "[rad]")
         SECTION("Full list")
         {
             rad::process_images(mgr.root().string(), fun);
-            for (auto seen : seen_files)
+            for (auto const& seen : seen_files)
             {
                 REQUIRE(seen);
             }
@@ -35,7 +37,7 @@ TEST_CASE("processing - process_images", "[rad]")
         SECTION("Full list - parallel")
         {
             rad::process_images_parallel(mgr.root().string(), fun);
-            for (auto seen : seen_files)
+            for (auto const& seen : seen_files)
             {
                 REQUIRE(seen);
             }
@@ -102,7 +104,7 @@ TEST_CASE("processing - process_files", "[rad]")
     TestFileManager::Params params;
     TestFileManager mgr{params};
 
-    std::vector<bool> seen_files(params.num_files, false);
+    std::vector<std::atomic<bool>> seen_files(params.num_files);
 
     auto fun = [&seen_files](std::string const& path) {
         fs::path p{path};
@@ -116,7 +118,7 @@ TEST_CASE("processing - process_files", "[rad]")
     SECTION("Full list")
     {
         rad::process_files(mgr.root().string(), fun);
-        for (auto seen : seen_files)
+        for (auto const& seen : seen_files)
         {
             REQUIRE(seen);
         }
@@ -125,7 +127,7 @@ TEST_CASE("processing - process_files", "[rad]")
     SECTION("Full list - parallel")
     {
         rad::process_files_parallel(mgr.root().string(), fun);
-        for (auto seen : seen_files)
+        for (auto const& seen : seen_files)
         {
             REQUIRE(seen);
         }
