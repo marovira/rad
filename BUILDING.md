@@ -28,11 +28,6 @@ dependencies in the `<install-root>` directory. Once the script finishes, you ca
 RAD by appending `-DCMAKE_PREFIX_PATH=<install-root>` to the list of CMake options when
 configuring the build system.
 
-> **Note:**
-> ONNXRuntime can fail to compile in certain Windows systems. This issue is currently
-> tracked [here](https://github.com/microsoft/onnxruntime/issues/22158). Please see the
-> section for building ONNXRuntime manually for a workaround to this problem.
-
 ## Manually Building
 
 Below is a quick guide on the configurations used to build the libraries RAD depends on.
