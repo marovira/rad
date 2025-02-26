@@ -124,56 +124,7 @@ namespace rad::onnx
 
         auto operator()(std::initializer_list<std::int64_t> dims) const
         {
-            if (std::empty(dims))
-            {
-                return std::views::counted(data.begin(), data.size());
-            }
-
-            if (dims.size() > shape.size())
-            {
-                throw std::runtime_error{
-                    fmt::format("error: attempting to slice a "
-                                "tensor blob with {} dimensions with {} indices.",
-                                shape.size(),
-                                dims.size())};
-            }
-
-            for (size_t i = 0; i < dims.size(); i++)
-            {
-                const auto dim = (*(dims.begin() + i));
-                if (dim >= shape[i])
-                {
-                    throw std::runtime_error{fmt::format("error: expected index {} to "
-                                                         "be less than dimension {}.",
-                                                         dim,
-                                                         shape[i])};
-                }
-            }
-
-            std::vector<std::int64_t> products(shape.size());
-            products[products.size() - 1] = 1;
-            for (int i = static_cast<int>(products.size()) - 2; i >= 0; i--)
-            {
-                products[i] = shape[i + 1] * products[i + 1];
-            }
-
-            size_t start_index = 0;
-            for (size_t i = 0; i < dims.size(); i++)
-            {
-                start_index += (*(dims.begin() + i)) * products[i];
-            }
-
-            const size_t size = products[dims.size() - 1];
-            if ((start_index + size) > data.size())
-            {
-                throw std::runtime_error{
-                    fmt::format("error: attempting to slice a "
-                                "tensor blob outside of the bounds of the array.")};
-            }
-
-            auto it = data.begin() + start_index;
-
-            return std::views::counted(it, size);
+            return operator()(std::vector<std::int64_t>(dims));
         }
     };
 
@@ -191,7 +142,7 @@ namespace rad::onnx
         return {.data = std::move(tensor_data), .shape = std::move(dims)};
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     TensorBlob<T> image_batch_to_tensor_blob(std::vector<cv::Mat> const& images)
     {
         const auto [num_channels, rows, cols] = detail::validate_batched_images(images);
@@ -219,13 +170,13 @@ namespace rad::onnx
         };
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     TensorBlob<T> image_to_tensor_blob(cv::Mat const& image)
     {
         return image_batch_to_tensor_blob<T>({image});
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor_blob(TensorBlob<T> const& blob,
                                                       cv::Size sz,
                                                       int type,
@@ -273,7 +224,7 @@ namespace rad::onnx
         return images;
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     std::vector<cv::Mat>
     image_batch_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
     {
@@ -282,7 +233,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob,
                                    cv::Size sz,
                                    int type,
@@ -302,7 +253,7 @@ namespace rad::onnx
         return images.front();
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
     {
         return image_from_tensor_blob<T>(blob, sz, type, [](cv::Mat img) {
@@ -310,7 +261,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor(Ort::Value const& tensor,
                                                  cv::Size sz,
                                                  int type,
@@ -388,7 +339,7 @@ namespace rad::onnx
         return images;
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     std::vector<cv::Mat>
     image_batch_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
@@ -397,7 +348,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     cv::Mat
     image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type, Fun post_process)
     {
@@ -413,7 +364,7 @@ namespace rad::onnx
         return images.front();
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     cv::Mat image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
         return image_from_tensor<T>(tensor, sz, type, [](cv::Mat img) {

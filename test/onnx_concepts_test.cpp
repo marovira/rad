@@ -10,6 +10,17 @@ TEMPLATE_TEST_CASE("[concepts] - TensorDataType",
                    float,
                    std::uint8_t,
                    Ort::Float16_t,
+                   std::uint16_t,
+                   std::int64_t)
+{
+    STATIC_REQUIRE(onnx::TensorDataType<TestType>);
+}
+
+TEMPLATE_TEST_CASE("[concepts] - ImageTensorDataType",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
                    std::uint16_t)
 {
     STATIC_REQUIRE(onnx::TensorDataType<TestType>);

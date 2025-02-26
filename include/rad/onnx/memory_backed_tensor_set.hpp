@@ -71,6 +71,10 @@ namespace rad::onnx
 
         void insert_tensor_from_batched_images(std::vector<cv::Mat> const& images)
         {
+            static_assert(ImageTensorDataType<T>,
+                          "error: cannot insert image to MemoryBackedTensorSet "
+                          "that does not conform to ImageTensorDataType");
+
             auto blob = image_batch_to_tensor_blob<T>(images);
 
             Ort::Value tensor{nullptr};

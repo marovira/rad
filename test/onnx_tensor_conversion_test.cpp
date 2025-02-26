@@ -62,7 +62,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                    float,
                    std::uint8_t,
                    Ort::Float16_t,
-                   uint16_t)
+                   std::uint16_t,
+                   std::int64_t)
 {
     static constexpr std::int64_t dim_b{7};
     static constexpr std::int64_t dim_n{5};
@@ -270,7 +271,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
                    float,
                    std::uint8_t,
                    Ort::Float16_t,
-                   uint16_t)
+                   std::uint16_t,
+                   std::int64_t)
 {
     static constexpr std::int64_t dim_b{7};
     static constexpr std::int64_t dim_n{5};
@@ -334,6 +336,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
         std::vector<TestType> two_dims_unsqueezed(dim_b * dim_n);
         std::vector<std::int64_t> shape{dim_b, dim_n};
         std::vector<std::int64_t> shape_unsqueezed{1, dim_b, dim_n};
+
         for (std::int64_t b{0}; b < dim_b; b++)
         {
             for (std::int64_t n{0}; n < dim_n; n++)
