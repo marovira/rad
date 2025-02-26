@@ -38,6 +38,405 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
+template<typename T, typename U, typename P>
+bool array_equals(T const& lhs, U const& rhs, P const& pred)
+{
+    if (lhs.size() != rhs.size())
+    {
+        return false;
+    }
+
+    for (std::size_t i{0}; i < lhs.size(); ++i)
+    {
+        if (!pred(lhs[i], rhs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   uint16_t)
+{
+    static constexpr std::int64_t dim_b{7};
+    static constexpr std::int64_t dim_n{5};
+    static constexpr std::int64_t dim_m{3};
+    const std::equal_to<const TestType> comparator;
+
+    Ort::MemoryInfo mem_info =
+        Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+    SECTION("One dimension")
+    {
+        std::vector<TestType> one_dim(dim_n);
+        std::vector<TestType> one_dim_unsqueezed(dim_n);
+        std::vector<std::int64_t> shape{dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_n};
+        for (std::int64_t n{0}; n < dim_n; n++)
+        {
+            const float val       = static_cast<float>(n);
+            one_dim[n]            = static_cast<TestType>(val);
+            one_dim_unsqueezed[n] = static_cast<TestType>(val);
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    one_dim.data(),
+                                                    one_dim.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                               one_dim_unsqueezed.data(),
+                                                               one_dim_unsqueezed.size(),
+                                                               shape_unsqueezed.data(),
+                                                               shape_unsqueezed.size());
+
+        auto blob            = onnx::blob_from_tensor<TestType>(tensor);
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+
+        REQUIRE(array_equals(one_dim, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed({}), comparator));
+        for (std::int64_t n{0}; n < dim_n; n++)
+        {
+            const TestType val            = blob({n}).front();
+            const TestType val_unsqueezed = blob_unsqueezed({0, n}).front();
+            REQUIRE(comparator(val, one_dim[n]));
+            REQUIRE(comparator(val_unsqueezed, one_dim_unsqueezed[n]));
+        }
+
+        REQUIRE_THROWS(blob({dim_n}));
+        REQUIRE_THROWS(blob({0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0}));
+    }
+
+    SECTION("Two dimensions")
+    {
+        std::vector<TestType> two_dims(dim_b * dim_n);
+        std::vector<TestType> two_dims_unsqueezed(dim_b * dim_n);
+        std::vector<std::int64_t> shape{dim_b, dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_b, dim_n};
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            for (std::int64_t n{0}; n < dim_n; n++)
+            {
+                const float val            = static_cast<float>(100 * b + n);
+                const std::int64_t index   = b * dim_n + n;
+                two_dims[index]            = static_cast<TestType>(val);
+                two_dims_unsqueezed[index] = static_cast<TestType>(val);
+            }
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    two_dims.data(),
+                                                    two_dims.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                               two_dims_unsqueezed.data(),
+                                                               two_dims_unsqueezed.size(),
+                                                               shape_unsqueezed.data(),
+                                                               shape_unsqueezed.size());
+
+        auto blob            = onnx::blob_from_tensor<TestType>(tensor);
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+        REQUIRE(array_equals(two_dims, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed({}), comparator));
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            auto batch = std::views::counted(two_dims.begin() + (b * dim_n), dim_n);
+            auto batch_unsqueezed =
+                std::views::counted(two_dims_unsqueezed.begin() + (b * dim_n), dim_n);
+            REQUIRE(array_equals(batch, blob({b}), comparator));
+            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b}), comparator));
+            for (std::int64_t n{0}; n < dim_n; n++)
+            {
+                const TestType val            = blob({b, n}).front();
+                const TestType val_unsqueezed = blob_unsqueezed({0, b, n}).front();
+                const std::int64_t index      = b * dim_n + n;
+                REQUIRE(comparator(val, two_dims[index]));
+                REQUIRE(comparator(val_unsqueezed, two_dims_unsqueezed[index]));
+            }
+        }
+
+        REQUIRE_THROWS(blob({dim_b, 0}));
+        REQUIRE_THROWS(blob({0, dim_n}));
+        REQUIRE_THROWS(blob({0, 0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_b, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, 0}));
+    }
+
+    SECTION("Three dimensions")
+    {
+        std::vector<TestType> three_dims(dim_b * dim_m * dim_n);
+        std::vector<TestType> three_dims_unsqueezed(dim_b * dim_m * dim_n);
+        std::vector<std::int64_t> shape{dim_b, dim_m, dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_b, dim_m, dim_n};
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            for (std::int64_t m{0}; m < dim_m; m++)
+            {
+                for (std::int64_t n{0}; n < dim_n; n++)
+                {
+                    const float val = static_cast<float>(100 * (100 * b + m) + n);
+                    const std::int64_t index     = b * dim_m * dim_n + m * dim_n + n;
+                    three_dims[index]            = static_cast<TestType>(val);
+                    three_dims_unsqueezed[index] = static_cast<TestType>(val);
+                }
+            }
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    three_dims.data(),
+                                                    three_dims.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed =
+            Ort::Value::CreateTensor<TestType>(mem_info,
+                                               three_dims_unsqueezed.data(),
+                                               three_dims_unsqueezed.size(),
+                                               shape_unsqueezed.data(),
+                                               shape_unsqueezed.size());
+
+        auto blob            = onnx::blob_from_tensor<TestType>(tensor);
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+        REQUIRE(array_equals(three_dims, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed({}), comparator));
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            auto batch = std::views::counted(three_dims.begin() + (b * dim_m * dim_n),
+                                             dim_m * dim_n);
+            auto batch_unsqueezed =
+                std::views::counted(three_dims_unsqueezed.begin() + (b * dim_m * dim_n),
+                                    dim_m * dim_n);
+            REQUIRE(array_equals(batch, blob({b}), comparator));
+            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b}), comparator));
+            for (std::int64_t m{0}; m < dim_m; m++)
+            {
+                auto row = std::views::counted(three_dims.begin() + (b * dim_m * dim_n)
+                                                   + (m * dim_n),
+                                               dim_n);
+                auto row_unsqueezed = std::views::counted(
+                    three_dims_unsqueezed.begin() + (b * dim_m * dim_n) + (m * dim_n),
+                    dim_n);
+                REQUIRE(array_equals(row, blob({b, m}), comparator));
+                REQUIRE(
+                    array_equals(row_unsqueezed, blob_unsqueezed({0, b, m}), comparator));
+                for (std::int64_t n{0}; n < dim_n; n++)
+                {
+                    const TestType val            = blob({b, m, n}).front();
+                    const TestType val_unsqueezed = blob_unsqueezed({0, b, m, n}).front();
+                    const std::int64_t index      = b * dim_m * dim_n + m * dim_n + n;
+                    REQUIRE(comparator(val, three_dims[index]));
+                    REQUIRE(comparator(val_unsqueezed, three_dims_unsqueezed[index]));
+                }
+            }
+        }
+
+        REQUIRE_THROWS(blob({dim_b, 0, 0}));
+        REQUIRE_THROWS(blob({0, dim_m, 0}));
+        REQUIRE_THROWS(blob({0, 0, dim_n}));
+        REQUIRE_THROWS(blob({0, 0, 0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_b, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, dim_m, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, 0, 0}));
+    }
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   uint16_t)
+{
+    static constexpr std::int64_t dim_b{7};
+    static constexpr std::int64_t dim_n{5};
+    static constexpr std::int64_t dim_m{3};
+    const std::equal_to<const TestType> comparator;
+
+    Ort::MemoryInfo mem_info =
+        Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+    SECTION("One dimension")
+    {
+        std::vector<TestType> one_dim(dim_n);
+        std::vector<TestType> one_dim_unsqueezed(dim_n);
+        std::vector<std::int64_t> shape{dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_n};
+        for (std::int64_t n{0}; n < dim_n; n++)
+        {
+            const float val       = static_cast<float>(n);
+            one_dim[n]            = static_cast<TestType>(val);
+            one_dim_unsqueezed[n] = static_cast<TestType>(val);
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    one_dim.data(),
+                                                    one_dim.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                               one_dim_unsqueezed.data(),
+                                                               one_dim_unsqueezed.size(),
+                                                               shape_unsqueezed.data(),
+                                                               shape_unsqueezed.size());
+
+        const auto tensor_info  = tensor.GetTensorTypeAndShapeInfo();
+        const auto tensor_dims  = tensor_info.GetShape();
+        const auto tensor_count = tensor_info.GetElementCount();
+        REQUIRE(tensor_count == dim_n);
+        REQUIRE(array_equals(shape, tensor_dims));
+
+        const auto tensor_unsqueezed_info = tensor_unsqueezed.GetTensorTypeAndShapeInfo();
+        const auto tensor_unsqueezed_dims = tensor_unsqueezed_info.GetShape();
+        const auto tensor_unsqueezed_count = tensor_unsqueezed_info.GetElementCount();
+        REQUIRE(tensor_unsqueezed_count == dim_n);
+        REQUIRE(array_equals(shape_unsqueezed, tensor_unsqueezed_dims));
+
+        auto blob = onnx::blob_from_tensor<TestType>(tensor);
+        REQUIRE(array_equals(shape, blob.shape));
+        REQUIRE(array_equals(one_dim, blob.data, comparator));
+
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+        REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
+        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed.data, comparator));
+    }
+
+    SECTION("Two dimensions")
+    {
+        std::vector<TestType> two_dims(dim_b * dim_n);
+        std::vector<TestType> two_dims_unsqueezed(dim_b * dim_n);
+        std::vector<std::int64_t> shape{dim_b, dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_b, dim_n};
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            for (std::int64_t n{0}; n < dim_n; n++)
+            {
+                const float val            = static_cast<float>(100 * b + n);
+                const std::int64_t index   = b * dim_n + n;
+                two_dims[index]            = static_cast<TestType>(val);
+                two_dims_unsqueezed[index] = static_cast<TestType>(val);
+            }
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    two_dims.data(),
+                                                    two_dims.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                               two_dims_unsqueezed.data(),
+                                                               two_dims_unsqueezed.size(),
+                                                               shape_unsqueezed.data(),
+                                                               shape_unsqueezed.size());
+
+        const auto tensor_info  = tensor.GetTensorTypeAndShapeInfo();
+        const auto tensor_dims  = tensor_info.GetShape();
+        const auto tensor_count = tensor_info.GetElementCount();
+        REQUIRE(tensor_count == dim_b * dim_n);
+        REQUIRE(array_equals(shape, tensor_dims));
+
+        const auto tensor_unsqueezed_info = tensor_unsqueezed.GetTensorTypeAndShapeInfo();
+        const auto tensor_unsqueezed_dims = tensor_unsqueezed_info.GetShape();
+        const auto tensor_unsqueezed_count = tensor_unsqueezed_info.GetElementCount();
+        REQUIRE(tensor_unsqueezed_count == dim_b * dim_n);
+        REQUIRE(array_equals(shape_unsqueezed, tensor_unsqueezed_dims));
+
+        auto blob = onnx::blob_from_tensor<TestType>(tensor);
+        REQUIRE(array_equals(shape, blob.shape));
+        REQUIRE(array_equals(two_dims, blob.data, comparator));
+
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+        REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
+        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed.data, comparator));
+    }
+
+    SECTION("Three dimensions")
+    {
+        std::vector<TestType> three_dims(dim_b * dim_m * dim_n);
+        std::vector<TestType> three_dims_unsqueezed(dim_b * dim_m * dim_n);
+        std::vector<std::int64_t> shape{dim_b, dim_m, dim_n};
+        std::vector<std::int64_t> shape_unsqueezed{1, dim_b, dim_m, dim_n};
+        for (std::int64_t b{0}; b < dim_b; b++)
+        {
+            for (std::int64_t m{0}; m < dim_m; m++)
+            {
+                for (std::int64_t n{0}; n < dim_n; n++)
+                {
+                    const float val = static_cast<float>(100 * (100 * b + m) + n);
+                    const std::int64_t index     = b * dim_m * dim_n + m * dim_n + n;
+                    three_dims[index]            = static_cast<TestType>(val);
+                    three_dims_unsqueezed[index] = static_cast<TestType>(val);
+                }
+            }
+        }
+
+        Ort::Value tensor{nullptr}, tensor_unsqueezed{nullptr};
+
+        tensor = Ort::Value::CreateTensor<TestType>(mem_info,
+                                                    three_dims.data(),
+                                                    three_dims.size(),
+                                                    shape.data(),
+                                                    shape.size());
+
+        tensor_unsqueezed =
+            Ort::Value::CreateTensor<TestType>(mem_info,
+                                               three_dims_unsqueezed.data(),
+                                               three_dims_unsqueezed.size(),
+                                               shape_unsqueezed.data(),
+                                               shape_unsqueezed.size());
+
+        const auto tensor_info  = tensor.GetTensorTypeAndShapeInfo();
+        const auto tensor_dims  = tensor_info.GetShape();
+        const auto tensor_count = tensor_info.GetElementCount();
+        REQUIRE(tensor_count == dim_b * dim_m * dim_n);
+        REQUIRE(array_equals(shape, tensor_dims));
+
+        const auto tensor_unsqueezed_info = tensor_unsqueezed.GetTensorTypeAndShapeInfo();
+        const auto tensor_unsqueezed_dims = tensor_unsqueezed_info.GetShape();
+        const auto tensor_unsqueezed_count = tensor_unsqueezed_info.GetElementCount();
+        REQUIRE(tensor_unsqueezed_count == dim_b * dim_m * dim_n);
+        REQUIRE(array_equals(shape_unsqueezed, tensor_unsqueezed_dims));
+
+        auto blob = onnx::blob_from_tensor<TestType>(tensor);
+        REQUIRE(array_equals(shape, blob.shape));
+        REQUIRE(array_equals(three_dims, blob.data, comparator));
+
+        auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
+        REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
+        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed.data, comparator));
+    }
+}
+
 TEST_CASE("[tensor_conversion] - detail::validate_batched_images", "[rad::onnx]")
 {
     const auto generate_batch = [](cv::Size sz, int type) {
