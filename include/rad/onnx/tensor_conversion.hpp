@@ -85,7 +85,7 @@ namespace rad::onnx
                                 dims.size())};
             }
 
-            for (size_t i = 0; i < dims.size(); i++)
+            for (std::size_t i = 0; i < dims.size(); i++)
             {
                 if (dims[i] >= shape[i])
                 {
@@ -103,13 +103,13 @@ namespace rad::onnx
                 products[i] = shape[i + 1] * products[i + 1];
             }
 
-            size_t start_index = 0;
-            for (size_t i = 0; i < dims.size(); i++)
+            std::size_t start_index = 0;
+            for (std::size_t i = 0; i < dims.size(); i++)
             {
                 start_index += dims[i] * products[i];
             }
 
-            const size_t size = products[dims.size() - 1];
+            const std::size_t size = products[dims.size() - 1];
             if ((start_index + size) > data.size())
             {
                 throw std::runtime_error{
@@ -124,56 +124,7 @@ namespace rad::onnx
 
         auto operator()(std::initializer_list<std::int64_t> dims) const
         {
-            if (std::empty(dims))
-            {
-                return std::views::counted(data.begin(), data.size());
-            }
-
-            if (dims.size() > shape.size())
-            {
-                throw std::runtime_error{
-                    fmt::format("error: attempting to slice a "
-                                "tensor blob with {} dimensions with {} indices.",
-                                shape.size(),
-                                dims.size())};
-            }
-
-            for (size_t i = 0; i < dims.size(); i++)
-            {
-                const auto dim = (*(dims.begin() + i));
-                if (dim >= shape[i])
-                {
-                    throw std::runtime_error{fmt::format("error: expected index {} to "
-                                                         "be less than dimension {}.",
-                                                         dim,
-                                                         shape[i])};
-                }
-            }
-
-            std::vector<std::int64_t> products(shape.size());
-            products[products.size() - 1] = 1;
-            for (int i = static_cast<int>(products.size()) - 2; i >= 0; i--)
-            {
-                products[i] = shape[i + 1] * products[i + 1];
-            }
-
-            size_t start_index = 0;
-            for (size_t i = 0; i < dims.size(); i++)
-            {
-                start_index += (*(dims.begin() + i)) * products[i];
-            }
-
-            const size_t size = products[dims.size() - 1];
-            if ((start_index + size) > data.size())
-            {
-                throw std::runtime_error{
-                    fmt::format("error: attempting to slice a "
-                                "tensor blob outside of the bounds of the array.")};
-            }
-
-            auto it = data.begin() + start_index;
-
-            return std::views::counted(it, size);
+            return operator()(std::vector<std::int64_t>(dims));
         }
     };
 
