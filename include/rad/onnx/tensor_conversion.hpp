@@ -5,6 +5,9 @@
 #include "onnxruntime.hpp"
 #include "perform_safe_op.hpp"
 
+#include <initializer_list>
+#include <ranges>
+
 namespace rad::onnx::detail
 {
     inline std::tuple<int, int, int>
@@ -65,7 +68,73 @@ namespace rad::onnx
     {
         std::vector<T> data;
         std::vector<std::int64_t> shape;
+
+        auto operator()(std::vector<std::int64_t> const& dims) const
+        {
+            if (dims.empty())
+            {
+                return std::views::counted(data.begin(), data.size());
+            }
+
+            std::vector<std::int64_t> products(shape.size());
+            products[products.size() - 1] = 1;
+            for (int i = static_cast<int>(products.size()) - 2; i >= 0; i--)
+            {
+                products[i] = shape[i + 1] * products[i + 1];
+            }
+
+            size_t start_index = 0;
+            for (size_t i = 0; i < dims.size(); i++)
+            {
+                start_index += dims[i] * products[i];
+            }
+
+            const size_t size = products[dims.size() - 1];
+            auto it           = data.begin() + start_index;
+
+            return std::views::counted(it, size);
+        }
+
+        auto operator()(std::initializer_list<std::int64_t> dims) const
+        {
+            if (std::empty(dims))
+            {
+                return std::views::counted(data.begin(), data.size());
+            }
+
+            std::vector<std::int64_t> products(shape.size());
+            products[products.size() - 1] = 1;
+            for (int i = static_cast<int>(products.size()) - 2; i >= 0; i--)
+            {
+                products[i] = shape[i + 1] * products[i + 1];
+            }
+
+            size_t start_index = 0;
+            for (size_t i = 0; i < dims.size(); i++)
+            {
+                start_index += (*(dims.begin() + i)) * products[i];
+            }
+
+            const size_t size = products[dims.size() - 1];
+            auto it           = data.begin() + start_index;
+
+            return std::views::counted(it, size);
+        }
     };
+
+    template<TensorDataType T>
+    TensorBlob<T> blob_from_tensor(Ort::Value const& tensor)
+    {
+        const auto info = tensor.GetTensorTypeAndShapeInfo();
+
+        auto dims        = info.GetShape();
+        const auto count = info.GetElementCount();
+
+        std::vector<T> tensor_data(count);
+        std::memcpy(tensor_data.data(), tensor.GetTensorData<T>(), count * sizeof(T));
+
+        return {.data = std::move(tensor_data), .shape = std::move(dims)};
+    }
 
     template<TensorDataType T>
     TensorBlob<T> image_batch_to_tensor_blob(std::vector<cv::Mat> const& images)
