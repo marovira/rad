@@ -76,6 +76,26 @@ namespace rad::onnx
                 return std::views::counted(data.begin(), data.size());
             }
 
+            if (dims.size() > shape.size())
+            {
+                throw std::runtime_error{
+                    fmt::format("error: attempting to slice a "
+                                "tensor blob with {} dimensions with {} indices.",
+                                shape.size(),
+                                dims.size())};
+            }
+
+            for (size_t i = 0; i < dims.size(); i++)
+            {
+                if (dims[i] >= shape[i])
+                {
+                    throw std::runtime_error{fmt::format("error: expected index {} to "
+                                                         "be less than dimension {}.",
+                                                         dims[i],
+                                                         shape[i])};
+                }
+            }
+
             std::vector<std::int64_t> products(shape.size());
             products[products.size() - 1] = 1;
             for (int i = static_cast<int>(products.size()) - 2; i >= 0; i--)
@@ -90,7 +110,14 @@ namespace rad::onnx
             }
 
             const size_t size = products[dims.size() - 1];
-            auto it           = data.begin() + start_index;
+            if ((start_index + size) > data.size())
+            {
+                throw std::runtime_error{
+                    fmt::format("error: attempting to slice a "
+                                "tensor blob outside of the bounds of the array.")};
+            }
+
+            auto it = data.begin() + start_index;
 
             return std::views::counted(it, size);
         }
@@ -100,6 +127,27 @@ namespace rad::onnx
             if (std::empty(dims))
             {
                 return std::views::counted(data.begin(), data.size());
+            }
+
+            if (dims.size() > shape.size())
+            {
+                throw std::runtime_error{
+                    fmt::format("error: attempting to slice a "
+                                "tensor blob with {} dimensions with {} indices.",
+                                shape.size(),
+                                dims.size())};
+            }
+
+            for (size_t i = 0; i < dims.size(); i++)
+            {
+                const auto dim = (*(dims.begin() + i));
+                if (dim >= shape[i])
+                {
+                    throw std::runtime_error{fmt::format("error: expected index {} to "
+                                                         "be less than dimension {}.",
+                                                         dim,
+                                                         shape[i])};
+                }
             }
 
             std::vector<std::int64_t> products(shape.size());
@@ -116,7 +164,14 @@ namespace rad::onnx
             }
 
             const size_t size = products[dims.size() - 1];
-            auto it           = data.begin() + start_index;
+            if ((start_index + size) > data.size())
+            {
+                throw std::runtime_error{
+                    fmt::format("error: attempting to slice a "
+                                "tensor blob outside of the bounds of the array.")};
+            }
+
+            auto it = data.begin() + start_index;
 
             return std::views::counted(it, size);
         }

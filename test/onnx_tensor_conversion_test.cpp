@@ -111,6 +111,13 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
             REQUIRE(comparator(val, one_dim[n]));
             REQUIRE(comparator(val_unsqueezed, one_dim_unsqueezed[n]));
         }
+
+        REQUIRE_THROWS(blob({dim_n}));
+        REQUIRE_THROWS(blob({0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0}));
     }
 
     SECTION("Two dimensions")
@@ -164,6 +171,15 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                 REQUIRE(comparator(val_unsqueezed, two_dims_unsqueezed[index]));
             }
         }
+
+        REQUIRE_THROWS(blob({dim_b, 0}));
+        REQUIRE_THROWS(blob({0, dim_n}));
+        REQUIRE_THROWS(blob({0, 0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_b, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, 0}));
     }
 
     SECTION("Three dimensions")
@@ -235,6 +251,17 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                 }
             }
         }
+
+        REQUIRE_THROWS(blob({dim_b, 0, 0}));
+        REQUIRE_THROWS(blob({0, dim_m, 0}));
+        REQUIRE_THROWS(blob({0, 0, dim_n}));
+        REQUIRE_THROWS(blob({0, 0, 0, 0}));
+
+        REQUIRE_THROWS(blob_unsqueezed({0, dim_b, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, dim_m, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, dim_n}));
+        REQUIRE_THROWS(blob_unsqueezed({1, 0, 0, 0}));
+        REQUIRE_THROWS(blob_unsqueezed({0, 0, 0, 0, 0}));
     }
 }
 
