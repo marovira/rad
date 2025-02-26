@@ -38,6 +38,25 @@ bool array_equals(T const& lhs, U const& rhs)
     return true;
 }
 
+template<typename T, typename U, typename P>
+bool array_equals(T const& lhs, U const& rhs, P const& pred)
+{
+    if (lhs.size() != rhs.size())
+    {
+        return false;
+    }
+
+    for (std::size_t i{0}; i < lhs.size(); ++i)
+    {
+        if (!pred(lhs[i], rhs[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                    "[rad::onnx]",
                    float,
@@ -48,6 +67,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
     static constexpr std::int64_t dim_b{7};
     static constexpr std::int64_t dim_n{5};
     static constexpr std::int64_t dim_m{3};
+    const std::equal_to<const TestType> comparator;
 
     Ort::MemoryInfo mem_info =
         Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
@@ -82,16 +102,14 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
         auto blob            = onnx::blob_from_tensor<TestType>(tensor);
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
 
-        REQUIRE(array_equals(one_dim, blob_unsqueezed({0})));
-        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed({})));
+        REQUIRE(array_equals(one_dim, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed({}), comparator));
         for (std::int64_t n{0}; n < dim_n; n++)
         {
-            TestType val            = blob({n}).front();
-            TestType val_unsqueezed = blob_unsqueezed({0, n}).front();
-            const bool val_equal{val == one_dim[n]};
-            const bool val_unsqueezed_equal{val_unsqueezed == one_dim_unsqueezed[n]};
-            REQUIRE(val_equal);
-            REQUIRE(val_unsqueezed_equal);
+            const TestType val            = blob({n}).front();
+            const TestType val_unsqueezed = blob_unsqueezed({0, n}).front();
+            REQUIRE(comparator(val, one_dim[n]));
+            REQUIRE(comparator(val_unsqueezed, one_dim_unsqueezed[n]));
         }
     }
 
@@ -128,25 +146,22 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
 
         auto blob            = onnx::blob_from_tensor<TestType>(tensor);
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
-        REQUIRE(array_equals(two_dims, blob_unsqueezed({0})));
-        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed({})));
+        REQUIRE(array_equals(two_dims, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed({}), comparator));
         for (std::int64_t b{0}; b < dim_b; b++)
         {
             auto batch = std::views::counted(two_dims.begin() + (b * dim_n), dim_n);
             auto batch_unsqueezed =
                 std::views::counted(two_dims_unsqueezed.begin() + (b * dim_n), dim_n);
-            REQUIRE(array_equals(batch, blob({b})));
-            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b})));
+            REQUIRE(array_equals(batch, blob({b}), comparator));
+            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b}), comparator));
             for (std::int64_t n{0}; n < dim_n; n++)
             {
                 const TestType val            = blob({b, n}).front();
                 const TestType val_unsqueezed = blob_unsqueezed({0, b, n}).front();
                 const std::int64_t index      = b * dim_n + n;
-                const bool val_equal{val == two_dims[index]};
-                const bool val_unsqueezed_equal{val_unsqueezed
-                                                == two_dims_unsqueezed[index]};
-                REQUIRE(val_equal);
-                REQUIRE(val_unsqueezed_equal);
+                REQUIRE(comparator(val, two_dims[index]));
+                REQUIRE(comparator(val_unsqueezed, two_dims_unsqueezed[index]));
             }
         }
     }
@@ -188,8 +203,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
 
         auto blob            = onnx::blob_from_tensor<TestType>(tensor);
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
-        REQUIRE(array_equals(three_dims, blob_unsqueezed({0})));
-        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed({})));
+        REQUIRE(array_equals(three_dims, blob_unsqueezed({0}), comparator));
+        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed({}), comparator));
         for (std::int64_t b{0}; b < dim_b; b++)
         {
             auto batch = std::views::counted(three_dims.begin() + (b * dim_m * dim_n),
@@ -197,8 +212,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
             auto batch_unsqueezed =
                 std::views::counted(three_dims_unsqueezed.begin() + (b * dim_m * dim_n),
                                     dim_m * dim_n);
-            REQUIRE(array_equals(batch, blob({b})));
-            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b})));
+            REQUIRE(array_equals(batch, blob({b}), comparator));
+            REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b}), comparator));
             for (std::int64_t m{0}; m < dim_m; m++)
             {
                 auto row = std::views::counted(three_dims.begin() + (b * dim_m * dim_n)
@@ -207,18 +222,16 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                 auto row_unsqueezed = std::views::counted(
                     three_dims_unsqueezed.begin() + (b * dim_m * dim_n) + (m * dim_n),
                     dim_n);
-                REQUIRE(array_equals(row, blob({b, m})));
-                REQUIRE(array_equals(row_unsqueezed, blob_unsqueezed({0, b, m})));
+                REQUIRE(array_equals(row, blob({b, m}), comparator));
+                REQUIRE(
+                    array_equals(row_unsqueezed, blob_unsqueezed({0, b, m}), comparator));
                 for (std::int64_t n{0}; n < dim_n; n++)
                 {
-                    TestType val             = blob({b, m, n}).front();
-                    TestType val_unsqueezed  = blob_unsqueezed({0, b, m, n}).front();
-                    const std::int64_t index = b * dim_m * dim_n + m * dim_n + n;
-                    const bool val_equal{val == three_dims[index]};
-                    const bool val_unsqueezed_equal{val_unsqueezed
-                                                    == three_dims_unsqueezed[index]};
-                    REQUIRE(val_equal);
-                    REQUIRE(val_unsqueezed_equal);
+                    const TestType val            = blob({b, m, n}).front();
+                    const TestType val_unsqueezed = blob_unsqueezed({0, b, m, n}).front();
+                    const std::int64_t index      = b * dim_m * dim_n + m * dim_n + n;
+                    REQUIRE(comparator(val, three_dims[index]));
+                    REQUIRE(comparator(val_unsqueezed, three_dims_unsqueezed[index]));
                 }
             }
         }
@@ -235,6 +248,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
     static constexpr std::int64_t dim_b{7};
     static constexpr std::int64_t dim_n{5};
     static constexpr std::int64_t dim_m{3};
+    const std::equal_to<const TestType> comparator;
 
     Ort::MemoryInfo mem_info =
         Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
@@ -280,11 +294,11 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
 
         auto blob = onnx::blob_from_tensor<TestType>(tensor);
         REQUIRE(array_equals(shape, blob.shape));
-        REQUIRE(array_equals(one_dim, blob.data));
+        REQUIRE(array_equals(one_dim, blob.data, comparator));
 
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
         REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
-        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed.data));
+        REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed.data, comparator));
     }
 
     SECTION("Two dimensions")
@@ -332,11 +346,11 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
 
         auto blob = onnx::blob_from_tensor<TestType>(tensor);
         REQUIRE(array_equals(shape, blob.shape));
-        REQUIRE(array_equals(two_dims, blob.data));
+        REQUIRE(array_equals(two_dims, blob.data, comparator));
 
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
         REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
-        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed.data));
+        REQUIRE(array_equals(two_dims_unsqueezed, blob_unsqueezed.data, comparator));
     }
 
     SECTION("Three dimensions")
@@ -388,11 +402,11 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
 
         auto blob = onnx::blob_from_tensor<TestType>(tensor);
         REQUIRE(array_equals(shape, blob.shape));
-        REQUIRE(array_equals(three_dims, blob.data));
+        REQUIRE(array_equals(three_dims, blob.data, comparator));
 
         auto blob_unsqueezed = onnx::blob_from_tensor<TestType>(tensor_unsqueezed);
         REQUIRE(array_equals(shape_unsqueezed, blob_unsqueezed.shape));
-        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed.data));
+        REQUIRE(array_equals(three_dims_unsqueezed, blob_unsqueezed.data, comparator));
     }
 }
 
