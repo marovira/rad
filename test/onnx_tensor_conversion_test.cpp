@@ -86,10 +86,12 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
         REQUIRE(array_equals(one_dim_unsqueezed, blob_unsqueezed({})));
         for (std::int64_t n{0}; n < dim_n; n++)
         {
-            const auto val            = blob({n}).front();
-            const auto val_unsqueezed = blob_unsqueezed({0, n}).front();
-            REQUIRE(val == one_dim[n]);
-            REQUIRE(val_unsqueezed == one_dim_unsqueezed[n]);
+            TestType val            = blob({n}).front();
+            TestType val_unsqueezed = blob_unsqueezed({0, n}).front();
+            const bool val_equal{val == one_dim[n]};
+            const bool val_unsqueezed_equal{val_unsqueezed == one_dim_unsqueezed[n]};
+            REQUIRE(val_equal);
+            REQUIRE(val_unsqueezed_equal);
         }
     }
 
@@ -137,11 +139,14 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
             REQUIRE(array_equals(batch_unsqueezed, blob_unsqueezed({0, b})));
             for (std::int64_t n{0}; n < dim_n; n++)
             {
-                const auto val            = blob({b, n}).front();
-                const auto val_unsqueezed = blob_unsqueezed({0, b, n}).front();
-                const std::int64_t index  = b * dim_n + n;
-                REQUIRE(val == two_dims[index]);
-                REQUIRE(val_unsqueezed == two_dims_unsqueezed[index]);
+                const TestType val            = blob({b, n}).front();
+                const TestType val_unsqueezed = blob_unsqueezed({0, b, n}).front();
+                const std::int64_t index      = b * dim_n + n;
+                const bool val_equal{val == two_dims[index]};
+                const bool val_unsqueezed_equal{val_unsqueezed
+                                                == two_dims_unsqueezed[index]};
+                REQUIRE(val_equal);
+                REQUIRE(val_unsqueezed_equal);
             }
         }
     }
@@ -206,11 +211,14 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                 REQUIRE(array_equals(row_unsqueezed, blob_unsqueezed({0, b, m})));
                 for (std::int64_t n{0}; n < dim_n; n++)
                 {
-                    const auto val            = blob({b, m, n}).front();
-                    const auto val_unsqueezed = blob_unsqueezed({0, b, m, n}).front();
-                    const std::int64_t index  = b * dim_m * dim_n + m * dim_n + n;
-                    REQUIRE(val == three_dims[index]);
-                    REQUIRE(val_unsqueezed == three_dims_unsqueezed[index]);
+                    TestType val             = blob({b, m, n}).front();
+                    TestType val_unsqueezed  = blob_unsqueezed({0, b, m, n}).front();
+                    const std::int64_t index = b * dim_m * dim_n + m * dim_n + n;
+                    const bool val_equal{val == three_dims[index]};
+                    const bool val_unsqueezed_equal{val_unsqueezed
+                                                    == three_dims_unsqueezed[index]};
+                    REQUIRE(val_equal);
+                    REQUIRE(val_unsqueezed_equal);
                 }
             }
         }
