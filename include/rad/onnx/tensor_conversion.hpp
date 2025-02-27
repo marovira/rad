@@ -142,7 +142,7 @@ namespace rad::onnx
         return {.data = std::move(tensor_data), .shape = std::move(dims)};
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     TensorBlob<T> image_batch_to_tensor_blob(std::vector<cv::Mat> const& images)
     {
         const auto [num_channels, rows, cols] = detail::validate_batched_images(images);
@@ -170,13 +170,13 @@ namespace rad::onnx
         };
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     TensorBlob<T> image_to_tensor_blob(cv::Mat const& image)
     {
         return image_batch_to_tensor_blob<T>({image});
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor_blob(TensorBlob<T> const& blob,
                                                       cv::Size sz,
                                                       int type,
@@ -224,7 +224,7 @@ namespace rad::onnx
         return images;
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     std::vector<cv::Mat>
     image_batch_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
     {
@@ -233,7 +233,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob,
                                    cv::Size sz,
                                    int type,
@@ -253,7 +253,7 @@ namespace rad::onnx
         return images.front();
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     cv::Mat image_from_tensor_blob(TensorBlob<T> const& blob, cv::Size sz, int type)
     {
         return image_from_tensor_blob<T>(blob, sz, type, [](cv::Mat img) {
@@ -261,7 +261,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     std::vector<cv::Mat> image_batch_from_tensor(Ort::Value const& tensor,
                                                  cv::Size sz,
                                                  int type,
@@ -339,7 +339,7 @@ namespace rad::onnx
         return images;
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     std::vector<cv::Mat>
     image_batch_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
@@ -348,7 +348,7 @@ namespace rad::onnx
         });
     }
 
-    template<TensorDataType T, ImagePostProcessFunctor Fun>
+    template<ImageTensorDataType T, ImagePostProcessFunctor Fun>
     cv::Mat
     image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type, Fun post_process)
     {
@@ -364,7 +364,7 @@ namespace rad::onnx
         return images.front();
     }
 
-    template<TensorDataType T>
+    template<ImageTensorDataType T>
     cv::Mat image_from_tensor(Ort::Value const& tensor, cv::Size sz, int type)
     {
         return image_from_tensor<T>(tensor, sz, type, [](cv::Mat img) {
