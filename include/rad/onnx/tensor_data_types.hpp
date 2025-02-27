@@ -23,5 +23,9 @@ namespace rad::onnx
         {
             return ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT16;
         }
+        else if constexpr (std::is_same_v<T, std::int64_t>)
+        {
+            return ONNXTensorElementDataType::ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64;
+        }
     }
 } // namespace rad::onnx
