@@ -85,7 +85,7 @@ namespace rad::onnx
                                 dims.size())};
             }
 
-            for (size_t i = 0; i < dims.size(); i++)
+            for (std::size_t i = 0; i < dims.size(); i++)
             {
                 if (dims[i] >= shape[i])
                 {
@@ -103,13 +103,13 @@ namespace rad::onnx
                 products[i] = shape[i + 1] * products[i + 1];
             }
 
-            size_t start_index = 0;
-            for (size_t i = 0; i < dims.size(); i++)
+            std::size_t start_index = 0;
+            for (std::size_t i = 0; i < dims.size(); i++)
             {
                 start_index += dims[i] * products[i];
             }
 
-            const size_t size = products[dims.size() - 1];
+            const std::size_t size = products[dims.size() - 1];
             if ((start_index + size) > data.size())
             {
                 throw std::runtime_error{
