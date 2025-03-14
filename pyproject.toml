@@ -1,0 +1,54 @@
+[project]
+name = "rad"
+version = "0.1.0" # Not relevant, just here to keep uv happy.
+requires-python = ">=3.12"
+dependencies = [
+    "gdown>=5.2.0",
+    "mypy>=1.15.0",
+    "pre-commit>=4.1.0",
+    "ruff>=0.10.0",
+]
+
+[tool.uv]
+required-version = ">=0.6.0"
+package = false
+
+[tool.ruff]
+line-length = 90
+indent-width = 4
+src = ["scripts"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "UP",
+    "B",
+    "SIM",
+    "I",
+    "N",
+    "A",
+    "C4",
+    "T10",
+    "ICN",
+    "PIE",
+    "SLF",
+    "PTH",
+    "ERA",
+    "NPY",
+    "RUF100",
+]
+
+ignore = []
+fixable = ["I"]
+unfixable = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.mypy]
+warn_unused_configs = true
+warn_unused_ignores = true
