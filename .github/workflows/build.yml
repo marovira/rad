@@ -44,38 +44,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        id: setup_python
+      - name: Install uv
+        uses: astral-sh/setup-uv@5
         with:
           python-version: "3.12"
-
-      - name: Cache virtualenv
-        uses: actions/cache@v4
-        with:
-          key: venv_${{ matrix.config.os }}_py-${{ steps.setup_python.outputs.python-version }}_${{ hashFiles('requirements.txt') }}
-          path: venv
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Install Python dependencies
         shell: bash
-        env:
-          RUNNER: ${{ matrix.config.os }}
         run: |
-          python -m venv venv
-          if [[ "$RUNNER" == "windows-latest" ]]; then
-           source venv/Scripts/activate
-          else
-            source venv/bin/activate
-          fi
-
-          python -m pip install -r requirements.txt
-
-          if [[ "$RUNNER" == "windows-latest" ]]; then
-            echo "$VIRTUAL_ENV/Scripts" >> $GITHUB_PATH
-          else
-            echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
-          fi
-          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+          uv sync --locked
 
       - name: Cache dependencies
         id: cache-deps
@@ -91,12 +70,12 @@ jobs:
           BUILD_TYPE: ${{ matrix.build }}
         run: |
           if [[ "$OSTYPE" == "msys" ]]; then
-            python tools/build_dependencies.py ~/deps -c
+            uv run tools/build_dependencies.py ~/deps -c
           else
             # Clang and GCC binaries are compatible, so only compile with GCC.
             export CC="gcc-14"
             export CXX="g++-14"
-            python3 tools/build_dependencies.py ~/deps -c
+            uv run tools/build_dependencies.py ~/deps -c
           fi
 
       - name: Build RAD
