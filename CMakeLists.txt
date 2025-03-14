@@ -52,11 +52,11 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
-set(RAD_ZEUS_VERSION 1.5.0)
-set(RAD_TBB_VERSION 2021.13.0)
-set(RAD_OPENCV_VERSION 4.10.0)
-set(RAD_ONNX_VERSION 1.20.0)
-set(RAD_CATCH_VERSION 3.7.1) # This must match the version that Zeus uses.
+set(RAD_ZEUS_VERSION 1.6.0)
+set(RAD_TBB_VERSION 2022.0.0)
+set(RAD_OPENCV_VERSION 4.11.0)
+set(RAD_ONNX_VERSION 1.21.0)
+set(RAD_CATCH_VERSION 3.8.0) # This must match the version that Zeus uses.
 
 #================================
 # Find packages.
