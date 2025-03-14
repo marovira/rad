@@ -1,7 +1,7 @@
 #include "rad/onnx/env.hpp"
 
 #include <fmt/printf.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <zeus/string.hpp>
 
 namespace rad::onnx

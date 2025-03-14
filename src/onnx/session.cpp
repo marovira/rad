@@ -1,7 +1,7 @@
 #include "rad/onnx/session.hpp"
 
 #include <fmt/printf.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #if defined(RAD_ONNX_DML_ENABLED)
 #    include <dml_provider_factory.h>
