@@ -13,14 +13,13 @@ encouraged to use the built-in script.
 ## Using the Script
 
 Starting with RAD 2.3.0, a Python script is provided to automatically build all
-dependencies. The script requires Python 3.12+ and can be used as follows:
+dependencies. In RAD 2.5.0, the use of Astral's [uv](https://docs.astral.sh/uv/) was
+introduced and is now required to run the script:
 
 ```sh
-python3 -m venv .venv
-. .venv/bin/activate # or .venv/Scripts/activate for Windows
-pip install -r requirements.txt
+uv sync
 
-python3 ./tools/build_dependencies.py <install-root>
+uv run ./tools/build_dependencies.py <install-root>
 ```
 
 The script will automatically clone, build, and install the correct versions for all
@@ -120,9 +119,10 @@ building through the provided `CopySharedLibs` script.
 
 ### Troubleshooting
 
-In certain Windows platforms, building ONNXRuntime can fail due to compiler errors. The
-issue is tracked [here](https://onnxruntime.ai/docs/build/inferencing.html). Below are
-some workarounds to the compiler errors that may arise:
+If the latest version of the Windows SDK is not used, then ONNXRuntime may fail to
+compile. For reference, see [this
+issue](https://onnxruntime.ai/docs/build/inferencing.html). Below are some workarounds to
+the compiler errors that may arise
 
 * Compiler errors appear regarding undefined symbols for `STRSAFE_LPSTR` and similar
   aliases. To solve this, navigate to

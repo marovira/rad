@@ -28,8 +28,8 @@ RAD requires a minimum version of 3.30 and supports the following platforms and 
 
 | Platform (Compiler) | Version |
 |---------------------|---------|
-| Windows (MSVC) | 19.41 |
-| Linux (GCC) | 14.0.1 |
+| Windows (MSVC) | 19.43 |
+| Linux (GCC) | 14.2.0 |
 | Linux (LLVM Clang) | 18.1 |
 
 > [!WARNING]
@@ -39,10 +39,10 @@ RAD requires a minimum version of 3.30 and supports the following platforms and 
 
 | Library | Version |
 |---------------------|---------|
-| [Zeus](https://github.com/marovira/zeus) | 1.5.0 |
-| [OpenCV](https://github.com/opencv/opencv) |4.10.0 |
-| [TBB](https://github.com/oneapi-src/oneTBB) |2021.13.0 |
-| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.19.2 |
+| [Zeus](https://github.com/marovira/zeus) | 1.6.0 |
+| [OpenCV](https://github.com/opencv/opencv) |4.11.0 |
+| [TBB](https://github.com/oneapi-src/oneTBB) |2022.0.0 |
+| [ONNXRuntime](https://github.com/microsoft/onnxruntime) | 1.21.0 |
 
 > [!NOTE]
 > ONNXRuntime is an optional dependency that may be removed when the library is built.
