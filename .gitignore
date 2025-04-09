@@ -4,6 +4,8 @@ build/
 # Generated files
 rad.hpp
 test_data_root.hpp
+cmake/radConfig.cmake
+cmake/radConfig_onnx.cmake
 
 # Python
 .ruff_cache/
