@@ -1,0 +1,10 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.8.0)
+    include(CMakeFindDependencyMacro)
+    find_dependency(zeus @RAD_ZEUS_VERSION@ REQUIRED)
+    find_dependency(OpenCV @RAD_OPENCV_VERSION@ REQUIRED)
+    find_dependency(TBB @RAD_TBB_VERSION@ REQUIRED)
+    find_dependency(onnxruntime @RAD_ONNX_VERSION@ REQUIRED)
+endif()
+
+include(${CMAKE_CURRENT_LIST_DIR}/radTargets.cmake)

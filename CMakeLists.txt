@@ -107,7 +107,19 @@ endif()
 configure_file(${RAD_CMAKE_ROOT}/CopySharedLibs.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/cmake/CopySharedLibs.cmake
     @ONLY
-    )
+)
+
+# Generate the config script. Make sure we only replace @...@ so CMake variables are left
+# alone.
+configure_file(${RAD_CMAKE_ROOT}/radConfig.cmake.in
+    ${RAD_CMAKE_ROOT}/radConfig.cmake
+    @ONLY
+)
+configure_file(${RAD_CMAKE_ROOT}/radConfig_onnx.cmake.in
+    ${RAD_CMAKE_ROOT}/radConfig_onnx.cmake
+    @ONLY
+)
+
 
 #================================
 # Add subdirectories.
