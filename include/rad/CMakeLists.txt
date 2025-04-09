@@ -12,6 +12,7 @@ set(INCLUDE_LIST
     ${INCLUDE_ROOT}/opencv.hpp
     ${INCLUDE_ROOT}/processing.hpp
     ${INCLUDE_ROOT}/processing_util.hpp
+    ${INCLUDE_ROOT}/blending_functions.hpp
     )
 
 if (RAD_USE_ONNX)

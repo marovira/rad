@@ -5,6 +5,7 @@ set(TEST_SOURCE
     ${RAD_TEST_ROOT}/image_utils_test.cpp
     ${RAD_TEST_ROOT}/processing_util_test.cpp
     ${RAD_TEST_ROOT}/processing_test.cpp
+    ${RAD_TEST_ROOT}/blending_functions_test.cpp
     )
 
 if (RAD_USE_ONNX)
