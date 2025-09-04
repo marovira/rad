@@ -75,6 +75,54 @@ namespace rad::onnx
     {
         return get_default_dml_session_options(0);
     }
+
+#elif defined(RAD_ONNX_COREML_ENABLED)
+    Ort::SessionOptions get_default_coreml_session_options(CoreMLSettings const& settings)
+    {
+        std::unordered_map<std::string, std::string> provider_options;
+
+        // Internal flags go first.
+        provider_options["ModelFormat"]                        = "MLProgram";
+        provider_options["EnableOnSubgraphs"]                  = "1";
+        provider_options["SpecializationStrategy"]             = "Default";
+        provider_options["ProfileComputePlan"]                 = "0";
+        provider_options["AllowLowPrecisionAccumulationOnGPU"] = "0";
+
+        std::string unit;
+        switch (settings.compute_unit)
+        {
+        case MLComputeUnit::cpu_only:
+            unit = "CPUOnly";
+            break;
+
+        case MLComputeUnit::cpu_and_neural_engine:
+            unit = "CPUAndNeuralEngine";
+            break;
+
+        case MLComputeUnit::cpu_and_gpu:
+            unit = "CPUAndGPU";
+            break;
+
+        case MLComputeUnit::all:
+            unit = "ALL";
+            break;
+
+        default:
+            // Unknown value passed in!
+            ASSERT(0);
+            break;
+        }
+
+        provider_options["MLComputeUnits"] = unit;
+        provider_options["RequireStaticInputShapes"] =
+            (settings.only_allow_static_input_shapes) ? "1" : "0";
+
+        Ort::SessionOptions opt;
+        opt.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
+        opt.AppendExecutionProvider("CoreML", provider_options);
+
+        return opt;
+    }
 #endif
 
     std::vector<std::vector<std::int64_t>> get_input_shapes(Ort::Session& session)

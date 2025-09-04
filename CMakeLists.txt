@@ -4,11 +4,6 @@
 cmake_minimum_required(VERSION 3.30)
 project(rad VERSION 2.7.0 LANGUAGES CXX)
 
-# Don't allow builds for Apple.
-if (APPLE)
-    message(ERROR "RAD does not support Apple platforms.")
-endif()
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
@@ -22,6 +17,7 @@ endif()
 #================================
 option(RAD_USE_ONNX "Enable features that rely on ONNXRuntime" OFF)
 option(RAD_USE_ONNX_DML "Enable usage of ONNXRuntime with DML provider" OFF)
+option(RAD_USE_ONNX_COREML "Enable usage of ONNXRuntime with CoreML provider" OFF)
 option(RAD_ENABLE_THROW_ON_FAILED_ORT_INIT
     "Enable throwing an exception when ONNXRuntime fails to initialise" OFF)
 option(RAD_BUILD_TESTS "Build RAD unit tests" OFF)
@@ -29,6 +25,10 @@ option(RAD_INSTALL_TARGET "Create install target" OFF)
 
 if (NOT WIN32 AND RAD_USE_ONNX_DML)
     message(FATAL_ERROR "DML provider for ONNXRuntime is only available in Windows")
+endif()
+
+if (NOT APPLE AND RAD_USE_ONNX_COREML)
+    message(FATAL_ERROR "CoreML provider for ONNXRuntime is only available on Apple")
 endif()
 
 if (NOT RAD_USE_ONNX AND RAD_USE_ONNX_DML)
@@ -52,11 +52,11 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
-set(RAD_ZEUS_VERSION 1.6.0)
-set(RAD_TBB_VERSION 2022.0.0)
-set(RAD_OPENCV_VERSION 4.11.0)
-set(RAD_ONNX_VERSION 1.21.0)
-set(RAD_CATCH_VERSION 3.8.0) # This must match the version that Zeus uses.
+set(RAD_ZEUS_VERSION 1.7.0)
+set(RAD_TBB_VERSION 2022.2.0)
+set(RAD_OPENCV_VERSION 4.12.0)
+set(RAD_ONNX_VERSION 1.22.0)
+set(RAD_CATCH_VERSION 3.10.0) # This must match the version that Zeus uses.
 
 #================================
 # Find packages.
@@ -149,6 +149,8 @@ endif()
 
 if (RAD_USE_ONNX_DML)
     target_compile_definitions(rad PUBLIC RAD_ONNX_DML_ENABLED)
+elseif(RAD_USE_ONNX_COREML)
+    target_compile_definitions(rad PUBLIC RAD_ONNX_COREML_ENABLED)
 endif()
 
 target_compile_features(rad PUBLIC cxx_std_20)

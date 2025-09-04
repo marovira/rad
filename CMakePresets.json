@@ -83,6 +83,35 @@
             "cacheVariables": {
                 "RAD_USE_ONNX": "ON"
             }
+        },
+        {
+            "name": "apple",
+            "displayName": "Apple",
+            "description": "Default build for Apple",
+            "inherits": "unix_base",
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror"
+            }
+        },
+        {
+            "name": "apple-onnx",
+            "displayName": "Apple",
+            "description": "Default build for Apple using ONNXRuntime",
+            "inherits": "apple",
+            "cacheVariables": {
+                "RAD_USE_ONNX": "ON"
+            }
+        },
+        {
+            "name": "apple-onnx-coreml",
+            "displayName": "Apple",
+            "description": "Default build for Apple using ONNXRuntime",
+            "inherits": "apple",
+            "cacheVariables": {
+                "RAD_USE_ONNX": "ON",
+                "RAD_USE_ONNX_COREML": "ON"
+            }
         }
     ]
+
 }

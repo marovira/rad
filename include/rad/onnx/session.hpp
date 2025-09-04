@@ -12,6 +12,7 @@ namespace rad::onnx
     {
         cpu = 0,
         dml,
+        coreml,
     };
 
     template<typename T>
@@ -49,6 +50,15 @@ namespace rad::onnx
 #endif
         }
 
+        if (provider == ExecutionProviders::coreml)
+        {
+#if defined(RAD_ONNX_COREML_ENABLED)
+            return true;
+#else
+            return false;
+#endif
+        }
+
         return false;
     }
 
@@ -57,6 +67,23 @@ namespace rad::onnx
 #if defined(RAD_ONNX_DML_ENABLED)
     Ort::SessionOptions get_default_dml_session_options(int device_id);
     Ort::SessionOptions get_default_dml_session_options();
+#elif defined(RAD_ONNX_COREML_ENABLED)
+    enum class MLComputeUnit
+    {
+        cpu_only,
+        cpu_and_neural_engine,
+        cpu_and_gpu,
+        all,
+    };
+
+    struct CoreMLSettings
+    {
+        MLComputeUnit compute_unit{MLComputeUnit::all};
+        bool only_allow_static_input_shapes{true};
+    };
+
+    Ort::SessionOptions
+    get_default_coreml_session_options(CoreMLSettings const& settings);
 #endif
 
     template<SelectorFunctor T>
