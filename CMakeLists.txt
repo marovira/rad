@@ -66,7 +66,7 @@ if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
         GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG a442ea14cb490df8dc34bbc561fe2910ae6e515d
+        GIT_TAG 2b600192467449824b3531c5490fccf9779dfa7d
         )
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
@@ -247,7 +247,7 @@ if (RAD_BUILD_TESTS)
         fetch_library(
             NAME Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG f981c9cbcac07a2690e5a86767eba490b5465463
+            GIT_TAG 25319fd3047c6bdcf3c0170e76fa526c77f99ca9
             )
         list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     endif()
