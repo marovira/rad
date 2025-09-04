@@ -91,6 +91,9 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "-DBUILD_opencv_objc_bindings_generator=OFF",
             "-DBUILD_opencv_js=OFF",
             "-DBUILD_opencv_js_bindings_generator=OFF",
+            "-DBUILD_PNG=OFF" if platform.system() == "Darwin" else "",
+            "-DPNG_HARDWARE_OPTIMISATIONS=OFF" if platform.system() == "Darwin" else "",
+            "-DBUILD_opencv_dnn=OFF" if platform.system() == "Darwin" else "",
         ],
         cmake_var="RAD_OPENCV_VERSION",
         archive_name="opencv.zip",
@@ -244,7 +247,10 @@ def configure_opencv(
 
 
 def build(name: str, build_root: pathlib.Path, config: str) -> None:
-    args = ["cmake", "--build", f"{str(build_root)}", "--parallel"]
+    args = ["cmake", "--build", f"{str(build_root)}"]
+    if platform.system() != "Darwin":
+        args.append("--parallel")
+
     if platform.system() == "Windows":
         args.extend(["--config", config])
     execute_command(f"Building {name}", args)
