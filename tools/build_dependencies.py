@@ -115,6 +115,7 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "--use_dml" if platform.system() == "Windows" else "",
             "--use_coreml" if platform.system() == "Darwin" else "",
             "--skip_tests",
+            "--compile_no_warning_as_error",
         ],
         cmake_var="RAD_ONNX_VERSION",
         clone_recursive=True,
