@@ -85,6 +85,12 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "-DBUILD_PERF_TESTS=OFF",
             "-DBUILD_TESTS=OFF",
             "-DWITH_DIRECTX=OFF",
+            "-DBUILD_JAVA=OFF",
+            "-DBUILD_opencv_java=OFF",
+            "-DBUILD_opencv_java_bindings_generator=OFF",
+            "-DBUILD_opencv_objc_bindings_generator=OFF",
+            "-DBUILD_opencv_js=OFF",
+            "-DBUILD_opencv_js_bindings_generator=OFF",
         ],
         cmake_var="RAD_OPENCV_VERSION",
         archive_name="opencv.zip",
@@ -107,6 +113,7 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "--parallel",
             "--skip_submodule_sync",
             "--use_dml" if platform.system() == "Windows" else "",
+            "--use_coreml" if platform.system() == "Darwin" else "",
             "--skip_tests",
         ],
         cmake_var="RAD_ONNX_VERSION",
@@ -211,6 +218,8 @@ def configure_cmake(
     args.append(f"-DCMAKE_PREFIX_PATH={install_root.parent}")
     if platform.system() == "Linux":
         args.append(f"-DCMAKE_BUILD_TYPE={config}")
+    if platform.system() == "Darwin":
+        args.append("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
 
     execute_command(f"Configuring {name}", args)
 
@@ -266,6 +275,7 @@ def build_onnxruntime(
             "--cmake_extra_defines",
             f"CMAKE_INSTALL_PREFIX={str(install_root)}",
             "onnxruntime_BUILD_UNIT_TESTS=OFF",
+            "CMAKE_OSX_ARCHITECTURES=arm64;x86_64",
         ]
     )
 
