@@ -55,7 +55,7 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 set(RAD_ZEUS_VERSION 1.7.0)
 set(RAD_TBB_VERSION 2022.2.0)
 set(RAD_OPENCV_VERSION 4.12.0)
-set(RAD_ONNX_VERSION 1.22.0)
+set(RAD_ONNX_VERSION 1.22.2)
 set(RAD_CATCH_VERSION 3.10.0) # This must match the version that Zeus uses.
 
 #================================
