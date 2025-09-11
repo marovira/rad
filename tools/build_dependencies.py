@@ -169,13 +169,18 @@ def get_cmake_config(project_root: pathlib.Path) -> CMakeConfig:
 
         presets = preset_data["configurePresets"]
         config = CMakeConfig()
+        # Grab the C++ standard from the CI base preset.
+        ci_preset = find_preset(presets, "ci")
+        config.cxx_standard = ci_preset["cacheVariables"]["CMAKE_CXX_STANDARD"]
+
+        # The generator we grab from either msvc-base or unix-base depending on the
+        # platform.
         if platform.system() == "Windows":
-            base_preset = find_preset(presets, "msvc")
+            base_preset = find_preset(presets, "msvc-base")
         else:
-            base_preset = find_preset(presets, "unix_base")
+            base_preset = find_preset(presets, "unix-base")
 
         config.generator = base_preset["generator"]
-        config.cxx_standard = base_preset["cacheVariables"]["CMAKE_CXX_STANDARD"]
 
         return config
 
