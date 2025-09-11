@@ -15,6 +15,7 @@ import gdown
 class GDriveURL(typing.TypedDict):
     Windows: str
     Linux: str
+    Darwin: str
     output: str
 
 
@@ -71,6 +72,7 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1uBVLn-8Ny2REmsO5nvnJBXJbTBR0r5QV",
             "Linux": "https://drive.google.com/uc?id=1wdc5Emwa8Ft3a0fQRttLygs3UUF6wWw8",
+            "Darwin": "https://drive.google.com/uc?id=1yjR0TWbUNOKgpT0UxZEtzBX_W0Nh-odB",
             "output": "TBB.zip",
         },
     ),
@@ -94,6 +96,7 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1Dm7zbKo9yqyJY3qW_yZSrX7GgcOKA-2z",
             "Linux": "https://drive.google.com/uc?id=1whhqtS6_YSlcnF2_MzRFu0ZnvKa-T7Mn",
+            "Darwin": "https://drive.google.com/uc?id=1foqpRPVpUM_1VejpcbtiM0aP_YWozkd6",
             "output": "opencv.zip",
         },
     ),
@@ -115,6 +118,7 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         gdrive_url={
             "Windows": "https://drive.google.com/uc?id=1FdjUi9VaXdNjQOErClBF15n-521k8MM2",
             "Linux": "https://drive.google.com/uc?id=1we8HonPhBK2AKsAsHOdmoCQRRFluX8cp",
+            "Darwin": "https://drive.google.com/uc?id=1diiDYD6m7zbFq3227lrHj1mCAybotwgp",
             "output": "onnxruntime.zip",
         },
     ),
