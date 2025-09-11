@@ -29,6 +29,10 @@ TEST_CASE("[session] - get_execution_providers", "[rad::onnx]")
 #if defined(RAD_ONNX_DML_ENABLED)
     REQUIRE(provider_present(providers, onnx::ExecutionProviders::dml));
 #endif
+
+#if defined(RAD_ONNX_COREML_ENABLED)
+    REQUIRE(provider_present(providers, onnx::ExecutionProviders::coreml));
+#endif
 }
 
 TEST_CASE("[session] - is_provider_enabled", "[rad::onnx]")
@@ -349,7 +353,7 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<float> set;
+        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
         set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());

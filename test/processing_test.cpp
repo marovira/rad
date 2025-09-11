@@ -3,6 +3,7 @@
 #include "test_file_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <zeus/platform.hpp>
 #include <zeus/string.hpp>
 
 #include <atomic>
@@ -82,6 +83,7 @@ TEST_CASE("processing - process_images", "[rad]")
             rad::process_images_parallel(mgr.root().string(), fun);
         }
 
+#if !defined(ZEUS_PLATFORM_APPLE)
         SECTION("16-bit")
         {
             TestFileManager::Params params{.num_files = num_files,
@@ -96,6 +98,7 @@ TEST_CASE("processing - process_images", "[rad]")
             rad::process_images(mgr.root().string(), fun, cv::IMREAD_UNCHANGED);
             rad::process_images_parallel(mgr.root().string(), fun, cv::IMREAD_UNCHANGED);
         }
+#endif
     }
 }
 

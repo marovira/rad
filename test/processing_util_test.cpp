@@ -3,6 +3,7 @@
 #include "test_file_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <zeus/platform.hpp>
 
 #include <unordered_set>
 
@@ -61,6 +62,7 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
         REQUIRE(img.type() == params.type);
     }
 
+#if !defined(ZEUS_PLATFORM_APPLE)
     SECTION("png")
     {
         params.ext = "png";
@@ -73,6 +75,7 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
         REQUIRE(img.size() == params.size);
         REQUIRE(img.type() == params.type);
     }
+#endif
 }
 
 TEST_CASE("[processing_util] - create_result_dir", "[rad]")

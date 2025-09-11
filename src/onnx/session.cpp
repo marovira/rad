@@ -21,6 +21,11 @@ namespace rad::onnx
             return ExecutionProviders::dml;
         }
 
+        if (name == "CoreMLExecutionProvider")
+        {
+            return ExecutionProviders::coreml;
+        }
+
         throw std::runtime_error{fmt::format("error: {} is an unknown provider", name)};
     }
 
