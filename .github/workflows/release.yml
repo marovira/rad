@@ -20,11 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc"}
-          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc-onnx"}
-          - {os: "windows-latest", cxx: "msvc", cc: "msvc", preset: "msvc-onnx-dml"}
-          - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc"}
+          - {os: "windows-2025", cxx: "msvc", cc: "msvc", preset: "msvc-onnx-dml"}
           - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc-onnx"}
+          - {os: "macos-14", cxx: "clang++", cc: "clang", preset: "apple-onnx-coreml"}
+
 
     steps:
       - name: Checkout
@@ -59,8 +58,10 @@ jobs:
             uv run tools/build_dependencies.py ~/deps -c
           else
             # Clang and GCC binaries are compatible, so only compile with GCC.
-            export CC="gcc-14"
-            export CXX="g++-14"
+            if [[ "$OSTYPE" == "linux-gnu" ]]; then
+              export CC="gcc-14"
+              export CXX="g++-14"
+            fi
             uv run tools/build_dependencies.py ~/deps -c
           fi
 
@@ -72,7 +73,7 @@ jobs:
           CC: ${{ matrix.config.cc }}
           CXX: ${{ matrix.config.cxx }}
         run: |
-          cmake --preset=$CONFIG_TYPE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps -DCMAKE_INSTALL_PREFIX=install/rad -DRAD_INSTALL_TARGET=ON
+          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps -DCMAKE_INSTALL_PREFIX=install/rad -DRAD_INSTALL_TARGET=ON
           cd ./build
           cmake --build . --config $BUILD_TYPE
 
@@ -88,7 +89,7 @@ jobs:
           if [[ "$OSTYPE" == "msys" ]]; then
             cmake --build . --target RUN_TESTS --config $BUILD_TYPE
           else
-            make test
+            cmake --build . --target test --config $BUILD_TYPE
           fi
 
       - name: Install
@@ -103,7 +104,7 @@ jobs:
           if [[ "$OSTYPE" == "msys" ]]; then
             cmake --build . --target INSTALL --config $BUILD_TYPE
           else
-            make install
+            cmake --build . --target install --config $BUILD_TYPE
           fi
 
       - name: Package
