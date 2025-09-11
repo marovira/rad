@@ -78,22 +78,16 @@ DEPENDENCIES: dict[str, SDKInfo] = {
         url="https://github.com/opencv/opencv.git",
         flags=[
             "-DWITH_TBB=ON",
-            "-DBUILD_TESTS=OFF",
+            "-DWITH_EIGEN=OFF",
             "-DBUILD_opencv_world=ON",
             "-DBUILD_opencv_python3=OFF",
             "-DBUILD_opencv_python_bindings_generator=OFF",
             "-DBUILD_PERF_TESTS=OFF",
             "-DBUILD_TESTS=OFF",
-            "-DWITH_DIRECTX=OFF",
-            "-DBUILD_JAVA=OFF",
-            "-DBUILD_opencv_java=OFF",
-            "-DBUILD_opencv_java_bindings_generator=OFF",
-            "-DBUILD_opencv_objc_bindings_generator=OFF",
-            "-DBUILD_opencv_js=OFF",
-            "-DBUILD_opencv_js_bindings_generator=OFF",
-            "-DBUILD_PNG=OFF" if platform.system() == "Darwin" else "",
-            "-DPNG_HARDWARE_OPTIMISATIONS=OFF" if platform.system() == "Darwin" else "",
-            "-DBUILD_opencv_dnn=OFF" if platform.system() == "Darwin" else "",
+            "-DWITH_DIRECTX=OFF" if platform.system() == "Windows" else "",
+            "-DCV_ENABLE_INTRINSICS=OFF" if platform.system() == "Darwin" else "",
+            "-DWITH_IPP=OFF" if platform.system() == "Darwin" else "",
+            "-DWITH_PNG=OFF" if platform.system() == "Darwin" else "",
         ],
         cmake_var="RAD_OPENCV_VERSION",
         archive_name="opencv.zip",
@@ -103,11 +97,6 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "output": "opencv.zip",
         },
     ),
-    "opencv_contrib": SDKInfo(
-        url="https://github.com/opencv/opencv_contrib.git",
-        cmake_var="RAD_OPENCV_VERSION",
-        is_extra_dependency=True,
-    ),
     "onnxruntime": SDKInfo(
         url="https://github.com/microsoft/onnxruntime.git",
         tag_prefix="v",
@@ -115,10 +104,10 @@ DEPENDENCIES: dict[str, SDKInfo] = {
             "--build_shared_lib",
             "--parallel",
             "--skip_submodule_sync",
+            "--compile_no_warning_as_error",
             "--use_dml" if platform.system() == "Windows" else "",
             "--use_coreml" if platform.system() == "Darwin" else "",
-            "--skip_tests",
-            "--compile_no_warning_as_error",
+            "--no_kleidiai" if platform.system() == "Darwin" else "",
         ],
         cmake_var="RAD_ONNX_VERSION",
         clone_recursive=True,
@@ -247,12 +236,7 @@ def configure_opencv(
 
 
 def build(name: str, build_root: pathlib.Path, config: str) -> None:
-    args = ["cmake", "--build", f"{str(build_root)}"]
-    if platform.system() != "Darwin":
-        args.append("--parallel")
-
-    if platform.system() == "Windows":
-        args.extend(["--config", config])
+    args = ["cmake", "--build", f"{str(build_root)}", "--parallel", "--config", config]
     execute_command(f"Building {name}", args)
 
 
@@ -281,10 +265,12 @@ def build_onnxruntime(
         [
             "--cmake_extra_defines",
             f"CMAKE_INSTALL_PREFIX={str(install_root)}",
+            "CMAKE_POLICY_VERSION_MINIMUM=3.5",
             "onnxruntime_BUILD_UNIT_TESTS=OFF",
-            "CMAKE_OSX_ARCHITECTURES=arm64;x86_64",
         ]
     )
+    if platform.system() == "Darwin":
+        args.append("CMAKE_OSX_ARCHITECTURES=arm64;x86_64")
 
     args = list(filter(None, args))
     execute_command(f"Installing {name}", args)
