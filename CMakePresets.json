@@ -7,108 +7,108 @@
     },
     "configurePresets": [
         {
-            "name": "msvc",
-            "displayName": "MSVC",
-            "description": "Default build for MSVC",
+            "name": "dev",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "20",
+                "RAD_USE_ONNX": "ON",
+                "RAD_BUILD_TESTS": "ON",
+                "RAD_INSTALL_TARGET": "ON"
+            }
+        },
+        {
+            "name": "ci",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "20",
+                "RAD_USE_ONNX": "ON",
+                "RAD_BUILD_TESTS": "ON",
+                "RAD_CI_BUILD": "ON"
+            }
+        },
+        {
+            "name": "msvc-base",
+            "hidden": true,
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "/W4 /WX /MP /EHsc -DNOMINMAX",
-                "CMAKE_CXX_STANDARD": "20",
-                "RAD_BUILD_TESTS": "ON"
-            }
-        },
-        {
-            "name": "msvc-onnx",
-            "displayName": "MSVC ONNX",
-            "description": "Default build for MSVC using ONNXRuntime",
-            "inherits": "msvc",
-            "cacheVariables": {
-                "RAD_USE_ONNX": "ON"
-            }
-        },
-        {
-            "name": "msvc-onnx-dml",
-            "displayName": "MSVC ONNX + DML",
-            "description": "Default build for MSVC using ONNXRuntime with DML provider",
-            "inherits": "msvc",
-            "cacheVariables": {
-                "RAD_USE_ONNX": "ON",
                 "RAD_USE_ONNX_DML": "ON"
             }
         },
         {
-            "name": "unix_base",
+            "name": "unix-base",
             "hidden": true,
             "generator": "Ninja Multi-Config",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_CXX_STANDARD": "20",
                 "CMAKE_CXX_FLAGS_DEBUG": "-g -O0 -DDEBUG",
-                "RAD_BUILD_TESTS": "ON"
-            }
-        },
-        {
-            "name": "gcc",
-            "displayName": "GCC",
-            "description": "Default build for GCC",
-            "inherits": "unix_base",
-            "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror"
             }
         },
         {
-            "name": "gcc-onnx",
-            "displayName": "GCC ONNX",
-            "description": "Default build for GCC using ONNXRuntime",
-            "inherits": "gcc",
+            "name": "msvc-dev",
+            "displayName": "MSVC dev",
+            "description": "Default dev build for MSVC",
+            "inherits": ["dev", "msvc-base"]
+        },
+        {
+            "name": "msvc-ci",
+            "displayName": "MSVC CI",
+            "description": "MSVC build for CI",
+            "inherits": ["ci", "msvc-base"],
             "cacheVariables": {
-                "RAD_USE_ONNX": "ON"
+                "RAD_CI_BUILD": "ON"
             }
         },
         {
-            "name": "clang",
-            "displayName": "Clang",
-            "description": "Default build for Clang",
-            "inherits": "unix_base",
+            "name": "gcc-dev",
+            "displayName": "GCC dev",
+            "description": "Default dev build for GCC",
+            "inherits": ["dev", "unix-base"]
+        },
+        {
+            "name": "gcc-ci",
+            "displayName": "GCC CI",
+            "description": "Default build for GCC using ONNXRuntime",
+            "inherits": ["ci", "unix-base"],
+            "cacheVariables": {
+                "RAD_CI_BUILD": "ON"
+            }
+        },
+        {
+            "name": "clang-dev",
+            "displayName": "Clang dev",
+            "description": "Default dev build for Clang",
+            "inherits": ["dev", "unix-base"],
             "cacheVariables": {
                 "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++"
             }
         },
         {
-            "name": "clang-onnx",
-            "displayName": "Clang ONNX",
-            "description": "Default build for Clang using ONNXRuntime",
-            "inherits": "clang",
+            "name": "clang-ci",
+            "displayName": "Clang CI",
+            "description": "Default ci build for Clang",
+            "inherits": ["ci", "unix-base"],
             "cacheVariables": {
-                "RAD_USE_ONNX": "ON"
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror -stdlib=libstdc++"
             }
         },
         {
-            "name": "apple",
-            "displayName": "Apple",
-            "description": "Default build for Apple",
-            "inherits": "unix_base",
+            "name": "apple-dev",
+            "displayName": "Apple dev",
+            "description": "Default dev build for Apple",
+            "inherits": ["dev", "unix-base"],
             "cacheVariables": {
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -pedantic -Werror"
+                "RAD_USE_ONNX_COREML": "ON"
             }
         },
         {
-            "name": "apple-onnx",
-            "displayName": "Apple",
-            "description": "Default build for Apple using ONNXRuntime",
-            "inherits": "apple",
+            "name": "apple-ci",
+            "displayName": "Apple CI",
+            "description": "Default CI build for Apple",
+            "inherits": ["ci", "unix-base"],
             "cacheVariables": {
-                "RAD_USE_ONNX": "ON"
-            }
-        },
-        {
-            "name": "apple-onnx-coreml",
-            "displayName": "Apple",
-            "description": "Default build for Apple using ONNXRuntime",
-            "inherits": "apple",
-            "cacheVariables": {
-                "RAD_USE_ONNX": "ON",
                 "RAD_USE_ONNX_COREML": "ON"
             }
         }
