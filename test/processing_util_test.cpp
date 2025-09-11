@@ -62,7 +62,7 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
         REQUIRE(img.type() == params.type);
     }
 
-#if !defined(ZEUS_PLATFORM_APPLE)
+#if !defined(ZEUS_PLATFORM_APPLE) || !defined(RAD_CI_BUILD)
     SECTION("png")
     {
         params.ext = "png";

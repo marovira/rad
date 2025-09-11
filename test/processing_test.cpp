@@ -83,9 +83,11 @@ TEST_CASE("processing - process_images", "[rad]")
             rad::process_images_parallel(mgr.root().string(), fun);
         }
 
-#if !defined(ZEUS_PLATFORM_APPLE)
+#if !defined(ZEUS_PLATFORM_APPLE) || !defined(RAD_CI_BUILD)
         SECTION("16-bit")
         {
+            // This test needs to be enabled for all platforms with the exception of CI
+            // builds on Apple.
             TestFileManager::Params params{.num_files = num_files,
                                            .ext       = "png",
                                            .type      = CV_16UC3};

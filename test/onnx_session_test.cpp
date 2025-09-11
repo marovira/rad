@@ -320,7 +320,7 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         REQUIRE(result.size() == 10);
     }
 
-#elif defined(RAD_ONNX_COREML_ENABLED)
+#elif defined(RAD_ONNX_COREML_ENABLED) && !defined(RAD_CI_BUILD)
     SECTION("CoreML inference: 32-bit float CoreML all")
     {
         auto opt = onnx::get_default_coreml_session_options(
@@ -363,7 +363,7 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         REQUIRE(result.size() == 10);
     }
 
-/*#    if defined(ZEUS_PLATFORM_APPLE_ARM64)
+#    if defined(ZEUS_PLATFORM_APPLE_ARM64)
     SECTION("CoreML inference: 32-bit float CoreML ANE")
     {
         auto opt = onnx::get_default_coreml_session_options(
@@ -405,6 +405,6 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         auto result = onnx::array_from_tensor<std::uint16_t>(out_tensors.front(), 10);
         REQUIRE(result.size() == 10);
     }
-#    endif*/
+#    endif
 #endif
 }

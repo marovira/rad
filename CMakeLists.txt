@@ -22,6 +22,7 @@ option(RAD_ENABLE_THROW_ON_FAILED_ORT_INIT
     "Enable throwing an exception when ONNXRuntime fails to initialise" OFF)
 option(RAD_BUILD_TESTS "Build RAD unit tests" OFF)
 option(RAD_INSTALL_TARGET "Create install target" OFF)
+option(RAD_CI_BUILD "Build for CI" OFF)
 
 if (NOT WIN32 AND RAD_USE_ONNX_DML)
     message(FATAL_ERROR "DML provider for ONNXRuntime is only available in Windows")
@@ -151,6 +152,10 @@ if (RAD_USE_ONNX_DML)
     target_compile_definitions(rad PUBLIC RAD_ONNX_DML_ENABLED)
 elseif(RAD_USE_ONNX_COREML)
     target_compile_definitions(rad PUBLIC RAD_ONNX_COREML_ENABLED)
+endif()
+
+if (RAD_CI_BUILD)
+    target_compile_definitions(rad PUBLIC RAD_CI_BUILD)
 endif()
 
 target_compile_features(rad PUBLIC cxx_std_20)
