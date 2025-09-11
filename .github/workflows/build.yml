@@ -33,10 +33,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: "windows-2025", cxx: "msvc", cc: "msvc", preset: "msvc-onnx-dml"}
-          - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc-onnx"}
-          - {os: "ubuntu-24.04", cxx: "clang++-18", cc: "clang-18", preset: "clang-onnx"}
-          - {os: "macos-14", cxx: "clang++", cc: "clang", preset: "apple-onnx-coreml"}
+          - {os: "windows-2025", cxx: "msvc", cc: "msvc", preset: "msvc-ci"}
+          - {os: "ubuntu-24.04", cxx: "g++-14", cc: "gcc-14", preset: "gcc-ci"}
+          - {os: "ubuntu-24.04", cxx: "clang++-18", cc: "clang-18", preset: "clang-ci"}
+          - {os: "macos-14", cxx: "clang++", cc: "clang", preset: "apple-ci"}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,13 +85,11 @@ jobs:
           CC: ${{ matrix.config.cc }}
           CXX: ${{ matrix.config.cxx }}
         run: |
-          cmake --preset=$CONFIG_TYPE -DBUILD_SHARED_LIBS=OFF -DCMAKE_PREFIX_PATH=~/deps
-          cd ./build
-          cmake --build . --config $BUILD_TYPE
+          cmake --preset=$CONFIG_TYPE -DCMAKE_PREFIX_PATH=~/deps
+          cmake --build build --config $BUILD_TYPE
 
       - name: Run tests
         shell: bash
-        working-directory: ./build
         env:
           BUILD_TYPE: Release
           CONFIG_TYPE: ${{ matrix.config.preset }}
@@ -99,9 +97,7 @@ jobs:
           CXX: ${{ matrix.config.cxx }}
         run: |
           if [[ "$OSTYPE" == "msys" ]]; then
-            cmake --build . --target RUN_TESTS --config $BUILD_TYPE
+            cmake --build build --target RUN_TESTS --config $BUILD_TYPE
           else
-            cd test/Release
-            ./rad_test
-            # cmake --build . --target test --config $BUILD_TYPE
+            cmake --build build --target test --config $BUILD_TYPE
           fi
