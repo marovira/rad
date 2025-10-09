@@ -24,13 +24,15 @@ development of R&D applications in computer vision. It supports the following wo
 
 ## Requirements
 
-RAD requires a minimum version of 3.30 and supports the following platforms and compilers:
+RAD requires a minimum version of 3.30 and has been tested on the following platforms and
+compilers:
 
 | Platform (Compiler) | Version |
 |---------------------|---------|
 | Windows (MSVC) | 19.44 |
-| Linux (GCC) | 14.2.0 |
+| Linux (GCC) | 14.2 |
 | Linux (LLVM Clang) | 18.1 |
+| macOS 14 (AppleClang) | 15.0 |
 
 
 ## Dependencies
