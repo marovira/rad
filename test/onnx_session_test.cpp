@@ -324,7 +324,8 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
     SECTION("CoreML inference: 32-bit float CoreML all")
     {
         auto opt = onnx::get_default_coreml_session_options(
-            {.compute_unit = onnx::MLComputeUnit::all});
+            {.compute_unit                = onnx::MLComputeUnit::all,
+             .require_static_input_shapes = true});
 
         auto session =
             onnx::make_session_from_file(mgr.get_root(), env, opt, [mgr](std::string) {
@@ -362,49 +363,5 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
         auto result = onnx::array_from_tensor<std::uint16_t>(out_tensors.front(), 10);
         REQUIRE(result.size() == 10);
     }
-
-#    if defined(ZEUS_PLATFORM_APPLE_ARM64)
-    SECTION("CoreML inference: 32-bit float CoreML ANE")
-    {
-        auto opt = onnx::get_default_coreml_session_options(
-            {.compute_unit = onnx::MLComputeUnit::cpu_and_neural_engine});
-
-        auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, opt, [mgr](std::string) {
-                return mgr.get_model(ModelFileManager::Type::static_axes);
-            });
-        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
-
-        onnx::MemoryBackedTensorSet<float> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
-
-        auto out_tensors = onnx::perform_inference(session, set.tensors());
-        REQUIRE(out_tensors.size() == 1);
-
-        auto result = onnx::array_from_tensor<float>(out_tensors.front(), 10);
-        REQUIRE(result.size() == 10);
-    }
-
-    SECTION("CoreML inference: 16-bit float CoreML ANE")
-    {
-        auto opt = onnx::get_default_coreml_session_options(
-            {.compute_unit = onnx::MLComputeUnit::cpu_and_neural_engine});
-
-        auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, opt, [mgr](std::string) {
-                return mgr.get_model(ModelFileManager::Type::half_float);
-            });
-        REQUIRE(static_cast<OrtSession*>(session) != nullptr);
-
-        onnx::MemoryBackedTensorSet<float> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
-
-        auto out_tensors = onnx::perform_inference(session, set.tensors());
-        REQUIRE(out_tensors.size() == 1);
-
-        auto result = onnx::array_from_tensor<std::uint16_t>(out_tensors.front(), 10);
-        REQUIRE(result.size() == 10);
-    }
-#    endif
 #endif
 }

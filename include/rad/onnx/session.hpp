@@ -76,10 +76,20 @@ namespace rad::onnx
         all,
     };
 
+    enum class MLSpecialisationStrategy
+    {
+        base,
+        fast_prediction,
+    };
+
     struct CoreMLSettings
     {
         MLComputeUnit compute_unit{MLComputeUnit::all};
-        bool only_allow_static_input_shapes{true};
+        bool require_static_input_shapes{false};
+        bool enable_on_subgraphs{false};
+        MLSpecialisationStrategy strategy{MLSpecialisationStrategy::base};
+        bool profile_compute_plan{false};
+        bool allow_low_precision_accumulation_on_gpu{false};
     };
 
     Ort::SessionOptions

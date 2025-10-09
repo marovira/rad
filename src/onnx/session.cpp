@@ -82,45 +82,77 @@ namespace rad::onnx
     }
 
 #elif defined(RAD_ONNX_COREML_ENABLED)
-    Ort::SessionOptions get_default_coreml_session_options(CoreMLSettings const& settings)
+    std::string compute_unit_to_str(MLComputeUnit unit)
     {
-        std::unordered_map<std::string, std::string> provider_options;
-
-        // Internal flags go first.
-        provider_options["ModelFormat"]                        = "MLProgram";
-        provider_options["EnableOnSubgraphs"]                  = "1";
-        provider_options["SpecializationStrategy"]             = "Default";
-        provider_options["ProfileComputePlan"]                 = "0";
-        provider_options["AllowLowPrecisionAccumulationOnGPU"] = "0";
-
-        std::string unit;
-        switch (settings.compute_unit)
+        std::string ret;
+        switch (unit)
         {
-        case MLComputeUnit::cpu_only:
-            unit = "CPUOnly";
+        case rad::onnx::MLComputeUnit::cpu_only:
+            ret = "CPUOnly";
             break;
 
-        case MLComputeUnit::cpu_and_neural_engine:
-            unit = "CPUAndNeuralEngine";
+        case rad::onnx::MLComputeUnit::cpu_and_neural_engine:
+            ret = "CPUAndNeuralEngine";
             break;
 
-        case MLComputeUnit::cpu_and_gpu:
-            unit = "CPUAndGPU";
+        case rad::onnx::MLComputeUnit::cpu_and_gpu:
+            ret = "CPUAndGPU";
             break;
 
-        case MLComputeUnit::all:
-            unit = "ALL";
+        case rad::onnx::MLComputeUnit::all:
+            ret = "ALL";
             break;
 
         default:
-            // Unknown value passed in!
+            // Unknown ML unit. Please update the switch accordingly.
             ASSERT(0);
             break;
         }
 
-        provider_options["MLComputeUnits"] = unit;
+        return ret;
+    }
+
+    std::string specialisation_strategy_to_str(MLSpecialisationStrategy strat)
+    {
+        std::string ret;
+        switch (strat)
+        {
+        case MLSpecialisationStrategy::base:
+            ret = "Default";
+            break;
+
+        case MLSpecialisationStrategy::fast_prediction:
+            ret = "FastPrediction";
+            break;
+
+        default:
+            // Unknown specialisation strategy. Please update the switch accordingly.
+            ASSERT(0);
+            break;
+        }
+
+        return ret;
+    }
+
+    Ort::SessionOptions get_default_coreml_session_options(CoreMLSettings const& settings)
+    {
+        std::unordered_map<std::string, std::string> provider_options;
+
+        // Always use NLProgram as we're targeting newer versions of CoreML and they offer
+        // much more control.
+        provider_options["ModelFormat"] = "MLProgram";
+
+        provider_options["MLComputeUnits"] = compute_unit_to_str(settings.compute_unit);
         provider_options["RequireStaticInputShapes"] =
-            (settings.only_allow_static_input_shapes) ? "1" : "0";
+            (settings.require_static_input_shapes) ? "1" : "0";
+        provider_options["EnableOnSubgraphs"] =
+            (settings.enable_on_subgraphs) ? "1" : "0";
+        provider_options["SpecializationStrategy"] =
+            specialisation_strategy_to_str(settings.strategy);
+        provider_options["ProfileComputePlan"] =
+            (settings.profile_compute_plan) ? "1" : "0";
+        provider_options["AllowLowPrecisionAccumulationOnGPU"] =
+            (settings.allow_low_precision_accumulation_on_gpu) ? "1" : "0";
 
         Ort::SessionOptions opt;
         opt.SetGraphOptimizationLevel(ORT_ENABLE_ALL);
