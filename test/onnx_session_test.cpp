@@ -1,13 +1,14 @@
 #include "model_file_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <onnxruntime_cxx_api.h>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <rad/onnx/env.hpp>
-#include <rad/onnx/memory_backed_tensor_set.hpp>
 #include <rad/onnx/onnxruntime.hpp>
 #include <rad/onnx/session.hpp>
 #include <rad/onnx/tensor_conversion.hpp>
+#include <rad/onnx/tensor_set.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -259,8 +260,8 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<float> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<float>(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);
@@ -277,8 +278,9 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<Ort::Float16_t>(
+            cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);
@@ -297,8 +299,8 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<float> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<float>(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);
@@ -316,8 +318,9 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<Ort::Float16_t>(
+            cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);
@@ -339,8 +342,8 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<float> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<float>(cv::Mat::ones(cv::Size{32, 32}, CV_32FC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);
@@ -360,8 +363,9 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
 
-        onnx::MemoryBackedTensorSet<Ort::Float16_t> set;
-        set.insert_tensor_from_image(cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
+        onnx::TensorSet set;
+        set.insert_tensor_from_image<Ort::Float16_t>(
+            cv::Mat::ones(cv::Size{32, 32}, CV_16SC1));
 
         auto out_tensors = onnx::perform_inference(session, set.tensors());
         REQUIRE(out_tensors.size() == 1);

@@ -5,9 +5,9 @@
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <rad/onnx/memory_backed_tensor_set.hpp>
 #include <rad/onnx/onnxruntime.hpp>
 #include <rad/onnx/tensor_conversion.hpp>
+#include <rad/onnx/tensor_set.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -794,7 +794,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
 {
     std::vector<cv::Mat> images(4);
     const auto size = get_test_image_size();
-    onnx::MemoryBackedTensorSet<TestType> s;
+    onnx::TensorSet s;
     const auto post_process = [](cv::Mat img) {
         return img;
     };
@@ -808,7 +808,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
             img = make_test_image<TestType>(channels);
         }
 
-        s.insert_tensor_from_batched_images(images);
+        s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
             onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
@@ -826,7 +826,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
             img = make_test_image<TestType>(channels);
         }
 
-        s.insert_tensor_from_batched_images(images);
+        s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
             onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
@@ -844,7 +844,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
             img = make_test_image<TestType>(channels);
         }
 
-        s.insert_tensor_from_batched_images(images);
+        s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
             onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
@@ -861,7 +861,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
                    Ort::Float16_t,
                    std::uint16_t)
 {
-    onnx::MemoryBackedTensorSet<TestType> s;
+    onnx::TensorSet s;
     const auto post_process = [](cv::Mat img) {
         return img;
     };
@@ -874,7 +874,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
             img = make_test_image<TestType>(1);
         }
 
-        s.insert_tensor_from_batched_images(images);
+        s.insert_tensor_from_batched_images<TestType>(images);
         REQUIRE_THROWS(onnx::image_from_tensor<TestType>(s.tensors().front(),
                                                          images.front().size(),
                                                          images.front().type(),
@@ -891,7 +891,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
         const cv::Mat img = make_test_image<TestType>(channels);
         const auto size   = img.size();
 
-        s.insert_tensor_from_image(img);
+        s.insert_tensor_from_image<TestType>(img);
 
         auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
@@ -907,7 +907,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
         const cv::Mat img = make_test_image<TestType>(channels);
         const auto size   = img.size();
 
-        s.insert_tensor_from_image(img);
+        s.insert_tensor_from_image<TestType>(img);
 
         auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
@@ -923,7 +923,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
         const cv::Mat img = make_test_image<TestType>(channels);
         const auto size   = img.size();
 
-        s.insert_tensor_from_image(img);
+        s.insert_tensor_from_image<TestType>(img);
 
         auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
         auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
@@ -938,7 +938,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_batch_from_tensor",
                    float,
                    std::uint8_t)
 {
-    onnx::MemoryBackedTensorSet<TestType> s;
+    onnx::TensorSet s;
     static constexpr std::size_t size{10};
     static constexpr std::size_t batch_size{4};
 
@@ -946,7 +946,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_batch_from_tensor",
         batch_size,
         std::vector<TestType>(size, TestType{1}));
 
-    s.insert_tensor_from_batched_arrays(batched_data);
+    s.insert_tensor_from_batched_arrays<TestType>(batched_data);
     REQUIRE_FALSE(s.empty());
 
     auto ret = onnx::array_batch_from_tensor<TestType>(s[0], size);
@@ -961,8 +961,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_from_tensor",
     static constexpr std::size_t size{10};
     const std::vector<TestType> src_data(10, TestType{1});
 
-    onnx::MemoryBackedTensorSet<TestType> s;
-    s.insert_tensor_from_array(src_data);
+    onnx::TensorSet s;
+    s.insert_tensor_from_array<TestType>(src_data);
     REQUIRE_FALSE(s.empty());
 
     auto ret = onnx::array_from_tensor<TestType>(s[0], size);

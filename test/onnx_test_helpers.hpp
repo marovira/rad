@@ -9,7 +9,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <utility>
 #include <vector>
+
+template<typename T>
+struct TestTensor
+{
+    Ort::Value tensor;
+    std::vector<T> data;
+};
 
 inline cv::Size get_test_image_size()
 {
@@ -62,6 +70,43 @@ constexpr T make_test_value()
     {
         return T{1};
     }
+}
+
+template<typename T>
+constexpr T make_zero_test_value()
+{
+    if constexpr (std::is_same_v<T, Ort::Float16_t>)
+    {
+        return Ort::Float16_t{0.0f};
+    }
+    else
+    {
+        return T{0};
+    }
+}
+
+template<typename T>
+TestTensor<T> make_test_tensor_with_size(std::size_t size)
+{
+    std::vector<T> data(size, make_test_value<T>());
+    const std::vector<std::int64_t> shape{1, static_cast<std::int64_t>(size)};
+
+    Ort::Value tensor{nullptr};
+    Ort::MemoryInfo mem_info =
+        Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    tensor = Ort::Value::CreateTensor<T>(mem_info,
+                                         data.data(),
+                                         data.size(),
+                                         shape.data(),
+                                         shape.size());
+
+    return {.tensor = std::move(tensor), .data = std::move(data)};
+}
+
+template<typename T>
+TestTensor<T> make_test_tensor()
+{
+    return make_test_tensor_with_size<T>(10);
 }
 
 template<typename T>
