@@ -53,7 +53,7 @@ set(RAD_TEST_ROOT ${RAD_SOURCE_DIR}/test)
 #================================
 # SDK Versions
 #================================
-set(RAD_ZEUS_VERSION 1.7.0)
+set(RAD_ZEUS_VERSION 1.9.0)
 set(RAD_TBB_VERSION 2022.2.0)
 set(RAD_OPENCV_VERSION 4.12.0)
 set(RAD_ONNX_VERSION 1.22.2)
@@ -67,7 +67,7 @@ if (NOT zeus_FOUND)
     include(FetchContent)
     FetchContent_Declare(zeus
         GIT_REPOSITORY https://github.com/marovira/zeus.git
-        GIT_TAG 2b600192467449824b3531c5490fccf9779dfa7d
+        GIT_TAG ca05278fd15748a8b41100bebcfd30113f1e6197
         )
     FetchContent_MakeAvailable(zeus)
     list(APPEND CMAKE_MODULE_PATH ${zeus_SOURCE_DIR}/cmake)
