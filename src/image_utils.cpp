@@ -7,6 +7,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <cmath>
+#include <vector>
 
 namespace rad
 {
@@ -158,11 +159,17 @@ namespace rad
         return ret;
     }
 
-    cv::Mat downscale_to(cv::Mat const& img, cv::Size size)
+    cv::Mat
+    resize(cv::Mat const& img, cv::Size size, double fx, double fy, int interpolation)
     {
-        cv::Mat resized;
-        cv::resize(img, resized, size, 0, 0, cv::INTER_CUBIC);
-        return resized;
+        cv::Mat ret;
+        cv::resize(img, ret, size, fx, fy, interpolation);
+        return ret;
+    }
+
+    cv::Mat resize(cv::Mat const& img, cv::Size size, int interpolation)
+    {
+        return resize(img, size, 0, 0, interpolation);
     }
 
     cv::Mat downscale_by_long_edge(cv::Mat const& img, int max_size)
@@ -188,9 +195,20 @@ namespace rad
             scale.height = max_size;
         }
 
-        cv::Mat resized;
-        cv::resize(img, resized, scale, 0, 0, cv::INTER_CUBIC);
+        return resize(img, scale, cv::INTER_CUBIC);
+    }
 
-        return resized;
+    std::vector<cv::Mat> split(cv::Mat const& img)
+    {
+        std::vector<cv::Mat> ret;
+        cv::split(img, ret);
+        return ret;
+    }
+
+    cv::Mat merge(std::vector<cv::Mat> const& chans)
+    {
+        cv::Mat ret;
+        cv::merge(chans, ret);
+        return ret;
     }
 } // namespace rad

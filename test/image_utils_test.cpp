@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <limits>
 #include <type_traits>
+#include <vector>
 
 template<typename T>
 consteval T epsilon()
@@ -270,16 +271,46 @@ TEST_CASE("[image_utils] - from_normalised_float", "[rad]")
     }
 }
 
-TEST_CASE("[image_utils] - downscale_to", "[rad]")
+TEST_CASE("[image_utils] - resize", "[rad]")
 {
-    const cv::Size target{64, 64};
-    const auto type = CV_8UC1;
+    const cv::Mat orig = cv::Mat::zeros(cv::Size{32, 32}, CV_32FC3);
+    SECTION("Main function")
+    {
+        SECTION("Downscale")
+        {
+            cv::Size target{16, 16};
+            auto res = rad::resize(orig, target, 0, 0, cv::INTER_CUBIC);
+            REQUIRE(res.type() == orig.type());
+            REQUIRE(res.size() == target);
+        }
 
-    const cv::Mat orig = cv::Mat::zeros(cv::Size{128, 128}, type);
-    const cv::Mat res  = rad::downscale_to(orig, target);
+        SECTION("Upscale")
+        {
+            const cv::Size target{64, 64};
+            auto res = rad::resize(orig, target, 0, 0, cv::INTER_CUBIC);
+            REQUIRE(res.type() == orig.type());
+            REQUIRE(res.size() == target);
+        }
+    }
 
-    REQUIRE(res.size() == target);
-    REQUIRE(res.type() == type);
+    SECTION("Overload")
+    {
+        SECTION("Downscale")
+        {
+            const cv::Size target{16, 16};
+            auto res = rad::resize(orig, target, cv::INTER_CUBIC);
+            REQUIRE(res.type() == orig.type());
+            REQUIRE(res.size() == target);
+        }
+
+        SECTION("Upscale")
+        {
+            const cv::Size target{64, 64};
+            auto res = rad::resize(orig, target, cv::INTER_CUBIC);
+            REQUIRE(res.type() == orig.type());
+            REQUIRE(res.size() == target);
+        }
+    }
 }
 
 TEST_CASE("[image_utils] - downscale_by_long_edge", "[rad]")
@@ -304,4 +335,25 @@ TEST_CASE("[image_utils] - downscale_by_long_edge", "[rad]")
         REQUIRE(res.size() == cv::Size{16, long_target});
         REQUIRE(res.type() == type);
     }
+}
+
+TEST_CASE("[image_utils] - split")
+{
+    const cv::Mat base = cv::Mat::zeros(cv::Size{32, 32}, CV_32FC3);
+    auto ret           = rad::split(base);
+    REQUIRE(ret.size() == 3);
+    REQUIRE(ret[0].type() == CV_32FC1);
+    REQUIRE(ret[1].type() == CV_32FC1);
+    REQUIRE(ret[2].type() == CV_32FC1);
+}
+
+TEST_CASE("[image_utils] - merge")
+{
+    const std::vector<cv::Mat> chans{
+        cv::Mat::zeros(cv::Size{32, 32}, CV_32FC1),
+        cv::Mat::zeros(cv::Size{32, 32}, CV_32FC1),
+        cv::Mat::zeros(cv::Size{32, 32}, CV_32FC1),
+    };
+    auto ret = rad::merge(chans);
+    REQUIRE(ret.type() == CV_32FC3);
 }

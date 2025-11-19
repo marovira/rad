@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <vector>
 
 namespace rad
 {
@@ -96,6 +97,11 @@ namespace rad
     cv::Mat to_fp16(cv::Mat const& img);
     cv::Mat to_fp32(cv::Mat const& img);
 
-    cv::Mat downscale_to(cv::Mat const& img, cv::Size size);
+    cv::Mat
+    resize(cv::Mat const& img, cv::Size size, double fx, double fy, int interpolation);
+    cv::Mat resize(cv::Mat const& img, cv::Size size, int interplation);
     cv::Mat downscale_by_long_edge(cv::Mat const& img, int max_size);
+
+    std::vector<cv::Mat> split(cv::Mat const& img);
+    cv::Mat merge(std::vector<cv::Mat> const& chans);
 } // namespace rad
