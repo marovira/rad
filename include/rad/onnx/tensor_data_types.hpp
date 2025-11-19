@@ -1,6 +1,10 @@
 #pragma once
 
 #include "concepts.hpp"
+#include "onnxruntime.hpp"
+
+#include <cstdint>
+#include <type_traits>
 
 namespace rad::onnx
 {

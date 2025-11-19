@@ -1,4 +1,5 @@
 #pragma once
 
 #define ORT_API_MANUAL_INIT
+#include <onnxruntime_c_api.h>   // IWYU pragma: export
 #include <onnxruntime_cxx_api.h> // IWYU pragma: export

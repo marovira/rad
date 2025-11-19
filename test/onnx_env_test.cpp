@@ -1,6 +1,6 @@
-#include <rad/onnx/env.hpp>
-
 #include <catch2/catch_test_macros.hpp>
+#include <rad/onnx/env.hpp>
+#include <rad/onnx/onnxruntime.hpp>
 
 namespace onnx = rad::onnx;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <zeus/concepts.hpp>
+#include <concepts>
 
 namespace rad
 {

@@ -1,9 +1,19 @@
-#include <rad/onnx/tensor_conversion.hpp>
-
 #include "onnx_test_helpers.hpp"
-#include <rad/onnx/memory_backed_tensor_set.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
+#include <rad/onnx/memory_backed_tensor_set.hpp>
+#include <rad/onnx/onnxruntime.hpp>
+#include <rad/onnx/tensor_conversion.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <ranges>
+#include <vector>
 
 namespace onnx = rad::onnx;
 
@@ -19,43 +29,47 @@ struct TestDataType<Ort::Float16_t>
     using Type = std::uint16_t;
 };
 
-template<typename T, typename U>
-bool array_equals(T const& lhs, U const& rhs)
+namespace
 {
-    if (lhs.size() != rhs.size())
+    template<typename T, typename U>
+    bool array_equals(T const& lhs, U const& rhs)
     {
-        return false;
-    }
-
-    for (std::size_t i{0}; i < lhs.size(); ++i)
-    {
-        if (lhs[i] != rhs[i])
+        if (lhs.size() != rhs.size())
         {
             return false;
         }
+
+        for (std::size_t i{0}; i < lhs.size(); ++i)
+        {
+            if (lhs[i] != rhs[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    return true;
-}
-
-template<typename T, typename U, typename P>
-bool array_equals(T const& lhs, U const& rhs, P const& pred)
-{
-    if (lhs.size() != rhs.size())
+    template<typename T, typename U, typename P>
+    bool array_equals(T const& lhs, U const& rhs, P const& pred)
     {
-        return false;
-    }
-
-    for (std::size_t i{0}; i < lhs.size(); ++i)
-    {
-        if (!pred(lhs[i], rhs[i]))
+        if (lhs.size() != rhs.size())
         {
             return false;
         }
+
+        for (std::size_t i{0}; i < lhs.size(); ++i)
+        {
+            if (!pred(lhs[i], rhs[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    return true;
-}
+} // namespace
 
 TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
                    "[rad::onnx]",
@@ -70,7 +84,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
     static constexpr std::int64_t dim_m{3};
     const std::equal_to<const TestType> comparator;
 
-    Ort::MemoryInfo mem_info =
+    const Ort::MemoryInfo mem_info =
         Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     SECTION("One dimension")
@@ -81,7 +95,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
         std::vector<std::int64_t> shape_unsqueezed{1, dim_n};
         for (std::int64_t n{0}; n < dim_n; n++)
         {
-            const float val       = static_cast<float>(n);
+            const auto val        = static_cast<float>(n);
             one_dim[n]            = static_cast<TestType>(val);
             one_dim_unsqueezed[n] = static_cast<TestType>(val);
         }
@@ -131,7 +145,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
         {
             for (std::int64_t n{0}; n < dim_n; n++)
             {
-                const float val            = static_cast<float>(100 * b + n);
+                const auto val             = static_cast<float>(100 * b + n);
                 const std::int64_t index   = b * dim_n + n;
                 two_dims[index]            = static_cast<TestType>(val);
                 two_dims_unsqueezed[index] = static_cast<TestType>(val);
@@ -195,7 +209,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - TensorBlob::operator()",
             {
                 for (std::int64_t n{0}; n < dim_n; n++)
                 {
-                    const float val = static_cast<float>(100 * (100 * b + m) + n);
+                    const auto val = static_cast<float>(100 * (100 * b + m) + n);
                     const std::int64_t index     = b * dim_m * dim_n + m * dim_n + n;
                     three_dims[index]            = static_cast<TestType>(val);
                     three_dims_unsqueezed[index] = static_cast<TestType>(val);
@@ -279,7 +293,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
     static constexpr std::int64_t dim_m{3};
     const std::equal_to<const TestType> comparator;
 
-    Ort::MemoryInfo mem_info =
+    const Ort::MemoryInfo mem_info =
         Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     SECTION("One dimension")
@@ -290,7 +304,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
         std::vector<std::int64_t> shape_unsqueezed{1, dim_n};
         for (std::int64_t n{0}; n < dim_n; n++)
         {
-            const float val       = static_cast<float>(n);
+            const auto val        = static_cast<float>(n);
             one_dim[n]            = static_cast<TestType>(val);
             one_dim_unsqueezed[n] = static_cast<TestType>(val);
         }
@@ -341,7 +355,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
         {
             for (std::int64_t n{0}; n < dim_n; n++)
             {
-                const float val            = static_cast<float>(100 * b + n);
+                const auto val             = static_cast<float>(100 * b + n);
                 const std::int64_t index   = b * dim_n + n;
                 two_dims[index]            = static_cast<TestType>(val);
                 two_dims_unsqueezed[index] = static_cast<TestType>(val);
@@ -395,7 +409,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - blob_from_tensor",
             {
                 for (std::int64_t n{0}; n < dim_n; n++)
                 {
-                    const float val = static_cast<float>(100 * (100 * b + m) + n);
+                    const auto val = static_cast<float>(100 * (100 * b + m) + n);
                     const std::int64_t index     = b * dim_m * dim_n + m * dim_n + n;
                     three_dims[index]            = static_cast<TestType>(val);
                     three_dims_unsqueezed[index] = static_cast<TestType>(val);

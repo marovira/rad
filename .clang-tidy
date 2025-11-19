@@ -1,0 +1,14 @@
+---
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  bugprone-*,
+  misc-*,
+  -modernize-use-trailing-return-type,
+  -modernize-use-std-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-reserved-identifier
+HeaderFilterRegex: ""

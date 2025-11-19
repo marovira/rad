@@ -1,12 +1,24 @@
 #pragma once
 
-#include "../opencv.hpp"
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
-#include "perform_safe_op.hpp"
 
+#include <fmt/format.h>
+#include <opencv2/core.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
+
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <initializer_list>
 #include <ranges>
+#include <stdexcept>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace rad::onnx::detail
 {
@@ -66,8 +78,11 @@ namespace rad::onnx
     template<TensorDataType T>
     struct TensorBlob
     {
+        // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
         std::vector<T> data;
         std::vector<std::int64_t> shape;
+
+        // NOLINTEND(misc-non-private-member-variables-in-classes)
 
         auto operator()(std::vector<std::int64_t> const& dims) const
         {
@@ -146,7 +161,8 @@ namespace rad::onnx
     TensorBlob<T> image_batch_to_tensor_blob(std::vector<cv::Mat> const& images)
     {
         const auto [num_channels, rows, cols] = detail::validate_batched_images(images);
-        const std::size_t stride              = rows * cols;
+        const auto stride =
+            static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols);
 
         std::vector<T> tensor_data(images.size() * num_channels * rows * cols);
         T* data_ptr = tensor_data.data();
@@ -185,8 +201,8 @@ namespace rad::onnx
         const auto batch_stride = blob.shape[1] * blob.shape[2] * blob.shape[3];
         std::vector<cv::Mat> images(blob.shape[0]);
 
-        int num_channels = 1 + (type >> CV_CN_SHIFT);
-        int depth        = type & CV_MAT_DEPTH_MASK;
+        const int num_channels = 1 + (type >> CV_CN_SHIFT);
+        const int depth        = type & CV_MAT_DEPTH_MASK;
 
         // OpenCV only takes pointers by void*, not void const*, so we need to cast away
         // the const of the returned pointer from the tensor.
@@ -267,8 +283,8 @@ namespace rad::onnx
                                                  int type,
                                                  Fun post_process)
     {
-        int num_channels = 1 + (type >> CV_CN_SHIFT);
-        int depth        = type & CV_MAT_DEPTH_MASK;
+        const int num_channels = 1 + (type >> CV_CN_SHIFT);
+        const int depth        = type & CV_MAT_DEPTH_MASK;
 
         const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
         if (dims.size() != 4)
@@ -384,7 +400,7 @@ namespace rad::onnx
                 dims.size())};
         }
 
-        if (dims[1] != static_cast<std::int64_t>(size))
+        if (!std::cmp_equal(dims[1], size))
         {
             throw std::runtime_error{
                 fmt::format("error: expected an array tensor with length {} but "

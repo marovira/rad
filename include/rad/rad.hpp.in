@@ -2,9 +2,11 @@
 
 #include <string_view>
 
+// NOLINTBEGIN(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum,cppcoreguidelines-macro-usage)
 #define RAD_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 #define RAD_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define RAD_VERSION_PATCH @PROJECT_VERSION_PATCH@
+// NOLINTEND(cppcoreguidelines-macro-to-enum,modernize-macro-to-enum,cppcoreguidelines-macro-usage)
 
 namespace rad
 {

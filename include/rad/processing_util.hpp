@@ -1,8 +1,11 @@
 #pragma once
 
-#include "opencv.hpp"
+#include <opencv2/core/mat.hpp>
 
 #include <filesystem>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace rad
 {

@@ -1,7 +1,11 @@
 #pragma once
 
 #include "onnxruntime.hpp"
-#include <zeus/concepts.hpp>
+
+#include <concepts>
+#include <cstdint>
+#include <string>
+#include <type_traits>
 
 namespace rad::onnx
 {

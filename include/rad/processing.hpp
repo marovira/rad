@@ -1,9 +1,11 @@
 #pragma once
 
-#include "opencv.hpp"
 #include "processing_util.hpp"
 
 #include <oneapi/tbb/parallel_for_each.h>
+#include <opencv2/imgcodecs.hpp>
+
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -33,8 +35,8 @@ namespace rad
     {
         for (auto sample : samples)
         {
-            std::string path     = root + sample;
-            auto [filename, img] = load_image(path, flags);
+            const std::string path = root + sample;
+            auto [filename, img]   = load_image(path, flags);
             fun(filename, img);
         }
     }
@@ -72,7 +74,7 @@ namespace rad
     void process_images_parallel(std::string const& root, ImageProcessFun fun, int flags)
     {
         auto files = get_file_paths_from_root(root);
-        std::filesystem::directory_iterator ite{root};
+        const std::filesystem::directory_iterator ite{root};
 
         oneapi::tbb::parallel_for_each(files.begin(),
                                        files.end(),
@@ -98,7 +100,7 @@ namespace rad
         oneapi::tbb::parallel_for_each(samples.begin(),
                                        samples.end(),
                                        [fun, root, flags](std::string const& sample) {
-                                           std::string path     = root + sample;
+                                           const std::string path = root + sample;
                                            auto [filename, img] = load_image(path, flags);
                                            fun(filename, img);
                                        });
@@ -116,7 +118,7 @@ namespace rad
     void process_files_parallel(std::string const& root, FileProcessFun fun)
     {
         auto files = get_file_paths_from_root(root);
-        std::filesystem::directory_iterator ite{root};
+        const std::filesystem::directory_iterator ite{root};
         oneapi::tbb::parallel_for_each(files.begin(),
                                        files.end(),
                                        [fun](std::filesystem::path const& entry) {
@@ -132,8 +134,8 @@ namespace rad
         oneapi::tbb::parallel_for_each(samples.begin(),
                                        samples.end(),
                                        [fun, root](std::string const& sample) {
-                                           std::string path     = root + sample;
-                                           auto [filename, img] = load_image(path);
+                                           const std::string path = root + sample;
+                                           auto [filename, img]   = load_image(path);
                                            fun(filename, img);
                                        });
     }

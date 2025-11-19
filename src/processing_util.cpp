@@ -1,5 +1,14 @@
 #include "rad/processing_util.hpp"
 
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+
+#include <filesystem>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace rad
 {
     namespace fs = std::filesystem;
@@ -20,7 +29,7 @@ namespace rad
 
     std::pair<std::string, cv::Mat> load_image(std::string const& path, int flags)
     {
-        fs::path entry{path};
+        const fs::path entry{path};
         return {entry.stem().string(), cv::imread(entry.string(), flags)};
     }
 
@@ -33,7 +42,7 @@ namespace rad
     {
         fs::create_directories(root);
 
-        std::string res_root = root + "/" + app_name + "/";
+        const std::string res_root = root + "/" + app_name + "/";
         fs::create_directories(res_root);
     }
 
@@ -50,22 +59,22 @@ namespace rad
         cv::Mat result;
         if (img.channels() == 1)
         {
-            double alpha = (img.type() == CV_32F) ? 255.0 : 1.0;
+            const double alpha = (img.type() == CV_32F) ? 255.0 : 1.0;
             img.convertTo(result, CV_8UC1, alpha);
         }
         else if (img.channels() == 3)
         {
-            double alpha = (img.type() == CV_32FC3) ? 255.0 : 1.0;
+            const double alpha = (img.type() == CV_32FC3) ? 255.0 : 1.0;
             img.convertTo(result, CV_8UC3, alpha);
         }
         else
         {
-            double alpha = (img.type() == CV_32FC4) ? 255.0 : 1.0;
+            const double alpha = (img.type() == CV_32FC4) ? 255.0 : 1.0;
             img.convertTo(result, CV_8UC4, alpha);
         }
 
-        std::string res_root = root + "/" + app_name + "/";
-        std::string path     = res_root + img_name;
+        const std::string res_root = root + "/" + app_name + "/";
+        const std::string path     = res_root + img_name;
         cv::imwrite(path, result);
     }
 

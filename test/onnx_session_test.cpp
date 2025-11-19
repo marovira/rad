@@ -1,22 +1,29 @@
-#include <rad/onnx/session.hpp>
-
 #include "model_file_manager.hpp"
-#include <rad/onnx/env.hpp>
-#include <rad/onnx/memory_backed_tensor_set.hpp>
-#include <rad/onnx/tensor_conversion.hpp>
-#include <zeus/platform.hpp>
-
-#include <algorithm>
 
 #include <catch2/catch_test_macros.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <rad/onnx/env.hpp>
+#include <rad/onnx/memory_backed_tensor_set.hpp>
+#include <rad/onnx/onnxruntime.hpp>
+#include <rad/onnx/session.hpp>
+#include <rad/onnx/tensor_conversion.hpp>
+
+#include <algorithm>
+#include <cstdint>
+#include <vector>
 
 namespace onnx = rad::onnx;
 
-bool provider_present(std::vector<onnx::ExecutionProviders> const& providers,
-                      onnx::ExecutionProviders provider)
+namespace
 {
-    return std::find(providers.begin(), providers.end(), provider) != providers.end();
-}
+    bool provider_present(std::vector<onnx::ExecutionProviders> const& providers,
+                          onnx::ExecutionProviders provider)
+    {
+        return std::ranges::find(providers, provider) != providers.end();
+    }
+
+} // namespace
 
 TEST_CASE("[session] - get_execution_providers", "[rad::onnx]")
 {
@@ -46,28 +53,27 @@ TEST_CASE("[session] - is_provider_enabled", "[rad::onnx]")
 
 TEST_CASE("[session] - make_session_from_file", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("session_test");
 
     SECTION("Invalid filename")
     {
-        REQUIRE_THROWS(
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
-                if constexpr (onnx::use_string_for_paths())
-                {
-                    return std::string{};
-                }
-                else
-                {
-                    return std::wstring{};
-                };
-            }));
+        REQUIRE_THROWS(onnx::make_session_from_file(mgr.get_root(), env, [](std::string) {
+            if constexpr (onnx::use_string_for_paths())
+            {
+                return std::string{};
+            }
+            else
+            {
+                return std::wstring{};
+            };
+        }));
     }
 
     SECTION("CPU session")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -78,7 +84,7 @@ TEST_CASE("[session] - make_session_from_file", "[rad::onnx]")
     {
         auto opt = onnx::get_default_dml_session_options();
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -88,13 +94,13 @@ TEST_CASE("[session] - make_session_from_file", "[rad::onnx]")
 
 TEST_CASE("[session] - get_input_shapes", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("session_test");
 
     SECTION("Static axes")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -113,7 +119,7 @@ TEST_CASE("[session] - get_input_shapes", "[rad::onnx]")
     SECTION("Dynamic axes")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::dynamic_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -132,10 +138,10 @@ TEST_CASE("[session] - get_input_shapes", "[rad::onnx]")
 
 TEST_CASE("[session] - get_output_shapes", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("session_test");
 
-    auto session = onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+    auto session = onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
         return mgr.get_model(ModelFileManager::Type::static_axes);
     });
     REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -151,13 +157,13 @@ TEST_CASE("[session] - get_output_shapes", "[rad::onnx]")
 
 TEST_CASE("[session] - get_input_types", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("session_test");
 
     SECTION("32-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -170,7 +176,7 @@ TEST_CASE("[session] - get_input_types", "[rad::onnx]")
     SECTION("16-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::half_float);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -184,13 +190,13 @@ TEST_CASE("[session] - get_input_types", "[rad::onnx]")
 
 TEST_CASE("[session] - get_output_types", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("session_test");
 
     SECTION("32-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -203,7 +209,7 @@ TEST_CASE("[session] - get_output_types", "[rad::onnx]")
     SECTION("16-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::half_float);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -216,9 +222,9 @@ TEST_CASE("[session] - get_output_types", "[rad::onnx]")
 
 TEST_CASE("[session] - get_input_names", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env     = onnx::create_environment("session_test");
-    auto session = onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+    auto session = onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
         return mgr.get_model(ModelFileManager::Type::static_axes);
     });
 
@@ -229,9 +235,9 @@ TEST_CASE("[session] - get_input_names", "[rad::onnx]")
 
 TEST_CASE("[session] - get_output_names", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env     = onnx::create_environment("session_test");
-    auto session = onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+    auto session = onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
         return mgr.get_model(ModelFileManager::Type::static_axes);
     });
 
@@ -242,13 +248,13 @@ TEST_CASE("[session] - get_output_names", "[rad::onnx]")
 
 TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
 {
-    ModelFileManager mgr;
+    const ModelFileManager mgr;
     auto env = onnx::create_environment("inference_test");
 
     SECTION("CPU inference: 32-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::static_axes);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);
@@ -266,7 +272,7 @@ TEST_CASE("[inference] - perform_inference", "[rad::onnx]")
     SECTION("CPU inference: 16-bit float")
     {
         auto session =
-            onnx::make_session_from_file(mgr.get_root(), env, [mgr](std::string) {
+            onnx::make_session_from_file(mgr.get_root(), env, [&mgr](std::string) {
                 return mgr.get_model(ModelFileManager::Type::half_float);
             });
         REQUIRE(static_cast<OrtSession*>(session) != nullptr);

@@ -1,10 +1,15 @@
-#include <rad/processing.hpp>
-
 #include "test_file_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <zeus/platform.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <rad/processing.hpp>
+#include <zeus/platform.hpp> // NOLINT(misc-include-cleaner)
 #include <zeus/string.hpp>
+
+#include <string>
+#include <vector>
 
 #include <atomic>
 
@@ -14,8 +19,8 @@ TEST_CASE("processing - process_images", "[rad]")
 {
     SECTION("Check files")
     {
-        TestFileManager::Params params;
-        TestFileManager mgr{params};
+        const TestFileManager::Params params;
+        const TestFileManager mgr{params};
 
         std::vector<std::atomic<bool>> seen_files(params.num_files);
 
@@ -46,9 +51,9 @@ TEST_CASE("processing - process_images", "[rad]")
 
         SECTION("Partial list")
         {
-            std::vector<std::string> samples{"test_img_0.jpg",
-                                             "test_img_2.jpg",
-                                             "test_img_4.jpg"};
+            const std::vector<std::string> samples{"test_img_0.jpg",
+                                                   "test_img_2.jpg",
+                                                   "test_img_4.jpg"};
             rad::process_images(mgr.root().string(), fun);
             REQUIRE(seen_files[0]);
             REQUIRE(seen_files[2]);
@@ -57,9 +62,9 @@ TEST_CASE("processing - process_images", "[rad]")
 
         SECTION("Partial list - parallel")
         {
-            std::vector<std::string> samples{"test_img_0.jpg",
-                                             "test_img_2.jpg",
-                                             "test_img_4.jpg"};
+            const std::vector<std::string> samples{"test_img_0.jpg",
+                                                   "test_img_2.jpg",
+                                                   "test_img_4.jpg"};
             rad::process_images_parallel(mgr.root().string(), fun);
             REQUIRE(seen_files[0]);
             REQUIRE(seen_files[2]);
@@ -72,8 +77,8 @@ TEST_CASE("processing - process_images", "[rad]")
         static constexpr int num_files{10};
         SECTION("8-bit")
         {
-            TestFileManager::Params params{.num_files = num_files};
-            TestFileManager mgr{params};
+            const TestFileManager::Params params{.num_files = num_files};
+            const TestFileManager mgr{params};
 
             auto fun = [params](std::string const&, cv::Mat const& img) {
                 REQUIRE(img.type() == params.type);
@@ -88,10 +93,10 @@ TEST_CASE("processing - process_images", "[rad]")
         {
             // This test needs to be enabled for all platforms with the exception of CI
             // builds on Apple.
-            TestFileManager::Params params{.num_files = num_files,
-                                           .ext       = "png",
-                                           .type      = CV_16UC3};
-            TestFileManager mgr{params};
+            const TestFileManager::Params params{.num_files = num_files,
+                                                 .ext       = "png",
+                                                 .type      = CV_16UC3};
+            const TestFileManager mgr{params};
 
             auto fun = [params](std::string const&, cv::Mat const& img) {
                 REQUIRE(img.type() == params.type);
@@ -106,14 +111,14 @@ TEST_CASE("processing - process_images", "[rad]")
 
 TEST_CASE("processing - process_files", "[rad]")
 {
-    TestFileManager::Params params;
-    TestFileManager mgr{params};
+    const TestFileManager::Params params;
+    const TestFileManager mgr{params};
 
     std::vector<std::atomic<bool>> seen_files(params.num_files);
 
     auto fun = [&seen_files](std::string const& path) {
-        fs::path p{path};
-        std::string name = p.stem().string();
+        const fs::path p{path};
+        const std::string name = p.stem().string();
 
         auto num           = zeus::split(name, '_')[2];
         auto as_int        = std::stoi(num);
@@ -140,9 +145,9 @@ TEST_CASE("processing - process_files", "[rad]")
 
     SECTION("Partial list")
     {
-        std::vector<std::string> samples{"test_img_0.jpg",
-                                         "test_img_2.jpg",
-                                         "test_img_4.jpg"};
+        const std::vector<std::string> samples{"test_img_0.jpg",
+                                               "test_img_2.jpg",
+                                               "test_img_4.jpg"};
         rad::process_files(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);
@@ -151,9 +156,9 @@ TEST_CASE("processing - process_files", "[rad]")
 
     SECTION("Partial list - parallel")
     {
-        std::vector<std::string> samples{"test_img_0.jpg",
-                                         "test_img_2.jpg",
-                                         "test_img_4.jpg"};
+        const std::vector<std::string> samples{"test_img_0.jpg",
+                                               "test_img_2.jpg",
+                                               "test_img_4.jpg"};
         rad::process_files_parallel(mgr.root().string(), fun);
         REQUIRE(seen_files[0]);
         REQUIRE(seen_files[2]);

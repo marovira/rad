@@ -1,7 +1,11 @@
-#include <rad/onnx/concepts.hpp>
-
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <rad/onnx/concepts.hpp>
+#include <rad/onnx/onnxruntime.hpp>
+
+#include <cstdint>
+#include <string>
+#include <type_traits>
 
 namespace onnx = rad::onnx;
 

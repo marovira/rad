@@ -2,6 +2,8 @@
 
 #include "onnxruntime.hpp"
 
+#include <string>
+
 namespace rad::onnx
 {
     [[nodiscard]]

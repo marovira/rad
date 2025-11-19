@@ -1,5 +1,13 @@
 #include "rad/image_utils.hpp"
 
+#include <opencv2/core.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgproc.hpp>
+
+#include <cmath>
+
 namespace rad
 {
     double get_max_value_for_integral_depth(int depth)
@@ -35,7 +43,7 @@ namespace rad
     cv::Mat change_colour_space(cv::Mat const& img, cv::ColorConversionCodes code)
     {
         cv::Mat as_code;
-        cvtColor(img, as_code, code);
+        cv::cvtColor(img, as_code, code);
         return as_code;
     }
 
@@ -159,22 +167,24 @@ namespace rad
 
     cv::Mat downscale_by_long_edge(cv::Mat const& img, int max_size)
     {
-        cv::Size size = img.size();
+        const cv::Size size = img.size();
         if (size.width <= max_size && size.height <= max_size)
         {
             return img;
         }
 
-        auto factor = static_cast<float>(max_size);
+        const auto factor = static_cast<float>(max_size);
+        const auto rows   = static_cast<float>(img.rows);
+        const auto cols   = static_cast<float>(img.cols);
         cv::Size scale;
         if (img.cols > img.rows)
         {
             scale.width  = max_size;
-            scale.height = static_cast<int>(std::round(img.rows / (img.cols / factor)));
+            scale.height = static_cast<int>(std::round(rows / (cols / factor)));
         }
         else
         {
-            scale.width  = static_cast<int>(std::round(img.cols / (img.rows / factor)));
+            scale.width  = static_cast<int>(std::round(cols / (rows / factor)));
             scale.height = max_size;
         }
 

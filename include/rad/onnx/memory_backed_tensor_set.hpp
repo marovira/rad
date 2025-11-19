@@ -1,12 +1,17 @@
 #pragma once
 
-#include "../opencv.hpp"
 #include "concepts.hpp"
 #include "onnxruntime.hpp"
-#include "perform_safe_op.hpp"
 #include "tensor_conversion.hpp"
 
+#include <opencv2/core/mat.hpp>
 #include <zeus/container_traits.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <utility>
+#include <vector>
 
 namespace rad::onnx
 {

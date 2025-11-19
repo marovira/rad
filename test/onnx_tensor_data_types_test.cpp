@@ -1,6 +1,8 @@
+#include <catch2/catch_test_macros.hpp>
+#include <rad/onnx/onnxruntime.hpp>
 #include <rad/onnx/tensor_data_types.hpp>
 
-#include <catch2/catch_test_macros.hpp>
+#include <cstdint>
 
 namespace onnx = rad::onnx;
 

@@ -1,17 +1,22 @@
-#include <rad/processing_util.hpp>
-
 #include "test_file_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <zeus/platform.hpp>
+#include <fmt/format.h>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/types.hpp>
+#include <rad/processing_util.hpp>
+#include <zeus/platform.hpp> // NOLINT(misc-include-cleaner)
 
+#include <cstddef>
+#include <filesystem>
+#include <string>
 #include <unordered_set>
 
 namespace fs = std::filesystem;
 
 TEST_CASE("[processing_util] - get_file_paths_from_root", "[rad]")
 {
-    TestFileManager mgr{TestFileManager::Params{}};
+    const TestFileManager mgr{TestFileManager::Params{}};
 
     auto files = rad::get_file_paths_from_root(mgr.root().string());
 
@@ -21,7 +26,7 @@ TEST_CASE("[processing_util] - get_file_paths_from_root", "[rad]")
     std::unordered_set<fs::path> exp_paths;
     for (std::size_t i{0}; i < files.size(); ++i)
     {
-        fs::path exp = mgr.root() / fmt::format("test_img_{}.jpg", i);
+        const fs::path exp = mgr.root() / fmt::format("test_img_{}.jpg", i);
         exp_paths.insert(exp);
     }
 
@@ -39,9 +44,9 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
     SECTION("jpg")
     {
         params.ext = "jpg";
-        TestFileManager mgr{params};
+        const TestFileManager mgr{params};
 
-        fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
+        const fs::path p = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
         auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
@@ -52,9 +57,9 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
     SECTION("JPG")
     {
         params.ext = "JPG";
-        TestFileManager mgr{params};
+        const TestFileManager mgr{params};
 
-        fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
+        const fs::path p = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
         auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
@@ -66,9 +71,9 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
     SECTION("png")
     {
         params.ext = "png";
-        TestFileManager mgr{params};
+        const TestFileManager mgr{params};
 
-        fs::path p       = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
+        const fs::path p = mgr.root() / fmt::format("{}.{}", exp_name, params.ext);
         auto [name, img] = rad::load_image(p.string());
 
         REQUIRE(name == exp_name);
@@ -80,7 +85,7 @@ TEST_CASE("[processing_util] - load_image", "[rad]")
 
 TEST_CASE("[processing_util] - create_result_dir", "[rad]")
 {
-    fs::path root = fs::absolute("./test_root");
+    const fs::path root = fs::absolute("./test_root");
     rad::create_result_dir(root.string(), "app");
 
     REQUIRE(fs::exists(root / "app"));
@@ -107,14 +112,14 @@ TEST_CASE("[processing_util] - save_result", "[rad]")
     {
         SECTION("uint image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_8UC1);
+            const cv::Mat img = cv::Mat::ones(size, CV_8UC1);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_32F);
+            const cv::Mat img = cv::Mat::ones(size, CV_32F);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
@@ -124,14 +129,14 @@ TEST_CASE("[processing_util] - save_result", "[rad]")
     {
         SECTION("uint image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_8UC3);
+            const cv::Mat img = cv::Mat::ones(size, CV_8UC3);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_32FC3);
+            const cv::Mat img = cv::Mat::ones(size, CV_32FC3);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
@@ -141,14 +146,14 @@ TEST_CASE("[processing_util] - save_result", "[rad]")
     {
         SECTION("uint image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_8UC4);
+            const cv::Mat img = cv::Mat::ones(size, CV_8UC4);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }
 
         SECTION("float image")
         {
-            cv::Mat img = cv::Mat::ones(size, CV_32FC4);
+            const cv::Mat img = cv::Mat::ones(size, CV_32FC4);
             rad::save_result(img, root.string(), name, img_name);
             REQUIRE(fs::exists(img_path));
         }

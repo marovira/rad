@@ -1,8 +1,15 @@
-#include <rad/onnx/memory_backed_tensor_set.hpp>
-
 #include "onnx_test_helpers.hpp"
 
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <opencv2/core/mat.hpp>
+#include <rad/onnx/memory_backed_tensor_set.hpp>
+#include <rad/onnx/onnxruntime.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+#include <vector>
 
 namespace onnx = rad::onnx;
 
@@ -27,7 +34,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - Constructors",
 {
     SECTION("Default constructor")
     {
-        onnx::MemoryBackedTensorSet<TestType> s;
+        const onnx::MemoryBackedTensorSet<TestType> s;
         REQUIRE(s.tensors().empty());
     }
 
@@ -40,6 +47,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - Constructors",
 
         auto s1{std::move(s)};
 
+        // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
         REQUIRE(s.tensors().empty());
         REQUIRE(s1.tensors().size() == 1);
     }
@@ -53,6 +61,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - Constructors",
 
         auto s1 = std::move(s);
 
+        // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
         REQUIRE(s.tensors().empty());
         REQUIRE(s1.tensors().size() == 1);
     }
@@ -97,7 +106,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - size/empty",
 {
     SECTION("Empty set")
     {
-        onnx::MemoryBackedTensorSet<TestType> s;
+        const onnx::MemoryBackedTensorSet<TestType> s;
         REQUIRE(s.size() == 0);
         REQUIRE(s.empty());
     }
@@ -184,7 +193,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
 
     SECTION("Grayscale image")
     {
-        cv::Mat img = make_test_image<TestType>(1);
+        const cv::Mat img = make_test_image<TestType>(1);
 
         s.insert_tensor_from_image(img);
         REQUIRE_FALSE(s.empty());
@@ -205,7 +214,7 @@ TEMPLATE_TEST_CASE("[MemoryBackedTensorSet] - insert_tensor_from_image",
 
     SECTION("RGB image")
     {
-        cv::Mat img = make_test_image<TestType>(3);
+        const cv::Mat img = make_test_image<TestType>(3);
 
         s.insert_tensor_from_image(img);
         REQUIRE_FALSE(s.empty());

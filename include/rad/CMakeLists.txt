@@ -9,7 +9,6 @@ set(INCLUDE_LIST
     ${RAD_VERSION_HEADER}
     ${INCLUDE_ROOT}/image_utils.hpp
     ${INCLUDE_ROOT}/image_utils.hpp
-    ${INCLUDE_ROOT}/opencv.hpp
     ${INCLUDE_ROOT}/processing.hpp
     ${INCLUDE_ROOT}/processing_util.hpp
     ${INCLUDE_ROOT}/blending_functions.hpp

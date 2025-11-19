@@ -1,6 +1,6 @@
-#include <rad/blending_functions.hpp>
-
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <rad/blending_functions.hpp>
 #include <zeus/float.hpp>
 
 template<typename T>
@@ -9,11 +9,14 @@ consteval T epsilon()
     return static_cast<T>(0.00001f);
 }
 
-template<typename T>
-constexpr bool test_equal(T a, T b)
+namespace
 {
-    return zeus::almost_equal<T>(a, b, epsilon<T>());
-}
+    template<typename T>
+    constexpr bool test_equal(T a, T b)
+    {
+        return zeus::almost_equal<T>(a, b, epsilon<T>());
+    }
+} // namespace
 
 TEMPLATE_TEST_CASE("[blending_functions] - soft_blend", "[rad]", float, double)
 {

@@ -1,7 +1,15 @@
 #pragma once
 
+#include <opencv2/core.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 #include <rad/onnx/onnxruntime.hpp>
-#include <rad/opencv.hpp>
+
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+#include <vector>
 
 inline cv::Size get_test_image_size()
 {

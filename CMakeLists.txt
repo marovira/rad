@@ -262,3 +262,10 @@ if (RAD_BUILD_TESTS)
 
     add_subdirectory(${RAD_TEST_ROOT})
 endif()
+
+if (NOT MSVC)
+    file(CREATE_LINK
+        "${CMAKE_BINARY_DIR}/compile_commands.json"
+        "${RAD_SOURCE_DIR}/compile_commands.json"
+        SYMBOLIC)
+endif()

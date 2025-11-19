@@ -5,7 +5,7 @@
 #include <rad/onnx/session.hpp>
 
 #include <filesystem>
-#include <fmt/printf.h>
+#include <string>
 
 class ModelFileManager
 {
@@ -15,6 +15,7 @@ public:
         m_root = std::filesystem::absolute(test::data_root);
     }
 
+    [[nodiscard]]
     std::string get_root() const
     {
         return m_root.string();
@@ -27,6 +28,7 @@ public:
         half_float,
     };
 
+    [[nodiscard]]
     auto get_model(Type type) const
     {
         std::string name;

@@ -1,6 +1,7 @@
-#include <rad/onnx/perform_safe_op.hpp>
-
 #include <catch2/catch_test_macros.hpp>
+#include <opencv2/core.hpp>
+#include <rad/onnx/onnxruntime.hpp>
+#include <rad/onnx/perform_safe_op.hpp>
 
 namespace onnx = rad::onnx;
 
@@ -8,7 +9,7 @@ TEST_CASE("[perform_safe_op] - perform_safe_op", "[rad::onnx]")
 {
     SECTION("cv::Exception")
     {
-        bool ret = onnx::perform_safe_op([]() {
+        const bool ret = onnx::perform_safe_op([]() {
             throw cv::Exception{};
         });
 
@@ -17,7 +18,7 @@ TEST_CASE("[perform_safe_op] - perform_safe_op", "[rad::onnx]")
 
     SECTION("Ort::Exception")
     {
-        bool ret = onnx::perform_safe_op([]() {
+        const bool ret = onnx::perform_safe_op([]() {
             throw Ort::Exception{"", ORT_FAIL};
         });
 
@@ -26,7 +27,7 @@ TEST_CASE("[perform_safe_op] - perform_safe_op", "[rad::onnx]")
 
     SECTION("std::exception")
     {
-        bool ret = onnx::perform_safe_op([]() {
+        const bool ret = onnx::perform_safe_op([]() {
             throw std::runtime_error{""};
         });
 
@@ -35,7 +36,7 @@ TEST_CASE("[perform_safe_op] - perform_safe_op", "[rad::onnx]")
 
     SECTION("No exception")
     {
-        bool ret = onnx::perform_safe_op([]() {});
+        const bool ret = onnx::perform_safe_op([]() {});
         REQUIRE(ret);
     }
 }

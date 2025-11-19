@@ -1,34 +1,105 @@
 #include "rad/onnx/session.hpp"
+#include "rad/onnx/onnxruntime.hpp"
 
-#include <fmt/printf.h>
+#include <fmt/format.h>
 #include <magic_enum/magic_enum.hpp>
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #if defined(RAD_ONNX_DML_ENABLED)
 #    include <dml_provider_factory.h>
+#else
+#    include <zeus/assert.hpp>
 #endif
 
-namespace rad::onnx
+namespace
 {
-    ExecutionProviders convert_provider_name(std::string const& name)
+    namespace onnx = rad::onnx;
+
+    onnx::ExecutionProviders convert_provider_name(std::string const& name)
     {
         if (name == "CPUExecutionProvider")
         {
-            return ExecutionProviders::cpu;
+            return onnx::ExecutionProviders::cpu;
         }
 
         if (name == "DmlExecutionProvider")
         {
-            return ExecutionProviders::dml;
+            return onnx::ExecutionProviders::dml;
         }
 
         if (name == "CoreMLExecutionProvider")
         {
-            return ExecutionProviders::coreml;
+            return onnx::ExecutionProviders::coreml;
         }
 
         throw std::runtime_error{fmt::format("error: {} is an unknown provider", name)};
     }
 
+#if defined(RAD_ONNX_COREML_ENABLED)
+    std::string compute_unit_to_str(onnx::MLComputeUnit unit)
+    {
+        std::string ret;
+        switch (unit)
+        {
+        case onnx::MLComputeUnit::cpu_only:
+            ret = "CPUOnly";
+            break;
+
+        case onnx::MLComputeUnit::cpu_and_neural_engine:
+            ret = "CPUAndNeuralEngine";
+            break;
+
+        case onnx::MLComputeUnit::cpu_and_gpu:
+            ret = "CPUAndGPU";
+            break;
+
+        case onnx::MLComputeUnit::all:
+            ret = "ALL";
+            break;
+
+        default:
+            // Unknown ML unit. Please update the switch accordingly.
+            ASSERT(0);
+            break;
+        }
+
+        return ret;
+    }
+
+    std::string specialisation_strategy_to_str(onnx::MLSpecialisationStrategy strat)
+    {
+        std::string ret;
+        switch (strat)
+        {
+        case onnx::MLSpecialisationStrategy::base:
+            ret = "Default";
+            break;
+
+        case onnx::MLSpecialisationStrategy::fast_prediction:
+            ret = "FastPrediction";
+            break;
+
+        default:
+            // Unknown specialisation strategy. Please update the switch accordingly.
+            ASSERT(0);
+            break;
+        }
+
+        return ret;
+    }
+#endif
+
+} // namespace
+
+namespace rad::onnx
+{
     std::vector<ExecutionProviders> get_execution_providers()
     {
         auto provider_names = Ort::GetAvailableProviders();
@@ -60,9 +131,12 @@ namespace rad::onnx
         OrtApi const& ort_api = Ort::GetApi();
 
         OrtDmlApi const* dml_api{nullptr};
+        // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
         ort_api.GetExecutionProviderApi("DML",
                                         ORT_API_VERSION,
                                         reinterpret_cast<void const**>(&dml_api));
+        // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+
         if (!dml_api)
         {
             throw std::runtime_error{"error: unable to acquire DML provider API"};
@@ -82,63 +156,11 @@ namespace rad::onnx
     }
 
 #elif defined(RAD_ONNX_COREML_ENABLED)
-    std::string compute_unit_to_str(MLComputeUnit unit)
-    {
-        std::string ret;
-        switch (unit)
-        {
-        case rad::onnx::MLComputeUnit::cpu_only:
-            ret = "CPUOnly";
-            break;
-
-        case rad::onnx::MLComputeUnit::cpu_and_neural_engine:
-            ret = "CPUAndNeuralEngine";
-            break;
-
-        case rad::onnx::MLComputeUnit::cpu_and_gpu:
-            ret = "CPUAndGPU";
-            break;
-
-        case rad::onnx::MLComputeUnit::all:
-            ret = "ALL";
-            break;
-
-        default:
-            // Unknown ML unit. Please update the switch accordingly.
-            ASSERT(0);
-            break;
-        }
-
-        return ret;
-    }
-
-    std::string specialisation_strategy_to_str(MLSpecialisationStrategy strat)
-    {
-        std::string ret;
-        switch (strat)
-        {
-        case MLSpecialisationStrategy::base:
-            ret = "Default";
-            break;
-
-        case MLSpecialisationStrategy::fast_prediction:
-            ret = "FastPrediction";
-            break;
-
-        default:
-            // Unknown specialisation strategy. Please update the switch accordingly.
-            ASSERT(0);
-            break;
-        }
-
-        return ret;
-    }
-
     Ort::SessionOptions get_default_coreml_session_options(CoreMLSettings const& settings)
     {
         std::unordered_map<std::string, std::string> provider_options;
 
-        // Always use NLProgram as we're targeting newer versions of CoreML and they offer
+        // Always use MLProgram as we're targeting newer versions of CoreML and they offer
         // much more control.
         provider_options["ModelFormat"] = "MLProgram";
 
@@ -213,10 +235,10 @@ namespace rad::onnx
 
     std::vector<std::string> get_input_names(Ort::Session& session)
     {
-        Ort::AllocatorWithDefaultOptions alloc;
+        const Ort::AllocatorWithDefaultOptions alloc;
 
         std::vector<std::string> names;
-        std::size_t num_inputs = session.GetInputCount();
+        const std::size_t num_inputs = session.GetInputCount();
         for (std::size_t i{0}; i < num_inputs; ++i)
         {
             names.emplace_back(session.GetInputNameAllocated(i, alloc).get());
@@ -227,10 +249,10 @@ namespace rad::onnx
 
     std::vector<std::string> get_output_names(Ort::Session& session)
     {
-        Ort::AllocatorWithDefaultOptions alloc;
+        const Ort::AllocatorWithDefaultOptions alloc;
 
         std::vector<std::string> names;
-        std::size_t num_inputs = session.GetOutputCount();
+        const std::size_t num_inputs = session.GetOutputCount();
         for (std::size_t i{0}; i < num_inputs; ++i)
         {
             names.emplace_back(session.GetOutputNameAllocated(i, alloc).get());
@@ -242,7 +264,7 @@ namespace rad::onnx
     std::vector<Ort::Value> perform_inference(Ort::Session& session,
                                               std::vector<Ort::Value> const& inputs)
     {
-        Ort::AllocatorWithDefaultOptions alloc;
+        const Ort::AllocatorWithDefaultOptions alloc;
 
         // Query the number of inputs and the name of said inputs.
         auto input_names = get_input_names(session);
@@ -327,18 +349,18 @@ namespace rad::onnx
         // Everything is ready, so let's perform the inference. Make sure we convert the
         // name vectors into C-strings beforehand.
         std::vector<const char*> input_strings, output_strings;
-        std::transform(input_names.begin(),
-                       input_names.end(),
-                       std::back_inserter(input_strings),
-                       [](std::string const& str) {
-                           return str.c_str();
-                       });
-        std::transform(output_names.begin(),
-                       output_names.end(),
-                       std::back_inserter(output_strings),
-                       [](std::string const& str) {
-                           return str.c_str();
-                       });
+        std::ranges::transform(input_names,
+
+                               std::back_inserter(input_strings),
+                               [](std::string const& str) {
+                                   return str.c_str();
+                               });
+        std::ranges::transform(output_names,
+
+                               std::back_inserter(output_strings),
+                               [](std::string const& str) {
+                                   return str.c_str();
+                               });
 
         auto output_tensors = session.Run(Ort::RunOptions{nullptr},
                                           input_strings.data(),

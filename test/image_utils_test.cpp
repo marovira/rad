@@ -1,7 +1,15 @@
-#include <rad/image_utils.hpp>
-
 #include <catch2/catch_test_macros.hpp>
+#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/matx.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgproc.hpp>
+#include <rad/image_utils.hpp>
 #include <zeus/float.hpp>
+
+#include <cstdint>
+#include <limits>
+#include <type_traits>
 
 template<typename T>
 consteval T epsilon()
@@ -209,13 +217,13 @@ TEST_CASE("[image_utils] - to_normalised_float", "[rad]")
     {
         SECTION("Invalid input depth")
         {
-            cv::Mat inv = cv::Mat::zeros(cv::Size{1, 1}, CV_32FC3);
+            const cv::Mat inv = cv::Mat::zeros(cv::Size{1, 1}, CV_32FC3);
             REQUIRE_THROWS(rad::to_normalised_float(inv, CV_32F, 0, 0));
         }
 
         SECTION("Invalid output depth")
         {
-            cv::Mat val = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
+            const cv::Mat val = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
             REQUIRE_THROWS(rad::to_normalised_float(val, CV_8U, 0, 0));
         }
 
@@ -254,10 +262,10 @@ TEST_CASE("[image_utils] - from_normalised_float", "[rad]")
 
     SECTION("Invalid inputs")
     {
-        cv::Mat inv = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
+        const cv::Mat inv = cv::Mat::zeros(cv::Size{1, 1}, CV_8UC3);
         REQUIRE_THROWS(rad::from_normalised_float(inv, CV_8U));
 
-        cv::Mat val = cv::Mat::zeros(cv::Size{1, 1}, CV_64FC3);
+        const cv::Mat val = cv::Mat::zeros(cv::Size{1, 1}, CV_64FC3);
         REQUIRE_THROWS(rad::from_normalised_float(val, CV_32F));
     }
 }
@@ -267,8 +275,8 @@ TEST_CASE("[image_utils] - downscale_to", "[rad]")
     const cv::Size target{64, 64};
     const auto type = CV_8UC1;
 
-    cv::Mat orig = cv::Mat::zeros(cv::Size{128, 128}, type);
-    cv::Mat res  = rad::downscale_to(orig, target);
+    const cv::Mat orig = cv::Mat::zeros(cv::Size{128, 128}, type);
+    const cv::Mat res  = rad::downscale_to(orig, target);
 
     REQUIRE(res.size() == target);
     REQUIRE(res.type() == type);
@@ -281,8 +289,8 @@ TEST_CASE("[image_utils] - downscale_by_long_edge", "[rad]")
 
     SECTION("Width > Height")
     {
-        cv::Mat orig = cv::Mat::zeros(cv::Size{512, 128}, type);
-        cv::Mat res  = rad::downscale_by_long_edge(orig, long_target);
+        const cv::Mat orig = cv::Mat::zeros(cv::Size{512, 128}, type);
+        const cv::Mat res  = rad::downscale_by_long_edge(orig, long_target);
 
         REQUIRE(res.size() == cv::Size{long_target, 16});
         REQUIRE(res.type() == type);
@@ -290,8 +298,8 @@ TEST_CASE("[image_utils] - downscale_by_long_edge", "[rad]")
 
     SECTION("Height > Width")
     {
-        cv::Mat orig = cv::Mat::zeros(cv::Size{128, 512}, type);
-        cv::Mat res  = rad::downscale_by_long_edge(orig, long_target);
+        const cv::Mat orig = cv::Mat::zeros(cv::Size{128, 512}, type);
+        const cv::Mat res  = rad::downscale_by_long_edge(orig, long_target);
 
         REQUIRE(res.size() == cv::Size{16, long_target});
         REQUIRE(res.type() == type);
