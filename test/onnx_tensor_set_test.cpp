@@ -67,7 +67,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - array operator",
     s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
     REQUIRE(s.tensors().size() == 1);
 
-    REQUIRE(s[0].IsTensor());
+    REQUIRE(s.front().IsTensor());
 }
 
 TEMPLATE_TEST_CASE("[TensorSet] - ranged for-loop iterators",
@@ -110,6 +110,118 @@ TEMPLATE_TEST_CASE("[TensorSet] - size/empty",
     }
 }
 
+TEMPLATE_TEST_CASE("[TensorSet] - tensors",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   std::uint16_t)
+{
+    onnx::TensorSet s;
+    {
+        auto& tensors = s.tensors();
+        REQUIRE(tensors.empty());
+    }
+
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    auto& tensors = s.tensors();
+    REQUIRE(tensors.size() == 1);
+}
+
+TEMPLATE_TEST_CASE("[TensorSet] - front",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   std::uint16_t)
+{
+    onnx::TensorSet s;
+    REQUIRE_THROWS(s.front());
+
+    const auto size = get_test_image_size();
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    {
+        auto& front = s.front();
+        REQUIRE(front.IsTensor());
+
+        const auto dims = front.GetTensorTypeAndShapeInfo().GetShape();
+        REQUIRE(dims.size() == 4);
+        REQUIRE(dims.front() == 1);
+        REQUIRE(dims[1] == 1);
+        REQUIRE(dims[2] == size.height);
+        REQUIRE(dims[3] == size.width);
+    }
+
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(3));
+    auto& front = s.front();
+    REQUIRE(front.IsTensor());
+
+    const auto dims = front.GetTensorTypeAndShapeInfo().GetShape();
+    REQUIRE(dims.size() == 4);
+    REQUIRE(dims.front() == 1);
+    REQUIRE(dims[1] == 1);
+    REQUIRE(dims[2] == size.height);
+    REQUIRE(dims[3] == size.width);
+}
+
+TEMPLATE_TEST_CASE("[TensorSet] - back",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   std::uint16_t)
+{
+    onnx::TensorSet s;
+    REQUIRE_THROWS(s.back());
+
+    const auto size = get_test_image_size();
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    {
+        auto& back = s.back();
+        REQUIRE(back.IsTensor());
+
+        const auto dims = back.GetTensorTypeAndShapeInfo().GetShape();
+        REQUIRE(dims.size() == 4);
+        REQUIRE(dims.front() == 1);
+        REQUIRE(dims[1] == 1);
+        REQUIRE(dims[2] == size.height);
+        REQUIRE(dims[3] == size.width);
+    }
+
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(3));
+    auto& back = s.back();
+    REQUIRE(back.IsTensor());
+
+    const auto dims = back.GetTensorTypeAndShapeInfo().GetShape();
+    REQUIRE(dims.size() == 4);
+    REQUIRE(dims.front() == 1);
+    REQUIRE(dims[1] == 3);
+    REQUIRE(dims[2] == size.height);
+    REQUIRE(dims[3] == size.width);
+}
+
+TEMPLATE_TEST_CASE("[TensorSet] - clear",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t,
+                   Ort::Float16_t,
+                   std::uint16_t)
+{
+    onnx::TensorSet s;
+    REQUIRE(s.empty());
+
+    s.clear();
+    REQUIRE(s.empty());
+
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    s.insert_tensor_from_image<TestType>(make_test_image<TestType>(1));
+    REQUIRE(s.size() == 3);
+
+    s.clear();
+    REQUIRE(s.empty());
+}
+
 TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor",
                    "[rad::onnx]",
                    float,
@@ -125,7 +237,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor",
     REQUIRE(s.size() == 1);
     REQUIRE(static_cast<OrtValue*>(test_tensor.tensor) == nullptr);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -194,7 +306,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_batched_images",
         s.insert_tensor_from_batched_images<TestType>(images);
         REQUIRE(s.size() == 1);
 
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -218,7 +330,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_batched_images",
         s.insert_tensor_from_batched_images<TestType>(images);
         REQUIRE(s.size() == 1);
 
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -250,7 +362,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_image",
         s.insert_tensor_from_image<TestType>(img);
         REQUIRE(s.size() == 1);
 
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -271,7 +383,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_image",
         s.insert_tensor_from_image<TestType>(img);
         REQUIRE(s.size() == 1);
 
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -304,7 +416,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_batched_arrays",
     s.insert_tensor_from_batched_arrays<TestType>(batched_data);
     REQUIRE(s.size() == 1);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -331,7 +443,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_array",
     s.insert_tensor_from_array<TestType>(data);
     REQUIRE(s.size() == 1);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -356,7 +468,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_scalar",
     s.insert_tensor_from_scalar<TestType>(value);
     REQUIRE(s.size() == 1);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -383,7 +495,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - insert_tensor_from_data",
     s.insert_tensor_from_data<TestType>(data.data(), shape);
     REQUIRE(s.size() == 1);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -410,7 +522,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_at",
     REQUIRE(static_cast<OrtValue*>(init_tensor.tensor) == nullptr);
 
     {
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -426,7 +538,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_at",
     s.replace_tensor_at(0, std::move(new_tensor.tensor));
     REQUIRE(s.size() == 1);
 
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -459,7 +571,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_images_at",
         s.insert_tensor_from_batched_images<TestType>(init_images);
         REQUIRE(s.size() == 1);
         {
-            auto& tensor = s[0];
+            auto& tensor = s.front();
             REQUIRE(tensor.IsTensor());
 
             auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -480,7 +592,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_images_at",
 
         s.replace_tensor_with_batched_images_at<TestType>(0, new_images);
         REQUIRE(s.size() == 1);
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -504,7 +616,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_images_at",
         s.insert_tensor_from_batched_images<TestType>(init_images);
         REQUIRE(s.size() == 1);
         {
-            auto& tensor = s[0];
+            auto& tensor = s.front();
             REQUIRE(tensor.IsTensor());
 
             auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -525,7 +637,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_images_at",
 
         s.replace_tensor_with_batched_images_at<TestType>(0, new_images);
         REQUIRE(s.size() == 1);
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -559,7 +671,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_image_at",
         REQUIRE(s.size() == 1);
 
         {
-            auto& tensor = s[0];
+            auto& tensor = s.front();
             REQUIRE(tensor.IsTensor());
 
             auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -576,7 +688,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_image_at",
         s.replace_tensor_with_image_at<TestType>(0, new_img);
         REQUIRE(s.size() == 1);
 
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -612,7 +724,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_arrays_at",
     s.insert_tensor_from_batched_arrays<TestType>(init_data);
     REQUIRE(s.size() == 1);
     {
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -625,7 +737,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_batched_arrays_at",
     }
 
     s.replace_tensor_with_batched_arrays_at<TestType>(0, new_data);
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -653,7 +765,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_array_at",
     s.insert_tensor_from_array<TestType>(init_data);
     REQUIRE(s.size() == 1);
     {
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -666,7 +778,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_array_at",
     }
 
     s.replace_tensor_with_array_at<TestType>(0, new_data);
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -692,7 +804,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_scalar_at",
     s.insert_tensor_from_scalar<TestType>(init_value);
     REQUIRE(s.size() == 1);
     {
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -705,7 +817,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_with_scalar_at",
 
     s.replace_tensor_with_scalar_at(0, new_value);
     REQUIRE(s.size() == 1);
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -733,7 +845,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_and_data_at",
     s.insert_tensor_from_data<TestType>(init_data.data(), init_shape);
     REQUIRE(s.size() == 1);
     {
-        auto& tensor = s[0];
+        auto& tensor = s.front();
         REQUIRE(tensor.IsTensor());
 
         auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();
@@ -744,7 +856,7 @@ TEMPLATE_TEST_CASE("[TensorSet] - replace_tensor_and_data_at",
     }
 
     s.replace_tensor_with_data_at(0, new_data.data(), new_shape);
-    auto& tensor = s[0];
+    auto& tensor = s.front();
     REQUIRE(tensor.IsTensor());
 
     auto type_and_shape = tensor.GetTensorTypeAndShapeInfo();

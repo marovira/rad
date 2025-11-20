@@ -47,7 +47,7 @@ namespace rad::onnx
 
         Ort::Value const& operator[](std::size_t i) const
         {
-            return m_tensors[i];
+            return m_tensors.at(i);
         }
 
         [[nodiscard]]
@@ -78,6 +78,35 @@ namespace rad::onnx
         std::vector<Ort::Value> const& tensors() const
         {
             return m_tensors;
+        }
+
+        [[nodiscard]]
+        Ort::Value const& front() const
+        {
+            if (m_tensors.empty())
+            {
+                throw std::runtime_error{
+                    "error: cannot get the first element of an empty set"};
+            }
+            return m_tensors.front();
+        }
+
+        [[nodiscard]]
+        Ort::Value const& back() const
+        {
+            if (m_tensors.empty())
+            {
+                throw std::runtime_error{
+                    "error: cannot get the last element of an empty set"};
+            }
+
+            return m_tensors.back();
+        }
+
+        void clear()
+        {
+            m_tensors.clear();
+            m_tensor_data.clear();
         }
 
         void insert_tensor(Ort::Value&& tensor)

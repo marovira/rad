@@ -74,8 +74,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
 
         s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
-            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
+            onnx::image_batch_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_array_equals(ret, ret2));
         REQUIRE(image_array_equals(ret, images));
@@ -92,8 +92,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
 
         s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
-            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
+            onnx::image_batch_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_array_equals(ret, ret2));
         REQUIRE(image_array_equals(ret, images));
@@ -110,8 +110,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_batch_from_tensor",
 
         s.insert_tensor_from_batched_images<TestType>(images);
         auto ret =
-            onnx::image_batch_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_batch_from_tensor<TestType>(s[0], size, type);
+            onnx::image_batch_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_batch_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_array_equals(ret, ret2));
         REQUIRE(image_array_equals(ret, images));
@@ -157,8 +157,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
 
         s.insert_tensor_from_image<TestType>(img);
 
-        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
+        auto ret = onnx::image_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -173,8 +173,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
 
         s.insert_tensor_from_image<TestType>(img);
 
-        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
+        auto ret = onnx::image_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -189,8 +189,8 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - image_from_tensor",
 
         s.insert_tensor_from_image<TestType>(img);
 
-        auto ret  = onnx::image_from_tensor<TestType>(s[0], size, type, post_process);
-        auto ret2 = onnx::image_from_tensor<TestType>(s[0], size, type);
+        auto ret = onnx::image_from_tensor<TestType>(s.front(), size, type, post_process);
+        auto ret2 = onnx::image_from_tensor<TestType>(s.front(), size, type);
 
         REQUIRE(image_equals(ret, ret2));
         REQUIRE(image_equals(ret, img));
@@ -213,7 +213,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_batch_from_tensor",
     s.insert_tensor_from_batched_arrays<TestType>(batched_data);
     REQUIRE_FALSE(s.empty());
 
-    auto ret = onnx::array_batch_from_tensor<TestType>(s[0], size);
+    auto ret = onnx::array_batch_from_tensor<TestType>(s.front(), size);
     REQUIRE(ret == batched_data);
 }
 
@@ -229,7 +229,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_from_tensor",
     s.insert_tensor_from_array<TestType>(src_data);
     REQUIRE_FALSE(s.empty());
 
-    auto ret = onnx::array_from_tensor<TestType>(s[0], size);
+    auto ret = onnx::array_from_tensor<TestType>(s.front(), size);
     REQUIRE(array_equals(src_data, ret));
 }
 
@@ -243,7 +243,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - scalar_from_tensor",
     s.insert_tensor_from_scalar<TestType>(value);
     REQUIRE(s.size() == 1);
 
-    auto ret = onnx::scalar_from_tensor<TestType>(s[0]);
+    auto ret = onnx::scalar_from_tensor<TestType>(s.front());
     REQUIRE(ret == value);
 }
 
@@ -261,7 +261,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - batched_rects_from_tensor",
     s.insert_tensor_from_data<TestType>(boxes[0].data(), shape);
     REQUIRE(s.size() == 1);
 
-    auto ret = onnx::batched_rects_from_tensor<TestType>(s[0]);
+    auto ret = onnx::batched_rects_from_tensor<TestType>(s.front());
     REQUIRE(std::cmp_equal(ret.size(), shape[0]));
     for (std::int64_t i{0}; i < shape[0]; ++i)
     {
@@ -287,7 +287,7 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - rects_from_tensor",
     s.insert_tensor_from_data<TestType>(boxes[0].data(), shape);
     REQUIRE(s.size() == 1);
 
-    auto ret = onnx::batched_rects_from_tensor<TestType>(s[0]);
+    auto ret = onnx::batched_rects_from_tensor<TestType>(s.front());
     REQUIRE(std::cmp_equal(ret.size(), shape[0]));
     for (std::int64_t i{0}; i < shape[0]; ++i)
     {
@@ -311,6 +311,6 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - data_from_tensor",
     s.insert_tensor_from_data<TestType>(data.data(), shape);
     REQUIRE(s.size() == 1);
 
-    auto ret = onnx::data_from_tensor<TestType>(s[0]);
+    auto ret = onnx::data_from_tensor<TestType>(s.front());
     REQUIRE(ret == data);
 }
