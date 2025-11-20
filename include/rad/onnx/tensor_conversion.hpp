@@ -4,11 +4,14 @@
 #include "onnxruntime.hpp"
 
 #include <fmt/format.h>
+#include <functional>
+#include <numeric>
 #include <opencv2/core.hpp>
 #include <opencv2/core/hal/interface.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <cstring>
@@ -182,6 +185,87 @@ namespace rad::onnx
 
         auto arrays = array_batch_from_tensor<T>(tensor, size);
         return arrays.front();
+    }
+
+    template<TensorDataType T>
+    T scalar_from_tensor(Ort::Value const& tensor)
+    {
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        if (dims.size() != 1)
+        {
+            throw std::runtime_error{
+                fmt::format("error: attempting to retrieve a scalar from a tensor with "
+                            "more than one dimension")};
+        }
+
+        auto ptr = tensor.GetTensorData<T>();
+        auto ret = *ptr;
+        return ret;
+    }
+
+    template<TensorDataType T>
+    std::vector<std::vector<std::array<T, 4>>>
+    batched_rects_from_tensor(Ort::Value const& tensor)
+    {
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        if (dims.size() != 3)
+        {
+            throw std::runtime_error{
+                fmt::format("error: expected either a 3 dimensional tensor, but "
+                            "recieved {} dimensions",
+                            dims.size())};
+        }
+        if (dims[2] != 4)
+        {
+            throw std::runtime_error{fmt::format(
+                "error: expected the final dimension to be 4, but received {}",
+                dims[2])};
+        }
+
+        const auto box_stride = dims[2];
+        std::vector<std::vector<std::array<T, 4>>> batches(dims[0]);
+        auto batch_ptr = tensor.GetTensorData<T>();
+        for (auto& batch : batches)
+        {
+            batch.resize(dims[1]);
+            for (auto& b : batch)
+            {
+                std::memcpy(b.data(), batch_ptr, dims[2] * sizeof(T));
+                batch_ptr += box_stride;
+            }
+        }
+
+        return batches;
+    }
+
+    template<TensorDataType T>
+    std::vector<std::array<T, 4>> rects_from_tensor(Ort::Value const& tensor)
+    {
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        if (dims[0] != 1)
+        {
+            throw std::runtime_error{fmt::format(
+                "error: attempting to retrieve a single array from a batched tensor with "
+                "{} arrays. Please use array_batch_from_tensor instead",
+                dims[0])};
+        }
+
+        auto boxes = batched_rects_from_tensor<T>(tensor);
+        return boxes.front();
+    }
+
+    template<TensorDataType T>
+    std::vector<T> data_from_tensor(Ort::Value const& tensor)
+    {
+        const auto dims = tensor.GetTensorTypeAndShapeInfo().GetShape();
+        const auto size =
+            std::accumulate(dims.begin(), dims.end(), 1ll, std::multiplies());
+
+        std::vector<T> buffer(size);
+        auto data_ptr = tensor.GetTensorData<T>();
+        std::memcpy(buffer.data(), data_ptr, buffer.size() * sizeof(T));
+
+        return buffer;
     }
 
 } // namespace rad::onnx

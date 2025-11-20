@@ -7,8 +7,10 @@
 #include <rad/onnx/tensor_conversion.hpp>
 #include <rad/onnx/tensor_set.hpp>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 namespace onnx = rad::onnx;
@@ -229,4 +231,86 @@ TEMPLATE_TEST_CASE("[tensor_conversion] - array_from_tensor",
 
     auto ret = onnx::array_from_tensor<TestType>(s[0], size);
     REQUIRE(array_equals(src_data, ret));
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - scalar_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    onnx::TensorSet s;
+    static constexpr TestType value{1};
+    s.insert_tensor_from_scalar<TestType>(value);
+    REQUIRE(s.size() == 1);
+
+    auto ret = onnx::scalar_from_tensor<TestType>(s[0]);
+    REQUIRE(ret == value);
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - batched_rects_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    using Rect = std::array<TestType, 4>;
+    const Rect box{TestType{0}, TestType{0}, TestType{1}, TestType{1}};
+    const std::vector<Rect> boxes{box, box, box, box, box, box};
+    const std::vector<std::int64_t> shape{2, 3, 4};
+
+    onnx::TensorSet s;
+    s.insert_tensor_from_data<TestType>(boxes[0].data(), shape);
+    REQUIRE(s.size() == 1);
+
+    auto ret = onnx::batched_rects_from_tensor<TestType>(s[0]);
+    REQUIRE(std::cmp_equal(ret.size(), shape[0]));
+    for (std::int64_t i{0}; i < shape[0]; ++i)
+    {
+        REQUIRE(std::cmp_equal(ret[i].size(), shape[1]));
+        for (auto b : ret[i])
+        {
+            REQUIRE(box == b);
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - rects_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    using Rect = std::array<TestType, 4>;
+    const Rect box{TestType{0}, TestType{0}, TestType{1}, TestType{1}};
+    const std::vector<Rect> boxes{box, box, box, box, box, box};
+    const std::vector<std::int64_t> shape{1, 6, 4};
+
+    onnx::TensorSet s;
+    s.insert_tensor_from_data<TestType>(boxes[0].data(), shape);
+    REQUIRE(s.size() == 1);
+
+    auto ret = onnx::batched_rects_from_tensor<TestType>(s[0]);
+    REQUIRE(std::cmp_equal(ret.size(), shape[0]));
+    for (std::int64_t i{0}; i < shape[0]; ++i)
+    {
+        REQUIRE(std::cmp_equal(ret[i].size(), shape[1]));
+        for (auto b : ret[i])
+        {
+            REQUIRE(box == b);
+        }
+    }
+}
+
+TEMPLATE_TEST_CASE("[tensor_conversion] - data_from_tensor",
+                   "[rad::onnx]",
+                   float,
+                   std::uint8_t)
+{
+    const std::vector<TestType> data(10, TestType{1});
+    const std::vector<std::int64_t> shape{1, 5, 2};
+
+    onnx::TensorSet s;
+    s.insert_tensor_from_data<TestType>(data.data(), shape);
+    REQUIRE(s.size() == 1);
+
+    auto ret = onnx::data_from_tensor<TestType>(s[0]);
+    REQUIRE(ret == data);
 }
